@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Browse - Rwanda SkillsConnect</title>
+  <link rel="stylesheet" href="assets/css/tailwind.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-gray-50">
+  <header class="bg-white shadow-sm border-b sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4">
+      <div class="flex justify-between items-center">
+        <a href="index.html" class="text-2xl font-bold text-indigo-600">Rwanda SkillsConnect</a>
+        <nav class="hidden md:flex items-center space-x-6">
+          <a href="#" id="dashboardLink" class="text-gray-600 hover:text-indigo-600">Dashboard</a>
+          <a href="browse.html" class="text-indigo-600 font-medium" id="browseLink">Browse</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-6 py-8">
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-900 mb-2" id="pageTitle">Browse Talent</h1>
+      <p class="text-gray-600" id="pageDescription">Find skilled freelancers for your projects</p>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="bg-white rounded-xl shadow-sm border p-6 mb-8">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <input type="text" id="searchInput" placeholder="Search..." class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <div>
+          <select id="skillFilter" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+            <option value="">All Skills</option>
+            <option value="web development">Web Development</option>
+            <option value="mobile development">Mobile Development</option>
+            <option value="graphic design">Graphic Design</option>
+            <option value="content writing">Content Writing</option>
+          </select>
+        </div>
+        <div>
+          <select id="locationFilter" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+            <option value="">All Locations</option>
+            <option value="kigali">Kigali</option>
+            <option value="huye">Huye</option>
+            <option value="musanze">Musanze</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div id="resultsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Results will be loaded here -->
+    </div>
+
+    <!-- Load More -->
+    <div class="text-center mt-8">
+      <button id="loadMoreBtn" class="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 hidden">
+        Load More
+      </button>
+    </div>
+  </main>
+
+  <script src="job-management.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script src="fix-access-control.js"></script>
+  <script>
+    // Simple notification function for browse page
+    function showNotification(message, type = 'success', duration = 3000) {
+      const notification = document.createElement('div');
+      notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transition-all duration-300 transform translate-x-full`;
+      
+      switch(type) {
+        case 'success':
+          notification.classList.add('bg-green-500', 'text-white');
+          break;
+        case 'error':
+          notification.classList.add('bg-red-500', 'text-white');
+          break;
+        case 'warning':
+          notification.classList.add('bg-yellow-500', 'text-white');
+          break;
+        case 'info':
+          notification.classList.add('bg-blue-500', 'text-white');
+          break;
+        default:
+          notification.classList.add('bg-gray-500', 'text-white');
+      }
+      
+      notification.innerHTML = `
+        <div class="flex items-center space-x-2">
+          <span>${message}</span>
+          <button onclick="this.parentElement.parentElement.remove()" class="ml-2 text-white hover:text-gray-200">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+            </svg>
+          </button>
+        </div>
+      `;
+      
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.classList.remove('translate-x-full');
+      }, 100);
+      
+      setTimeout(() => {
+        notification.classList.add('translate-x-full');
+        setTimeout(() => {
+          if (notification.parentElement) {
+            notification.remove();
+          }
+        }, 300);
+      }, duration);
+    }
+  </script>
+  <script>
+    let currentPage = 1;
+    let allItems = [];
+    let filteredItems = [];
+    const itemsPerPage = 9;
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const session = JSON.parse(localStorage.getItem('userSession') || 'null');
+      if (!session) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      // Update page based on user role
+      if (session.role === 'freelancer') {
+        document.getElementById('pageTitle').textContent = 'Find Jobs';
+        document.getElementById('pageDescription').textContent = 'Discover opportunities that match your skills';
+        document.getElementById('browseLink').textContent = 'Find Jobs';
+        document.getElementById('dashboardLink').href = 'freelancer-dashboard.html';
+        document.getElementById('searchInput').placeholder = 'Search jobs...';
+        loadJobs();
+      } else {
+        document.getElementById('pageTitle').textContent = 'Browse Talent';
+        document.getElementById('pageDescription').textContent = 'Find skilled freelancers for your projects';
+        document.getElementById('browseLink').textContent = 'Browse Talent';
+        document.getElementById('dashboardLink').href = 'client-dashboard.html';
+        document.getElementById('searchInput').placeholder = 'Search freelancers...';
+        loadFreelancers();
+      }
+
+      // Event listeners
+      document.getElementById('searchInput').addEventListener('input', applyFilters);
+      document.getElementById('skillFilter').addEventListener('change', applyFilters);
+      document.getElementById('locationFilter').addEventListener('change', applyFilters);
+      document.getElementById('loadMoreBtn').addEventListener('click', loadMore);
+    });
+
+    function loadFreelancers() {
+      allItems = JSON.parse(localStorage.getItem('users') || '[]')
+        .filter(user => user.role === 'freelancer');
+      applyFilters();
+    }
+
+    function loadJobs() {
+      const session = JSON.parse(localStorage.getItem('userSession') || 'null');
+      const appliedJobs = JSON.parse(localStorage.getItem('appliedJobs') || '[]');
+      
+      allItems = JSON.parse(localStorage.getItem('jobs') || '[]')
+        .filter(job => {
+          // Only show admin-approved active jobs
+          if (job.status !== 'active' || !job.adminApproved) return false;
+          
+          // Filter out jobs already applied to by current freelancer
+          if (session && session.role === 'freelancer') {
+            return !appliedJobs.find(app => app.jobId === job.id && app.freelancerId === session.id);
+          }
+          
+          return true;
+        });
+      applyFilters();
+    }
+
+    function applyFilters() {
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      const skillFilter = document.getElementById('skillFilter').value.toLowerCase();
+      const locationFilter = document.getElementById('locationFilter').value.toLowerCase();
+
+      filteredItems = allItems.filter(item => {
+        const matchesSearch = !searchTerm || 
+          (item.fullName && item.fullName.toLowerCase().includes(searchTerm)) ||
+          (item.title && item.title.toLowerCase().includes(searchTerm)) ||
+          (item.skills && item.skills.toLowerCase().includes(searchTerm)) ||
+          (item.description && item.description.toLowerCase().includes(searchTerm));
+
+        const matchesSkill = !skillFilter || 
+          (item.skills && item.skills.toLowerCase().includes(skillFilter));
+
+        const matchesLocation = !locationFilter || 
+          (item.location && item.location.toLowerCase().includes(locationFilter));
+
+        return matchesSearch && matchesSkill && matchesLocation;
+      });
+
+      currentPage = 1;
+      renderItems();
+    }
+
+    function renderItems() {
+      const container = document.getElementById('resultsContainer');
+      const startIndex = 0;
+      const endIndex = currentPage * itemsPerPage;
+      const itemsToShow = filteredItems.slice(startIndex, endIndex);
+
+      if (itemsToShow.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full text-center py-12">
+            <i class="fas fa-search text-gray-300 text-6xl mb-4"></i>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">No results found</h3>
+            <p class="text-gray-500">Try adjusting your search criteria.</p>
+          </div>
+        `;
+        document.getElementById('loadMoreBtn').classList.add('hidden');
+        return;
+      }
+
+      const session = JSON.parse(localStorage.getItem('userSession') || 'null');
+      
+      if (session.role === 'freelancer') {
+        container.innerHTML = itemsToShow.map(job => `
+          <div class="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow">
+            <div class="flex justify-between items-start mb-4">
+              <div>
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">${job.title}</h3>
+                <p class="text-gray-600 mb-2">${job.clientName}</p>
+                <div class="flex items-center text-sm text-gray-500">
+                  <i class="fas fa-map-marker-alt mr-1"></i>
+                  ${job.location}
+                </div>
+              </div>
+              <span class="text-green-600 font-bold text-lg">RWF ${parseInt(job.salary || job.maxBudget || 0).toLocaleString()}</span>
+            </div>
+            <p class="text-gray-600 mb-4">${job.description}</p>
+            <div class="flex flex-wrap gap-2 mb-4">
+              ${job.skills ? job.skills.split(',').map(skill => 
+                `<span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">${skill.trim()}</span>`
+              ).join('') : ''}
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-sm text-gray-500">Posted ${new Date(job.createdAt).toLocaleDateString()}</span>
+              <button onclick="applyToJob('${job.id}')" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors">
+                Apply Now
+              </button>
+            </div>
+          </div>
+        `).join('');
+      } else {
+        container.innerHTML = itemsToShow.map(freelancer => `
+          <div class="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow">
+            <div class="flex items-center mb-4">
+              ${freelancer.profilePhoto ? 
+                `<img src="${freelancer.profilePhoto}" class="w-12 h-12 rounded-full object-cover border-2 border-gray-200">` :
+                `<div class="w-12 h-12 bg-indigo-500 rounded-full flex items-center justify-center">
+                  <span class="text-white font-bold">${freelancer.fullName.charAt(0).toUpperCase()}</span>
+                </div>`
+              }
+              <div class="ml-3">
+                <h3 class="text-lg font-semibold text-gray-900">${freelancer.fullName}</h3>
+                <p class="text-sm text-gray-500">${freelancer.professionalTitle || 'Professional'}</p>
+                <p class="text-sm text-gray-500">
+                  <i class="fas fa-map-marker-alt mr-1"></i>${freelancer.location || 'Location not specified'}
+                </p>
+              </div>
+            </div>
+            
+            <div class="mb-4">
+              <div class="flex flex-wrap gap-2 mb-3">
+                ${freelancer.skills ? freelancer.skills.split(',').slice(0, 3).map(skill => 
+                  `<span class="px-2 py-1 bg-indigo-100 text-indigo-800 text-xs rounded-full">${skill.trim()}</span>`
+                ).join('') : '<span class="text-gray-500 text-sm">No skills listed</span>'}
+              </div>
+              <p class="text-sm text-gray-600">
+                <span class="font-medium">Rate:</span> ${freelancer.hourlyRate ? 'RWF ' + parseInt(freelancer.hourlyRate).toLocaleString() + '/hr' : 'Not set'}
+              </p>
+            </div>
+            
+            <div class="flex items-center justify-between">
+              <div class="flex text-yellow-400">
+                ${Array(5).fill().map((_, i) => `
+                  <i class="fas fa-star ${i < 4 ? 'text-yellow-400' : 'text-gray-300'} text-sm"></i>
+                `).join('')}
+              </div>
+              <div class="flex space-x-2">
+                <button onclick="showProfileModal('${freelancer.id}')" class="bg-indigo-500 text-white px-3 py-1 rounded text-sm hover:bg-indigo-600">
+                  View
+                </button>
+                <button onclick="contactFreelancer('${freelancer.id}')" class="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600">
+                  Contact
+                </button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // Show/hide load more button
+      if (endIndex < filteredItems.length) {
+        document.getElementById('loadMoreBtn').classList.remove('hidden');
+      } else {
+        document.getElementById('loadMoreBtn').classList.add('hidden');
+      }
+    }
+
+    function loadMore() {
+      currentPage++;
+      renderItems();
+    }
+    
+    // Job application function
+    function applyToJob(jobId) {
+      const session = JSON.parse(localStorage.getItem('userSession') || 'null');
+      if (!session || session.role !== 'freelancer') {
+        showNotification('Please login as a freelancer to apply for jobs', 'error');
+        return;
+      }
+
+      // Check freelancer application limit
+      const applicationCheck = canFreelancerApply(session.id);
+      if (!applicationCheck.canApply) {
+        showNotification(`You can only apply to ${applicationCheck.maxAllowed} jobs at a time. You currently have ${applicationCheck.activeCount} active applications.`, 'error');
+        return;
+      }
+
+      const jobs = JSON.parse(localStorage.getItem('jobs') || '[]');
+      const job = jobs.find(j => j.id === jobId);
+      
+      if (!job) {
+        showNotification('Job not found', 'error');
+        return;
+      }
+
+      // Check if job is approved and active
+      if (job.status !== 'active' || !job.adminApproved) {
+        showNotification('This job is not available for applications', 'error');
+        return;
+      }
+
+      const application = {
+        id: 'app_' + Date.now().toString(36) + Math.random().toString(36).substr(2),
+        jobId: jobId,
+        freelancerId: session.id,
+        freelancerName: session.name || session.fullName,
+        status: 'pending',
+        appliedAt: new Date().toISOString(),
+        jobTitle: job.title,
+        clientName: job.clientName
+      };
+
+      const appliedJobs = JSON.parse(localStorage.getItem('appliedJobs') || '[]');
+      
+      // Check if already applied
+      if (appliedJobs.find(app => app.jobId === jobId && app.freelancerId === session.id)) {
+        showNotification('You have already applied to this job!', 'warning');
+        return;
+      }
+
+      appliedJobs.push(application);
+      localStorage.setItem('appliedJobs', JSON.stringify(appliedJobs));
+
+      showNotification(`Successfully applied to ${job.title}!`, 'success');
+      
+      // Refresh the jobs list
+      setTimeout(() => {
+        loadJobs();
+      }, 1000);
+    }
+
+    // Make functions globally available
+    window.loadJobs = loadJobs;
+    window.loadFreelancers = loadFreelancers;
+    window.applyFilters = applyFilters;
+    window.applyToJob = applyToJob;
+  </script>
+</body>
+</html>

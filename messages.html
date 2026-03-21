@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Messages — Rwanda SkillsConnect</title>
+  <link rel="stylesheet" href="assets/css/tailwind.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .chat-layout { height: calc(100vh - 65px); }
+    .msg-bubble { max-width: 72%; word-break: break-word; }
+    .conv-item { transition: background 0.15s; }
+    .conv-item.active { background: #eff6ff; border-left: 3px solid #3b82f6; }
+    .conv-item:hover:not(.active) { background: #f9fafb; }
+    #chatMessages { scroll-behavior: smooth; }
+  </style>
+</head>
+<body class="bg-gray-50">
+
+<!-- Navbar -->
+<header class="bg-white border-b shadow-sm sticky top-0 z-50 h-[65px] flex items-center">
+  <div class="max-w-7xl mx-auto px-6 w-full flex justify-between items-center">
+    <a id="dashLink" href="#" class="text-xl font-bold text-indigo-600">Rwanda SkillsConnect</a>
+    <div class="flex items-center gap-4">
+      <span class="text-sm text-gray-500" id="navUserName"></span>
+      <button id="logoutBtn" class="text-sm text-red-500 hover:text-red-700"><i class="fas fa-sign-out-alt mr-1"></i>Logout</button>
+    </div>
+  </div>
+</header>
+
+<!-- Chat Layout -->
+<div class="chat-layout flex overflow-hidden">
+
+  <!-- Sidebar: Conversations -->
+  <aside class="w-80 bg-white border-r flex flex-col shrink-0">
+    <div class="p-4 border-b">
+      <h2 class="font-semibold text-gray-800 mb-3">Messages</h2>
+      <div class="relative">
+        <input id="searchInput" type="text" placeholder="Search conversations…"
+          class="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400">
+        <i class="fas fa-search absolute left-3 top-2.5 text-gray-400 text-sm"></i>
+      </div>
+    </div>
+    <div id="convList" class="flex-1 overflow-y-auto"></div>
+  </aside>
+
+  <!-- Main: Chat -->
+  <main class="flex-1 flex flex-col overflow-hidden">
+
+    <!-- Empty state -->
+    <div id="emptyState" class="flex-1 flex flex-col items-center justify-center text-gray-400">
+      <i class="fas fa-comments text-6xl mb-4"></i>
+      <p class="text-lg font-medium">Select a conversation</p>
+      <p class="text-sm mt-1">Your messages will appear here</p>
+    </div>
+
+    <!-- Active chat -->
+    <div id="chatPanel" class="hidden flex-1 flex flex-col overflow-hidden">
+
+      <!-- Chat header -->
+      <div class="bg-white border-b px-6 py-3 flex items-center gap-3 shrink-0">
+        <div id="chatAvatar" class="w-9 h-9 rounded-full bg-indigo-500 flex items-center justify-center text-white font-semibold text-sm"></div>
+        <div>
+          <p id="chatName" class="font-semibold text-gray-900 text-sm"></p>
+          <p id="chatSub" class="text-xs text-gray-500"></p>
+        </div>
+      </div>
+
+      <!-- Messages -->
+      <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50"></div>
+
+      <!-- Input -->
+      <div class="bg-white border-t px-4 py-3 flex items-end gap-3 shrink-0">
+        <textarea id="msgInput" rows="1" placeholder="Type a message…"
+          class="flex-1 resize-none border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400"
+          style="min-height:38px;max-height:120px;"></textarea>
+        <button id="sendBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-2 text-sm transition-colors">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabaseClient.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/chat.js"></script>
+<script>
+  let _me = null;          // { session, profile }
+  let _convs = [];         // all conversations
+  let _activeConv = null;  // currently open conversation
+
+  // ── Boot ──────────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', async () => {
+    _me = await Auth.requireAuth(['worker', 'employer']);
+    if (!_me) return;
+
+    const dash = _me.profile.role === 'employer' ? 'employer-dashboard.html' : 'freelancer-dashboard.html';
+    document.getElementById('dashLink').href = dash;
+    document.getElementById('navUserName').textContent = _me.profile.full_name || 'User';
+
+    document.getElementById('logoutBtn').addEventListener('click', () => Auth.logout());
+    document.getElementById('sendBtn').addEventListener('click', doSend);
+    document.getElementById('msgInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); doSend(); }
+    });
+    document.getElementById('msgInput').addEventListener('input', function () {
+      this.style.height = '38px';
+      this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    });
+    document.getElementById('searchInput').addEventListener('input', renderConvList);
+
+    // Check ?conv= or ?with= params
+    const params = new URLSearchParams(location.search);
+    const withId = params.get('with');
+    const jobId  = params.get('job') || null;
+
+    await loadConversations();
+
+    if (withId) {
+      const { data: conv } = await ChatService.getOrCreateConversation(_me.session.user.id, withId, jobId);
+      if (conv) {
+        // Ensure it's in the list
+        if (!_convs.find(c => c.id === conv.id)) await loadConversations();
+        openConversation(conv.id);
+      }
+    }
+  });
+
+  // ── Load all conversations ────────────────────────────────
+  async function loadConversations() {
+    const { data } = await ChatService.getConversations(_me.session.user.id);
+    _convs = data || [];
+    renderConvList();
+  }
+
+  // ── Render sidebar list ───────────────────────────────────
+  function renderConvList() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const container = document.getElementById('convList');
+    const myId = _me.session.user.id;
+
+    const filtered = _convs.filter(c => {
+      const other = c.user1_id === myId ? c.user2 : c.user1;
+      return !q || (other?.full_name || '').toLowerCase().includes(q);
+    });
+
+    if (!filtered.length) {
+      container.innerHTML = `<div class="p-6 text-center text-gray-400 text-sm">
+        <i class="fas fa-inbox text-3xl mb-2 block"></i>No conversations yet</div>`;
+      return;
+    }
+
+    container.innerHTML = filtered.map(c => {
+      const other = c.user1_id === myId ? c.user2 : c.user1;
+      const name  = other?.full_name || 'Unknown';
+      const init  = name.charAt(0).toUpperCase();
+      const unread = c.user1_id === myId ? c.unread_user1 : c.unread_user2;
+      const time  = c.last_message_at ? fmtTime(c.last_message_at) : '';
+      const isActive = _activeConv?.id === c.id;
+
+      return `<div class="conv-item px-4 py-3 cursor-pointer flex items-center gap-3 ${isActive ? 'active' : ''}"
+                   onclick="openConversation('${c.id}')">
+        <div class="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center text-white font-semibold shrink-0">${init}</div>
+        <div class="flex-1 min-w-0">
+          <div class="flex justify-between items-center">
+            <span class="font-medium text-gray-900 text-sm truncate">${name}</span>
+            <span class="text-xs text-gray-400 shrink-0 ml-2">${time}</span>
+          </div>
+          <p class="text-xs text-gray-500 truncate">${c.last_message || 'No messages yet'}</p>
+        </div>
+        ${unread > 0 ? `<span class="bg-indigo-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center shrink-0">${unread}</span>` : ''}
+      </div>`;
+    }).join('');
+  }
+
+  // ── Open a conversation ───────────────────────────────────
+  async function openConversation(convId) {
+    _activeConv = _convs.find(c => c.id === convId);
+    if (!_activeConv) return;
+
+    const myId = _me.session.user.id;
+    const other = _activeConv.user1_id === myId ? _activeConv.user2 : _activeConv.user1;
+
+    // Update header
+    document.getElementById('chatAvatar').textContent = (other?.full_name || '?').charAt(0).toUpperCase();
+    document.getElementById('chatName').textContent = other?.full_name || 'Unknown';
+    document.getElementById('chatSub').textContent = other?.role === 'employer' ? 'Employer' : 'Worker';
+
+    document.getElementById('emptyState').classList.add('hidden');
+    document.getElementById('chatPanel').classList.remove('hidden');
+
+    renderConvList(); // highlight active
+
+    await loadMessages();
+    await ChatService.markRead(convId, myId);
+
+    // Reset unread locally
+    if (_activeConv.user1_id === myId) _activeConv.unread_user1 = 0;
+    else _activeConv.unread_user2 = 0;
+    renderConvList();
+
+    // Subscribe realtime
+    ChatService.subscribeToMessages(convId, async (newMsg) => {
+      if (newMsg.sender_id !== myId) {
+        await ChatService.markRead(convId, myId);
+      }
+      appendMessage(newMsg);
+    });
+  }
+
+  // ── Load messages into chat panel ─────────────────────────
+  async function loadMessages() {
+    const { data: msgs } = await ChatService.getMessages(_activeConv.id);
+    const container = document.getElementById('chatMessages');
+    container.innerHTML = '';
+    (msgs || []).forEach(m => appendMessage(m, false));
+    container.scrollTop = container.scrollHeight;
+  }
+
+  // ── Append a single message bubble ───────────────────────
+  function appendMessage(msg, scroll = true) {
+    const myId = _me.session.user.id;
+    const isMine = msg.sender_id === myId;
+    const container = document.getElementById('chatMessages');
+
+    const div = document.createElement('div');
+    div.className = `flex ${isMine ? 'justify-end' : 'justify-start'}`;
+    div.innerHTML = `
+      <div class="msg-bubble px-4 py-2 rounded-2xl text-sm ${isMine
+        ? 'bg-indigo-600 text-white rounded-br-sm'
+        : 'bg-white text-gray-800 border rounded-bl-sm shadow-sm'}">
+        <p>${escHtml(msg.message)}</p>
+        <p class="text-xs mt-1 ${isMine ? 'text-indigo-200' : 'text-gray-400'} text-right">${fmtTime(msg.created_at)}</p>
+      </div>`;
+    container.appendChild(div);
+    if (scroll) container.scrollTop = container.scrollHeight;
+  }
+
+  // ── Send message ──────────────────────────────────────────
+  async function doSend() {
+    const input = document.getElementById('msgInput');
+    const text = input.value.trim();
+    if (!text || !_activeConv) return;
+
+    const myId = _me.session.user.id;
+    const otherId = _activeConv.user1_id === myId ? _activeConv.user2_id : _activeConv.user1_id;
+
+    input.value = '';
+    input.style.height = '38px';
+
+    const { error } = await ChatService.sendMessage(_activeConv.id, myId, otherId, text);
+    if (error) { showToast('Failed to send message', 'error'); return; }
+
+    // Update local last_message
+    _activeConv.last_message = text;
+    _activeConv.last_message_at = new Date().toISOString();
+    renderConvList();
+  }
+
+  // ── Helpers ───────────────────────────────────────────────
+  function fmtTime(ts) {
+    const d = new Date(ts), now = new Date();
+    const diff = now - d;
+    if (diff < 60000) return 'now';
+    if (diff < 3600000) return Math.floor(diff / 60000) + 'm';
+    if (diff < 86400000) return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function showToast(msg, type = 'success') {
+    const t = document.createElement('div');
+    t.className = `fixed bottom-4 right-4 z-50 px-4 py-2 rounded-lg text-white text-sm shadow-lg ${type === 'error' ? 'bg-red-500' : 'bg-green-500'}`;
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 3000);
+  }
+</script>
+</body>
+</html>

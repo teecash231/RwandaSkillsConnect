@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Earnings | Rwanda SkillsConnect</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{--primary:#0056B3;--primary-light:#E8F2FF;--secondary:#00C896;--dark:#1A1F36;--gray:#64748B;--border:#E2E8F0;--radius:10px;--sidebar-width:280px;--shadow:0 4px 20px rgba(0,0,0,.08);}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Inter',sans-serif;color:var(--dark);background:#f5f7fa;}
+    h1,h2,h3,h4,h5,h6{font-family:'Poppins',sans-serif;font-weight:600;}
+    .sidebar{width:var(--sidebar-width);background:#fff;border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:1000;box-shadow:2px 0 10px rgba(0,0,0,.05);}
+    .sidebar-header{padding:20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+    .logo{display:flex;align-items:center;gap:12px;}
+    .logo-icon{width:40px;height:40px;background:linear-gradient(135deg,var(--primary),var(--secondary));border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;}
+    .brand-name{font-family:'Poppins',sans-serif;font-weight:700;font-size:18px;color:var(--dark);}
+    .brand-tagline{font-size:11px;color:var(--gray);}
+    .sidebar-menu{flex:1;padding:20px 0;overflow-y:auto;}
+    .menu-section{margin-bottom:20px;}
+    .section-title{padding:0 20px 8px;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--gray);font-weight:600;}
+    .menu-item{display:flex;align-items:center;gap:12px;padding:12px 20px;color:var(--gray);text-decoration:none;transition:all .2s;}
+    .menu-item:hover,.menu-item.active{background:var(--primary-light);color:var(--primary);}
+    .menu-item.active{border-left:3px solid var(--primary);}
+    .menu-item i{width:20px;text-align:center;font-size:16px;}
+    .menu-text{flex:1;font-size:14px;font-weight:500;}
+    .sidebar-footer{border-top:1px solid var(--border);padding:15px 0;}
+    .sidebar-item{display:flex;align-items:center;gap:12px;padding:10px 20px;color:var(--gray);text-decoration:none;transition:all .2s;}
+    .sidebar-item:hover{background:var(--primary-light);color:var(--primary);}
+    .sidebar-item.logout:hover{background:#ffe6e6;color:#dc3545;}
+    .main-content{margin-left:var(--sidebar-width);min-height:100vh;}
+    .top-nav{background:#fff;border-bottom:1px solid var(--border);padding:0 30px;height:70px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 10px rgba(0,0,0,.05);}
+    .mobile-toggle{display:none;background:none;border:none;color:var(--primary);font-size:1.2rem;cursor:pointer;}
+    .user-avatar-sm{width:36px;height:36px;background:linear-gradient(135deg,var(--primary),var(--secondary));border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:14px;}
+    .content-area{padding:30px;}
+    .stat-card{background:#fff;border-radius:var(--radius);padding:1.5rem;box-shadow:var(--shadow);height:100%;}
+    .tip-item{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px;}
+    .tip-icon{width:38px;height:38px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;font-size:15px;}
+    .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;}
+    .sidebar-overlay.show{display:block;}
+    @media(max-width:992px){.sidebar{transform:translateX(-100%);}.sidebar.show{transform:translateX(0);}.main-content{margin-left:0!important;}.mobile-toggle{display:block;}.content-area{padding:20px;}}
+  </style>
+</head>
+<body>
+<div class="d-flex">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <div class="logo-icon"><i class="fas fa-hands-helping"></i></div>
+        <div>
+          <div class="brand-name">SkillsConnect</div>
+          <div class="brand-tagline">Rwanda</div>
+        </div>
+      </div>
+    </div>
+    <nav class="sidebar-menu">
+      <div class="menu-section">
+        <div class="section-title">Dashboard</div>
+        <a href="freelancer-dashboard.html" class="menu-item"><i class="fas fa-tachometer-alt"></i><span class="menu-text">Overview</span></a>
+        <a href="profile.html" class="menu-item"><i class="fas fa-user"></i><span class="menu-text">My Profile</span></a>
+      </div>
+      <div class="menu-section">
+        <div class="section-title">Jobs &amp; Skills</div>
+        <a href="find-jobs.html" class="menu-item"><i class="fas fa-search"></i><span class="menu-text">Find Jobs</span></a>
+        <a href="my-applications.html" class="menu-item"><i class="fas fa-file-alt"></i><span class="menu-text">Applications</span></a>
+      </div>
+      <div class="menu-section">
+        <div class="section-title">Earnings</div>
+        <a href="worker-earnings.html" class="menu-item active"><i class="fas fa-wallet"></i><span class="menu-text">Earnings</span></a>
+        <a href="worker-transactions.html" class="menu-item"><i class="fas fa-history"></i><span class="menu-text">Transactions</span></a>
+        <a href="worker-earnings.html#invoices" class="menu-item"><i class="fas fa-file-invoice"></i><span class="menu-text">Invoices</span></a>
+      </div>
+      <div class="menu-section">
+        <div class="section-title">Communication</div>
+        <a href="messages.html" class="menu-item"><i class="fas fa-comments"></i><span class="menu-text">Messages</span></a>
+        <a href="notifications.html" class="menu-item"><i class="fas fa-bell"></i><span class="menu-text">Notifications</span></a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <a href="client-settings.html" class="sidebar-item"><i class="fas fa-cog"></i><span>Settings</span></a>
+      <a href="#" class="sidebar-item logout" id="logoutBtn"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a>
+    </div>
+  </aside>
+
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <main class="main-content">
+    <header class="top-nav">
+      <div class="d-flex align-items-center gap-3">
+        <button class="mobile-toggle" id="mobileToggle"><i class="fas fa-bars"></i></button>
+        <div>
+          <h1 style="font-size:1.4rem;margin:0;">My Earnings</h1>
+          <p style="font-size:13px;color:var(--gray);margin:0;">Track your earnings and payments</p>
+        </div>
+      </div>
+      <div class="d-flex align-items-center gap-3">
+        <div class="user-avatar-sm" id="userAvatar">W</div>
+        <div style="font-size:14px;font-weight:500;" id="userName">Worker</div>
+      </div>
+    </header>
+
+    <div class="content-area">
+
+      <!-- Top stat cards -->
+      <div class="row g-3 mb-4">
+        <div class="col-md-4">
+          <div class="p-4 rounded-3 text-white h-100" style="background:linear-gradient(135deg,var(--primary),#003D82);">
+            <p class="mb-1 opacity-75"><i class="fas fa-money-bill-wave me-2"></i>Total Earnings</p>
+            <h3 class="fw-bold mb-0" id="totalEarnings">RWF —</h3>
+            <small class="opacity-75">Lifetime from all jobs</small>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="p-4 rounded-3 text-white h-100" style="background:linear-gradient(135deg,var(--secondary),#009970);">
+            <p class="mb-1 opacity-75"><i class="fas fa-wallet me-2"></i>Available Balance</p>
+            <h3 class="fw-bold mb-0" id="availableBalance">RWF —</h3>
+            <small class="opacity-75">Ready to withdraw</small>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="p-4 rounded-3 text-dark h-100" style="background:linear-gradient(135deg,#FFF3CD,#FFE69C);">
+            <p class="mb-1" style="opacity:.7"><i class="fas fa-clock me-2"></i>This Month</p>
+            <h3 class="fw-bold mb-0" id="thisMonth">RWF —</h3>
+            <small style="opacity:.7">Earnings in <span id="monthName"></span></small>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-4">
+        <!-- Earnings + Invoices tabs -->
+        <div class="col-lg-8">
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white">
+              <ul class="nav nav-tabs card-header-tabs" id="earningsTabs">
+                <li class="nav-item"><a class="nav-link active" href="#tab-earnings" data-bs-toggle="tab">Recent Earnings</a></li>
+                <li class="nav-item"><a class="nav-link" href="#tab-invoices" data-bs-toggle="tab" id="invoicesTabLink">Invoices</a></li>
+              </ul>
+            </div>
+            <div class="tab-content">
+              <div class="tab-pane fade show active" id="tab-earnings">
+                <div class="d-flex justify-content-end p-3 pb-0">
+                  <a href="worker-transactions.html" class="btn btn-sm btn-primary"><i class="fas fa-history me-1"></i> All Transactions</a>
+                </div>
+                <div id="earningsList">
+                  <div class="text-center py-5 text-muted">
+                    <div class="spinner-border text-primary mb-3"></div>
+                    <p>Loading earnings...</p>
+                  </div>
+                </div>
+              </div>
+              <div class="tab-pane fade" id="tab-invoices">
+                <div id="invoicesList">
+                  <div class="text-center py-5 text-muted">
+                    <div class="spinner-border text-primary mb-3"></div>
+                    <p>Loading invoices...</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right column -->
+        <div class="col-lg-4">
+          <!-- Quick Stats -->
+          <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white"><h6 class="mb-0 fw-semibold">Quick Stats</h6></div>
+            <div class="card-body">
+              <div class="row g-3 text-center">
+                <div class="col-6">
+                  <div class="p-3 rounded-3" style="background:#f8f9fa;">
+                    <h4 class="mb-1 text-primary" id="statPayments">—</h4>
+                    <small class="text-muted">Payments</small>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="p-3 rounded-3" style="background:#f8f9fa;">
+                    <h4 class="mb-1 text-success" id="statJobs">—</h4>
+                    <small class="text-muted">Jobs Done</small>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="p-3 rounded-3" style="background:#f8f9fa;">
+                    <h4 class="mb-1 text-info" id="statEmployers">—</h4>
+                    <small class="text-muted">Employers</small>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="p-3 rounded-3" style="background:#f8f9fa;">
+                    <h5 class="mb-1 text-warning" id="statAvg">—</h5>
+                    <small class="text-muted">Avg Payment</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Withdraw -->
+          <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white"><h6 class="mb-0 fw-semibold">Withdrawal</h6></div>
+            <div class="card-body d-grid gap-2">
+              <a href="withdraw.html" class="btn btn-primary" id="withdrawBtn">
+                <i class="fas fa-money-bill-wave me-2"></i> Withdraw Funds
+              </a>
+              <a href="wallet.html" class="btn btn-outline-primary">
+                <i class="fas fa-wallet me-2"></i> View E-Wallet
+              </a>
+              <small class="text-muted text-center" id="withdrawNote">Minimum withdrawal: RWF 1,000</small>
+            </div>
+          </div>
+
+          <!-- Tips -->
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white"><h6 class="mb-0 fw-semibold">Earnings Tips</h6></div>
+            <div class="card-body">
+              <div class="tip-item">
+                <div class="tip-icon" style="background:var(--primary);"><i class="fas fa-bolt"></i></div>
+                <div><h6 class="mb-1" style="font-size:13px;">Complete Your Profile</h6><p class="text-muted mb-0" style="font-size:12px;">A complete profile attracts more employers</p></div>
+              </div>
+              <div class="tip-item">
+                <div class="tip-icon" style="background:var(--secondary);"><i class="fas fa-star"></i></div>
+                <div><h6 class="mb-1" style="font-size:13px;">Build Your Ratings</h6><p class="text-muted mb-0" style="font-size:12px;">High ratings lead to better-paying jobs</p></div>
+              </div>
+              <div class="tip-item mb-0">
+                <div class="tip-icon" style="background:#17a2b8;"><i class="fas fa-certificate"></i></div>
+                <div><h6 class="mb-1" style="font-size:13px;">Add More Skills</h6><p class="text-muted mb-0" style="font-size:12px;">More skills mean more opportunities</p></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabaseClient.js"></script>
+<script src="js/ewallet.js"></script>
+<script>
+(async () => {
+  const sb = window.supabaseClient;
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) { location.href = 'login.html'; return; }
+
+  const { data: profile } = await sb.from('profiles').select('full_name,role').eq('id', user.id).single();
+  if (profile?.role === 'employer') { location.href = 'employer-dashboard.html'; return; }
+  if (profile?.role === 'admin')    { location.href = 'admin-dashboard.html'; return; }
+
+  const name = profile?.full_name || user.email.split('@')[0];
+  document.getElementById('userName').textContent = name;
+  document.getElementById('userAvatar').textContent = name.charAt(0).toUpperCase();
+  document.getElementById('monthName').textContent = new Date().toLocaleString('en-US', { month: 'long' });
+
+  // Load wallet
+  let wallet;
+  try {
+    wallet = await EwalletService.getWallet(user.id);
+    document.getElementById('availableBalance').textContent = `RWF ${Number(wallet.available_balance).toLocaleString()}`;
+
+    if (Number(wallet.available_balance) < 1000) {
+      document.getElementById('withdrawBtn').classList.replace('btn-primary', 'btn-secondary');
+      document.getElementById('withdrawBtn').setAttribute('disabled', true);
+      document.getElementById('withdrawNote').classList.add('text-danger');
+      document.getElementById('withdrawNote').textContent = 'Need RWF 1,000 minimum to withdraw';
+    }
+  } catch {
+    document.getElementById('availableBalance').textContent = 'RWF 0';
+  }
+
+  // Load payment_received transactions (worker earnings)
+  let transactions = [];
+  try {
+    if (wallet) transactions = await EwalletService.getTransactions(wallet.id, 100);
+  } catch { /* no wallet yet */ }
+
+  const earnings = transactions.filter(t => t.transaction_type === 'payment_received');
+
+  // Total earnings
+  const total = earnings.reduce((s, t) => s + Number(t.amount), 0);
+  document.getElementById('totalEarnings').textContent = `RWF ${total.toLocaleString()}`;
+
+  // This month
+  const now = new Date();
+  const thisMonthEarnings = earnings
+    .filter(t => { const d = new Date(t.created_at); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear(); })
+    .reduce((s, t) => s + Number(t.amount), 0);
+  document.getElementById('thisMonth').textContent = `RWF ${thisMonthEarnings.toLocaleString()}`;
+
+  // Stats
+  document.getElementById('statPayments').textContent = earnings.length;
+  const avg = earnings.length ? Math.round(total / earnings.length) : 0;
+  document.getElementById('statAvg').textContent = `RWF ${avg.toLocaleString()}`;
+
+  // Jobs completed (accepted applications)
+  const { count: jobsDone } = await sb.from('job_applications').select('*', { count: 'exact', head: true }).eq('worker_id', user.id).eq('status', 'accepted');
+  document.getElementById('statJobs').textContent = jobsDone || 0;
+
+  // Unique employers from payments
+  const { data: pays } = await sb.from('payments').select('employer_id').eq('worker_id', user.id);
+  const uniqueEmployers = new Set((pays || []).map(p => p.employer_id)).size;
+  document.getElementById('statEmployers').textContent = uniqueEmployers;
+
+  // Render recent earnings list
+  const recent = earnings.slice(0, 10);
+  if (!recent.length) {
+    document.getElementById('earningsList').innerHTML = `
+      <div class="text-center py-5 text-muted">
+        <i class="fas fa-money-bill-wave fa-2x mb-3 d-block"></i>
+        <p class="mb-2">No earnings yet</p>
+        <a href="find-jobs.html" class="btn btn-sm btn-primary">Find Jobs</a>
+      </div>`;
+  } else {
+    document.getElementById('earningsList').innerHTML = recent.map(t => `
+      <div class="d-flex align-items-center justify-content-between px-4 py-3 border-bottom">
+        <div>
+          <div class="fw-semibold">${t.description || 'Payment received'}</div>
+          <small class="text-muted">${new Date(t.created_at).toLocaleDateString('en-RW',{day:'numeric',month:'short',year:'numeric'})}</small>
+          ${t.reference_id ? `<br><small class="text-muted"><i class="fas fa-hashtag me-1"></i>${t.reference_id}</small>` : ''}
+        </div>
+        <div class="text-end">
+          <div class="fw-bold text-success">+ RWF ${Number(t.amount).toLocaleString()}</div>
+          <span class="badge" style="background:#D1FAE5;color:#065F46;">${t.status}</span>
+        </div>
+      </div>`).join('');
+  }
+
+  // Load invoices — payments received from employers
+  const { data: receivedPays } = await sb
+    .from('payments')
+    .select(`id, amount, payment_date, transaction_id, notes,
+             employer:profiles!payments_employer_id_fkey(full_name, company_name),
+             jobs(title)`)
+    .eq('worker_id', user.id)
+    .eq('status', 'completed')
+    .order('payment_date', { ascending: false });
+
+  if (!receivedPays || !receivedPays.length) {
+    document.getElementById('invoicesList').innerHTML = `
+      <div class="text-center py-5 text-muted">
+        <i class="fas fa-file-invoice fa-2x mb-3 d-block"></i>
+        <p class="mb-1">No invoices yet</p>
+        <small>Completed payments from employers appear here</small>
+      </div>`;
+  } else {
+    document.getElementById('invoicesList').innerHTML = `
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="table-light"><tr><th>Invoice #</th><th>Employer</th><th>Job</th><th>Amount</th><th>Date</th><th>Action</th></tr></thead>
+          <tbody>${receivedPays.map(p => `<tr>
+            <td><span class="fw-semibold text-primary">#INV-${String(p.id).padStart(4,'0')}</span></td>
+            <td>${p.employer?.company_name || p.employer?.full_name || '—'}</td>
+            <td>${p.jobs?.title || '—'}</td>
+            <td class="fw-semibold text-success">RWF ${Number(p.amount).toLocaleString()}</td>
+            <td>${new Date(p.payment_date).toLocaleDateString('en-RW',{day:'numeric',month:'short',year:'numeric'})}</td>
+            <td><button class="btn btn-sm btn-outline-primary" onclick="printInvoice(${JSON.stringify(p).replace(/"/g,'&quot;')},${JSON.stringify(name).replace(/"/g,'&quot;')})"><i class="fas fa-print me-1"></i>Print</button></td>
+          </tr>`).join('')}</tbody>
+        </table>
+      </div>`;
+  }
+
+  // Auto-switch to invoices tab if hash
+  if (location.hash === '#invoices') {
+    document.getElementById('invoicesTabLink').click();
+  }
+
+  // Logout & sidebar
+  document.getElementById('logoutBtn').addEventListener('click', async e => {
+    e.preventDefault();
+    await sb.auth.signOut();
+    location.href = 'login.html';
+  });
+  document.getElementById('mobileToggle').addEventListener('click', () => {
+    document.getElementById('sidebar').classList.toggle('show');
+    document.getElementById('sidebarOverlay').classList.toggle('show');
+  });
+  document.getElementById('sidebarOverlay').addEventListener('click', () => {
+    document.getElementById('sidebar').classList.remove('show');
+    document.getElementById('sidebarOverlay').classList.remove('show');
+  });
+})();
+
+function printInvoice(p, workerName) {
+  const employer = p.employer?.company_name || p.employer?.full_name || '—';
+  const w = window.open('', '_blank');
+  w.document.write(`<!DOCTYPE html><html><head><title>Invoice #INV-${String(p.id).padStart(4,'0')}</title>
+  <style>body{font-family:Arial,sans-serif;padding:40px;max-width:600px;margin:auto;}
+  .header{text-align:center;border-bottom:2px solid #00C896;padding-bottom:20px;margin-bottom:30px;}
+  .row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee;}
+  .total{font-size:1.3rem;font-weight:bold;color:#00C896;}</style></head>
+  <body><div class="header"><h2 style="color:#0056B3">Rwanda SkillsConnect</h2><h3>PAYMENT RECEIPT</h3></div>
+  <div class="row"><span>Invoice #</span><span>INV-${String(p.id).padStart(4,'0')}</span></div>
+  <div class="row"><span>Worker (You)</span><span>${workerName}</span></div>
+  <div class="row"><span>Employer</span><span>${employer}</span></div>
+  <div class="row"><span>Job</span><span>${p.jobs?.title || '—'}</span></div>
+  <div class="row"><span>Date</span><span>${new Date(p.payment_date).toLocaleDateString()}</span></div>
+  <div class="row"><span>Reference</span><span>${p.transaction_id || '—'}</span></div>
+  <div class="row"><span>Notes</span><span>${p.notes || '—'}</span></div>
+  <div class="row total"><span>Amount Received</span><span>RWF ${Number(p.amount).toLocaleString()}</span></div>
+  <p style="text-align:center;margin-top:40px;color:#666;font-size:12px;">Rwanda SkillsConnect — Verified Payment Receipt</p>
+  <script>window.print();<\/script></body></html>`);
+  w.document.close();
+}
+</script>
+</body>
+</html>

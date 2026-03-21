@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Delete Functionality - Rwanda SkillsConnect</title>
+    <link rel="stylesheet" href="assets/css/tailwind.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-6xl mx-auto">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">Delete Functionality Test</h1>
+                <p class="text-gray-600">Test and verify all user deletion features</p>
+            </div>
+
+            <!-- Current System Status -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-info-circle text-blue-600 mr-3"></i>Current System Status
+                </h2>
+                <div id="systemStatus" class="grid md:grid-cols-4 gap-4">
+                    <!-- Status will be populated here -->
+                </div>
+            </div>
+
+            <!-- Test Sample Data -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-database text-green-600 mr-3"></i>Test Data Setup
+                </h2>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <button onclick="createSampleUsers()" class="p-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                        <i class="fas fa-plus mr-2"></i>Create Sample Users
+                    </button>
+                    <button onclick="refreshStatus()" class="p-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-sync-alt mr-2"></i>Refresh Status
+                    </button>
+                </div>
+            </div>
+
+            <!-- Single User Delete Tests -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-user-minus text-red-600 mr-3"></i>Single User Delete Tests
+                </h2>
+                <div class="space-y-4">
+                    <div class="grid md:grid-cols-3 gap-4">
+                        <button onclick="testDeleteFreelancer()" class="p-3 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                            <i class="fas fa-user-cog mr-2"></i>Delete Test Freelancer
+                        </button>
+                        <button onclick="testDeleteClient()" class="p-3 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                            <i class="fas fa-user-tie mr-2"></i>Delete Test Client
+                        </button>
+                        <button onclick="testDeleteNonExistent()" class="p-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700">
+                            <i class="fas fa-question mr-2"></i>Delete Non-existent User
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bulk Delete Tests -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-users-slash text-orange-600 mr-3"></i>Bulk Delete Tests
+                </h2>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <button onclick="testDeleteAllFreelancers()" class="p-4 bg-orange-600 text-white rounded-lg hover:bg-orange-700">
+                        <i class="fas fa-user-cog mr-2"></i>Delete All Freelancers
+                    </button>
+                    <button onclick="testDeleteAllClients()" class="p-4 bg-orange-600 text-white rounded-lg hover:bg-orange-700">
+                        <i class="fas fa-user-tie mr-2"></i>Delete All Clients
+                    </button>
+                    <button onclick="testDeleteAllKeepAdmin()" class="p-4 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700">
+                        <i class="fas fa-user-shield mr-2"></i>Delete All (Keep Admin)
+                    </button>
+                    <button onclick="testResetToDefault()" class="p-4 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                        <i class="fas fa-undo mr-2"></i>Reset to Default Admin
+                    </button>
+                </div>
+            </div>
+
+            <!-- Data Cleanup Tests -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-broom text-indigo-600 mr-3"></i>Data Cleanup Tests
+                </h2>
+                <div class="grid md:grid-cols-3 gap-4">
+                    <button onclick="testDataCleanup()" class="p-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                        <i class="fas fa-broom mr-2"></i>Test Data Cleanup
+                    </button>
+                    <button onclick="viewAuditLog()" class="p-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700">
+                        <i class="fas fa-history mr-2"></i>View Audit Log
+                    </button>
+                    <button onclick="clearAuditLog()" class="p-3 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                        <i class="fas fa-trash mr-2"></i>Clear Audit Log
+                    </button>
+                </div>
+            </div>
+
+            <!-- Test Results -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-clipboard-list text-purple-600 mr-3"></i>Test Results
+                </h2>
+                <div id="testResults" class="space-y-2">
+                    <div class="text-gray-500 text-center py-4">
+                        <i class="fas fa-play-circle text-2xl mb-2"></i>
+                        <p>Run tests to see results here</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load Scripts -->
+    <script src="secure-delete-system.js"></script>
+    <script>
+        let testCounter = 0;
+
+        function addTestResult(test, result, type = 'info') {
+            testCounter++;
+            const resultsDiv = document.getElementById('testResults');
+            
+            if (testCounter === 1) {
+                resultsDiv.innerHTML = '';
+            }
+            
+            const colors = {
+                'success': 'bg-green-50 border-green-200 text-green-800',
+                'error': 'bg-red-50 border-red-200 text-red-800',
+                'warning': 'bg-yellow-50 border-yellow-200 text-yellow-800',
+                'info': 'bg-blue-50 border-blue-200 text-blue-800'
+            };
+            
+            const icons = {
+                'success': 'fas fa-check-circle text-green-600',
+                'error': 'fas fa-times-circle text-red-600',
+                'warning': 'fas fa-exclamation-triangle text-yellow-600',
+                'info': 'fas fa-info-circle text-blue-600'
+            };
+            
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `p-3 border rounded-lg ${colors[type]}`;
+            resultDiv.innerHTML = `
+                <div class="flex items-start">
+                    <i class="${icons[type]} mr-3 mt-0.5"></i>
+                    <div class="flex-1">
+                        <div class="font-medium">${test}</div>
+                        <div class="text-sm mt-1">${result}</div>
+                        <div class="text-xs mt-1 opacity-75">${new Date().toLocaleTimeString()}</div>
+                    </div>
+                </div>
+            `;
+            
+            resultsDiv.appendChild(resultDiv);
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+
+        function refreshStatus() {
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const jobs = JSON.parse(localStorage.getItem('jobs') || '[]');
+            const applications = JSON.parse(localStorage.getItem('appliedJobs') || '[]');
+            
+            const freelancers = users.filter(u => u.role === 'freelancer').length;
+            const clients = users.filter(u => u.role === 'client').length;
+            const admins = users.filter(u => u.role === 'admin').length;
+            
+            document.getElementById('systemStatus').innerHTML = `
+                <div class="text-center p-4 bg-blue-50 rounded-lg">
+                    <div class="text-2xl font-bold text-blue-600">${users.length}</div>
+                    <div class="text-sm text-blue-800">Total Users</div>
+                </div>
+                <div class="text-center p-4 bg-green-50 rounded-lg">
+                    <div class="text-2xl font-bold text-green-600">${freelancers}</div>
+                    <div class="text-sm text-green-800">Freelancers</div>
+                </div>
+                <div class="text-center p-4 bg-purple-50 rounded-lg">
+                    <div class="text-2xl font-bold text-purple-600">${clients}</div>
+                    <div class="text-sm text-purple-800">Clients</div>
+                </div>
+                <div class="text-center p-4 bg-red-50 rounded-lg">
+                    <div class="text-2xl font-bold text-red-600">${admins}</div>
+                    <div class="text-sm text-red-800">Admins</div>
+                </div>
+            `;
+        }
+
+        function createSampleUsers() {
+            const sampleUsers = [
+                {
+                    id: 'test_freelancer_001',
+                    fullName: 'John Freelancer',
+                    email: 'john.freelancer@test.com',
+                    role: 'freelancer',
+                    verified: true,
+                    createdAt: new Date().toISOString(),
+                    password: 'test123'
+                },
+                {
+                    id: 'test_client_001',
+                    fullName: 'Jane Client',
+                    email: 'jane.client@test.com',
+                    role: 'client',
+                    verified: true,
+                    createdAt: new Date().toISOString(),
+                    password: 'test123'
+                },
+                {
+                    id: 'test_freelancer_002',
+                    fullName: 'Bob Developer',
+                    email: 'bob.developer@test.com',
+                    role: 'freelancer',
+                    verified: false,
+                    createdAt: new Date().toISOString(),
+                    password: 'test123'
+                },
+                {
+                    id: 'test_client_002',
+                    fullName: 'Alice Business',
+                    email: 'alice.business@test.com',
+                    role: 'client',
+                    verified: true,
+                    createdAt: new Date().toISOString(),
+                    password: 'test123'
+                }
+            ];
+            
+            let users = JSON.parse(localStorage.getItem('users') || '[]');
+            
+            // Remove existing test users first
+            users = users.filter(u => !u.id.startsWith('test_'));
+            
+            // Add new test users
+            users.push(...sampleUsers);
+            localStorage.setItem('users', JSON.stringify(users));
+            
+            addTestResult('Create Sample Users', `Created ${sampleUsers.length} test users`, 'success');
+            refreshStatus();
+        }
+
+        function testDeleteFreelancer() {
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const freelancer = users.find(u => u.role === 'freelancer' && u.id.startsWith('test_'));
+            
+            if (!freelancer) {
+                addTestResult('Delete Freelancer Test', 'No test freelancer found. Create sample users first.', 'warning');
+                return;
+            }
+            
+            const result = window.secureDeleteSystem.deleteSingleUser(freelancer.id);
+            
+            if (result.success) {
+                addTestResult('Delete Freelancer Test', `Successfully deleted: ${result.deletedUser.fullName}`, 'success');
+            } else {
+                addTestResult('Delete Freelancer Test', `Failed: ${result.error}`, 'error');
+            }
+            
+            refreshStatus();
+        }
+
+        function testDeleteClient() {
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const client = users.find(u => u.role === 'client' && u.id.startsWith('test_'));
+            
+            if (!client) {
+                addTestResult('Delete Client Test', 'No test client found. Create sample users first.', 'warning');
+                return;
+            }
+            
+            const result = window.secureDeleteSystem.deleteSingleUser(client.id);
+            
+            if (result.success) {
+                addTestResult('Delete Client Test', `Successfully deleted: ${result.deletedUser.fullName}`, 'success');
+            } else {
+                addTestResult('Delete Client Test', `Failed: ${result.error}`, 'error');
+            }
+            
+            refreshStatus();
+        }
+
+        function testDeleteNonExistent() {
+            const result = window.secureDeleteSystem.deleteSingleUser('non_existent_user_123');
+            
+            if (!result.success) {
+                addTestResult('Delete Non-existent User Test', `Correctly handled: ${result.error}`, 'success');
+            } else {
+                addTestResult('Delete Non-existent User Test', 'Unexpected success - this should have failed', 'error');
+            }
+        }
+
+        function testDeleteAllFreelancers() {
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const freelancerCount = users.filter(u => u.role === 'freelancer').length;
+            
+            const result = window.secureDeleteSystem.deleteUsersByRole('freelancers');
+            
+            if (result.success) {
+                addTestResult('Delete All Freelancers Test', `Successfully deleted ${result.deletedCount} freelancer(s)`, 'success');
+            } else {
+                addTestResult('Delete All Freelancers Test', `Failed: ${result.error}`, 'error');
+            }
+            
+            refreshStatus();
+        }
+
+        function testDeleteAllClients() {
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const clientCount = users.filter(u => u.role === 'client').length;
+            
+            const result = window.secureDeleteSystem.deleteUsersByRole('client');
+            
+            if (result.success) {
+                addTestResult('Delete All Clients Test', `Successfully deleted ${result.deletedCount} client(s)`, 'success');
+            } else {
+                addTestResult('Delete All Clients Test', `Failed: ${result.error}`, 'error');
+            }
+            
+            refreshStatus();
+        }
+
+        function testDeleteAllKeepAdmin() {
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const nonAdminCount = users.filter(u => u.role !== 'admin').length;
+            
+            if (nonAdminCount === 0) {
+                addTestResult('Delete All Keep Admin Test', 'No non-admin users to delete. Create sample users first.', 'warning');
+                return;
+            }
+            
+            const result = window.secureDeleteSystem.deleteAllKeepAdmin();
+            
+            if (result.success) {
+                addTestResult('Delete All Keep Admin Test', `Successfully deleted ${result.deletedCount} users, preserved ${result.preservedCount} admin(s)`, 'success');
+            } else {
+                addTestResult('Delete All Keep Admin Test', `Failed: ${result.error}`, 'error');
+            }
+            
+            refreshStatus();
+        }
+
+        function testResetToDefault() {
+            if (!confirm('This will reset the entire system to default admin only. Continue?')) {
+                return;
+            }
+            
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const originalCount = users.length;
+            
+            const result = window.secureDeleteSystem.resetToDefaultAdmin();
+            
+            if (result.success) {
+                addTestResult('Reset to Default Test', `System reset complete. ${result.deletedCount} users deleted, default admin created`, 'success');
+            } else {
+                addTestResult('Reset to Default Test', `Failed: ${result.error}`, 'error');
+            }
+            
+            refreshStatus();
+        }
+
+        function testDataCleanup() {
+            // Create some test data first
+            const testJobs = [
+                { id: 'test_job_001', clientId: 'test_client_001', title: 'Test Job 1' },
+                { id: 'test_job_002', clientId: 'test_client_002', title: 'Test Job 2' }
+            ];
+            
+            const testApplications = [
+                { id: 'test_app_001', freelancerId: 'test_freelancer_001', jobId: 'test_job_001' },
+                { id: 'test_app_002', freelancerId: 'test_freelancer_002', jobId: 'test_job_002' }
+            ];
+            
+            localStorage.setItem('jobs', JSON.stringify(testJobs));
+            localStorage.setItem('appliedJobs', JSON.stringify(testApplications));
+            
+            // Test cleanup
+            window.secureDeleteSystem.cleanupMultipleUsersData(['test_client_001', 'test_freelancer_001']);
+            
+            const remainingJobs = JSON.parse(localStorage.getItem('jobs') || '[]');
+            const remainingApps = JSON.parse(localStorage.getItem('appliedJobs') || '[]');
+            
+            addTestResult('Data Cleanup Test', `Cleanup completed. Jobs: ${testJobs.length} → ${remainingJobs.length}, Applications: ${testApplications.length} → ${remainingApps.length}`, 'success');
+        }
+
+        function viewAuditLog() {
+            const auditLog = window.secureDeleteSystem.getAuditLog();
+            const stats = window.secureDeleteSystem.getDeletionStats();
+            
+            if (auditLog.length === 0) {
+                addTestResult('Audit Log View', 'No deletion activities logged yet', 'info');
+                return;
+            }
+            
+            const recentEntries = auditLog.slice(-5);
+            const logSummary = recentEntries.map(entry => 
+                `${entry.action} at ${new Date(entry.timestamp).toLocaleTimeString()}`
+            ).join(', ');
+            
+            addTestResult('Audit Log View', `Total entries: ${stats.totalDeletions}. Recent: ${logSummary}`, 'info');
+        }
+
+        function clearAuditLog() {
+            const result = window.secureDeleteSystem.clearAuditLog();
+            
+            if (result.success) {
+                addTestResult('Clear Audit Log', 'Audit log cleared successfully', 'success');
+            } else {
+                addTestResult('Clear Audit Log', 'Failed to clear audit log', 'error');
+            }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            refreshStatus();
+            
+            // Ensure default admin exists
+            if (window.localAuth) {
+                window.localAuth.ensureDefaultAdmin();
+            }
+            
+            addTestResult('System Initialization', 'Delete functionality test page loaded successfully', 'success');
+        });
+    </script>
+</body>
+</html>

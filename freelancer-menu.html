@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Freelancer Menu - Rwanda SkillsConnect</title>  <!-- Tailwind CSS Production -->
+  <link rel="stylesheet" href="assets/css/tailwind.css" />
+  
+  <!-- Font Awesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="assets/css/style.css" />
+  
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .nav-link { position: relative; transition: all 0.3s ease; }
+    .nav-link::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 0; height: 2px; background: #3b82f6; transition: width 0.3s ease; }
+    .nav-link:hover::after { width: 100%; }
+    .menu-card { transition: all 0.3s ease; }
+    .menu-card:hover { transform: translateY(-5px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+    .feature-card { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+    .stats-card { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+    .action-card { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+    .tools-card { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-in-up { animation: fadeInUp 0.6s ease-out; }
+    .category-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+  </style>
+</head>
+<body class="bg-gray-50">
+
+  <!-- Navbar -->
+  <header class="bg-white shadow-sm border-b sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center space-x-4">
+          <a href="freelancer-dashboard.html" class="text-2xl font-bold text-indigo-600 hover:text-indigo-700 transition-colors">Rwanda SkillsConnect</a>
+          <span class="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">Freelancer Menu</span>
+        </div>
+        
+        <!-- Navigation Links -->
+        <nav class="hidden md:flex items-center space-x-6">
+          <a href="freelancer-dashboard.html" class="nav-link text-gray-600 hover:text-indigo-600">Dashboard</a>
+          <a href="browse.html" class="nav-link text-gray-600 hover:text-indigo-600">Find Jobs</a>
+          <a href="map.html" class="nav-link text-gray-600 hover:text-indigo-600">Job Map</a>
+          <a href="freelancer-menu.html" class="nav-link text-indigo-600 font-medium">Menu</a>
+        </nav>
+        
+        <div class="flex items-center space-x-4">
+          <!-- User Menu -->
+          <div class="relative">
+            <button id="userMenuBtn" class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 transition-colors">
+              <div class="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center">
+                <span class="text-white font-semibold text-sm" id="userInitial">U</span>
+              </div>
+              <span class="text-gray-700 font-medium" id="userName">User</span>
+              <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
+            </button>
+            
+            <!-- User Dropdown -->
+            <div id="userDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border z-50">
+              <div class="p-3 border-b">
+                <p class="font-medium text-gray-800" id="dropdownUserName">User</p>
+                <p class="text-sm text-gray-600" id="dropdownUserEmail">user@example.com</p>
+              </div>
+              <div class="py-2">
+                <a href="freelancer-dashboard.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                  <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                </a>
+                <a href="profile.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                  <i class="fas fa-user mr-2"></i>Profile
+                </a>
+                <hr class="my-2">
+                <button id="logoutBtn" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                  <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Mobile Menu Button -->
+          <button id="mobileMenuBtn" class="md:hidden p-2 rounded-lg hover:bg-gray-100">
+            <i class="fas fa-bars text-gray-600"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-6 py-8">
+    <!-- Header -->
+    <div class="text-center mb-8">
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">Freelancer Menu</h1>
+      <p class="text-gray-600">Access all your freelancer features and tools in one place</p>
+    </div>
+
+    <!-- Core Features -->
+    <div class="mb-12">
+      <div class="category-header text-white p-4 rounded-t-xl">
+        <h2 class="text-xl font-bold flex items-center">
+          <i class="fas fa-star mr-3"></i>Core Features
+        </h2>
+        <p class="text-blue-100 text-sm mt-1">Essential tools for managing your freelance career</p>
+      </div>
+      <div class="bg-white rounded-b-xl shadow-lg p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <!-- Dashboard -->
+          <div class="menu-card bg-white border-2 border-gray-200 rounded-xl p-6 text-center hover:border-indigo-300 fade-in-up">
+            <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i class="fas fa-tachometer-alt text-indigo-600 text-2xl"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">Dashboard</h3>
+            <p class="text-gray-600 text-sm mb-4">Overview of your applications and projects</p>
+            <a href="freelancer-dashboard.html" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm">
+              <i class="fas fa-arrow-right mr-2"></i>Go to Dashboard
+            </a>
+          </div>
+
+          <!-- Find Jobs -->
+          <div class="menu-card bg-white border-2 border-gray-200 rounded-xl p-6 text-center hover:border-green-300 fade-in-up">
+            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i class="fas fa-search text-green-600 text-2xl"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">Find Jobs</h3>
+            <p class="text-gray-600 text-sm mb-4">Browse and apply to available job opportunities</p>
+            <a href="browse.html" class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm">
+              <i class="fas fa-briefcase mr-2"></i>Browse Jobs
+            </a>
+          </div>
+
+          <!-- Job Map -->
+          <div class="menu-card bg-white border-2 border-gray-200 rounded-xl p-6 text-center hover:border-blue-300 fade-in-up">
+            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i class="fas fa-map-marked-alt text-blue-600 text-2xl"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">Job Map</h3>
+            <p class="text-gray-600 text-sm mb-4">Find job opportunities by location</p>
+            <a href="map.html" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm">
+              <i class="fas fa-map mr-2"></i>View Job Map
+            </a>
+          </div>
+
+          <!-- Messages -->
+          <div class="menu-card bg-white border-2 border-gray-200 rounded-xl p-6 text-center hover:border-purple-300 fade-in-up">
+            <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i class="fas fa-envelope text-purple-600 text-2xl"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">Messages</h3>
+            <p class="text-gray-600 text-sm mb-4">Communicate with clients</p>
+            <a href="freelancer-messages.html" class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm">
+              <i class="fas fa-comment mr-2"></i>Open Messages
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Profile & Career -->
+    <div class="mb-12">
+      <div class="feature-card text-white p-4 rounded-t-xl">
+        <h2 class="text-xl font-bold flex items-center">
+          <i class="fas fa-user-cog mr-3"></i>Profile & Career
+        </h2>
+        <p class="text-pink-100 text-sm mt-1">Manage your profile and build your freelance career</p>
+      </div>
+      <div class="bg-white rounded-b-xl shadow-lg p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Profile -->
+          <div class="menu-card bg-white border-2 border-gray-200 rounded-xl p-6 text-center hover:border-pink-300 fade-in-up">
+            <div class="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i class="fas fa-user text-pink-600 text-2xl"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">My Profile</h3>
+            <p class="text-gray-600 text-sm mb-4">Update your profile and showcase your skills</p>
+            <a href="profile.html" class="inline-flex items-center px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors text-sm">
+              <i class="fas fa-edit mr-2"></i>Edit Profile
+            </a>
+          </div>
+
+          <!-- Applications -->
+          <div class="menu-card bg-white border-2 border-gray-200 rounded-xl p-6 text-center hover:border-orange-300 fade-in-up">
+            <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i class="fas fa-file-alt text-orange-600 text-2xl"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">My Applications</h3>
+            <p class="text-gray-600 text-sm mb-4">Track your job applications and status</p>
+            <button onclick="window.location.href='freelancer-dashboard.html#applications'" class="inline-flex items-center px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm">
+              <i class="fas fa-list mr-2"></i>View Applications
+            </button>
+          </div>
+
+          <!-- Earnings -->
+          <div class="menu-card bg-white border-2 border-gray-200 rounded-xl p-6 text-center hover:border-yellow-300 fade-in-up">
+            <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i class="fas fa-wallet text-yellow-600 text-2xl"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">Earnings</h3>
+            <p class="text-gray-600 text-sm mb-4">Track your earnings and payment history</p>
+            <button onclick="window.location.href='freelancer-dashboard.html#earnings'" class="inline-flex items-center px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors text-sm">
+              <i class="fas fa-dollar-sign mr-2"></i>View Earnings
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tools & Resources -->
+    <div class="mb-12">
+      <div class="tools-card text-white p-4 rounded-t-xl">
+        <h2 class="text-xl font-bold flex items-center">
+          <i class="fas fa-tools mr-3"></i>Tools & Resources
+        </h2>
+        <p class="text-yellow-100 text-sm mt-1">Additional tools to help you succeed as a freelancer</p>
+      </div>
+      <div class="bg-white rounded-b-xl shadow-lg p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <!-- Portfolio -->
+          <div class="menu-card bg-white border-2 border-gray-200 rounded-xl p-6 text-center hover:border-teal-300 fade-in-up">
+            <div class="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i class="fas fa-folder-open text-teal-600 text-2xl"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">Portfolio</h3>
+            <p class="text-gray-600 text-sm mb-4">Showcase your work and projects</p>
+            <button onclick="showComingSoon('Portfolio')" class="inline-flex items-center px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors text-sm">
+              <i class="fas fa-images mr-2"></i>Manage Portfolio
+            </button>
+          </div>
+
+          <!-- Skills Assessment -->
+          <div class="menu-card bg-white border-2 border-gray-200 rounded-xl p-6 text-center hover:border-cyan-300 fade-in-up">
+            <div class="w-16 h-16 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i class="fas fa-certificate text-cyan-600 text-2xl"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">Skills Test</h3>
+            <p class="text-gray-600 text-sm mb-4">Take tests to verify your skills</p>
+            <button onclick="showComingSoon('Skills Assessment')" class="inline-flex items-center px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors text-sm">
+              <i class="fas fa-tasks mr-2"></i>Take Tests
+            </button>
+          </div>
+
+          <!-- Learning -->
+          <div class="menu-card bg-white border-2 border-gray-200 rounded-xl p-6 text-center hover:border-emerald-300 fade-in-up">
+            <div class="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i class="fas fa-graduation-cap text-emerald-600 text-2xl"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">Learning</h3>
+            <p class="text-gray-600 text-sm mb-4">Improve your skills with courses</p>
+            <button onclick="showComingSoon('Learning Center')" class="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm">
+              <i class="fas fa-book mr-2"></i>Browse Courses
+            </button>
+          </div>
+
+          <!-- Help Center -->
+          <div class="menu-card bg-white border-2 border-gray-200 rounded-xl p-6 text-center hover:border-rose-300 fade-in-up">
+            <div class="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i class="fas fa-question-circle text-rose-600 text-2xl"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">Help Center</h3>
+            <p class="text-gray-600 text-sm mb-4">Get support and find answers</p>
+            <button onclick="showComingSoon('Help Center')" class="inline-flex items-center px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition-colors text-sm">
+              <i class="fas fa-life-ring mr-2"></i>Get Help
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="mb-12">
+      <div class="stats-card text-white p-4 rounded-t-xl">
+        <h2 class="text-xl font-bold flex items-center">
+          <i class="fas fa-chart-line mr-3"></i>Quick Stats
+        </h2>
+        <p class="text-cyan-100 text-sm mt-1">Your freelance career overview at a glance</p>
+      </div>
+      <div class="bg-white rounded-b-xl shadow-lg p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div class="text-center p-4 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-xl">
+            <div class="text-3xl font-bold text-indigo-600 mb-2" id="totalApplications">0</div>
+            <div class="text-sm text-gray-600">Applications Sent</div>
+          </div>
+          <div class="text-center p-4 bg-gradient-to-br from-green-50 to-emerald-100 rounded-xl">
+            <div class="text-3xl font-bold text-emerald-600 mb-2" id="activeProjects">0</div>
+            <div class="text-sm text-gray-600">Active Projects</div>
+          </div>
+          <div class="text-center p-4 bg-gradient-to-br from-purple-50 to-violet-100 rounded-xl">
+            <div class="text-3xl font-bold text-violet-600 mb-2" id="totalEarnings">RWF 0</div>
+            <div class="text-sm text-gray-600">Total Earnings</div>
+          </div>
+          <div class="text-center p-4 bg-gradient-to-br from-orange-50 to-amber-100 rounded-xl">
+            <div class="text-3xl font-bold text-amber-600 mb-2" id="profileViews">0</div>
+            <div class="text-sm text-gray-600">Profile Views</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="bg-white rounded-xl shadow-lg p-8 text-center">
+      <h2 class="text-2xl font-bold text-gray-900 mb-4">Ready to Find Your Next Opportunity?</h2>
+      <p class="text-gray-600 mb-6">Take action now to advance your freelance career</p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <a href="browse.html" class="inline-flex items-center px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors shadow-lg hover:shadow-xl">
+          <i class="fas fa-search mr-2"></i>Find Jobs Now
+        </a>
+        <a href="profile.html" class="inline-flex items-center px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors shadow-lg hover:shadow-xl">
+          <i class="fas fa-user-edit mr-2"></i>Complete Profile
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <!-- JS -->
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/menu-config.js"></script>
+  <script src="assets/js/menu-management.js"></script>
+  <script src="assets/js/menu-interconnect.js"></script>
+  <script src="assets/js/menu-renderer.js"></script>
+  <script>
+    // Show coming soon notification
+    function showComingSoon(feature) {
+      showNotification(`${feature} feature coming soon!`, 'info');
+    }
+    
+    // Enhanced job application function
+    function applyToJob(jobId) {
+      const session = JSON.parse(localStorage.getItem('userSession') || 'null');
+      if (!session) {
+        showNotification('Please log in to apply for jobs', 'error');
+        return;
+      }
+      
+      const jobs = JSON.parse(localStorage.getItem('jobs') || '[]');
+      const job = jobs.find(j => j.id === jobId);
+      
+      if (!job) {
+        showNotification('Job not found', 'error');
+        return;
+      }
+      
+      // Check if already applied
+      const appliedJobs = JSON.parse(localStorage.getItem('appliedJobs') || '[]');
+      const existingApplication = appliedJobs.find(app => app.jobId === jobId && app.freelancerId === session.id);
+      
+      if (existingApplication) {
+        showNotification('You have already applied for this job', 'warning');
+        return;
+      }
+      
+      if (confirm(`Apply for "${job.title}"? Your profile will be sent to the client for review.`)) {
+        const application = {
+          id: 'app_' + Date.now().toString(36) + Math.random().toString(36).substr(2),
+          jobId: jobId,
+          jobTitle: job.title,
+          freelancerId: session.id,
+          freelancerName: session.fullName || session.name,
+          clientId: job.clientId,
+          status: 'pending',
+          appliedAt: new Date().toISOString()
+        };
+        
+        appliedJobs.push(application);
+        localStorage.setItem('appliedJobs', JSON.stringify(appliedJobs));
+        
+        showNotification('Application submitted successfully! The client will review your profile.', 'success');
+        
+        // Update stats if on menu page
+        if (typeof updateFreelancerMenuStats === 'function') {
+          updateFreelancerMenuStats();
+        }
+      }
+    }
+    
+    // Make applyToJob globally available
+    window.applyToJob = applyToJob;
+
+    // Update freelancer stats
+    function updateFreelancerMenuStats() {
+      const session = JSON.parse(localStorage.getItem('userSession') || 'null');
+      if (!session) return;
+
+      const applications = JSON.parse(localStorage.getItem('appliedJobs') || '[]')
+        .filter(app => app.freelancerId === session.id);
+      
+      const activeProjects = applications.filter(app => app.status === 'accepted').length;
+      const totalEarnings = activeProjects * 400000; // Mock calculation
+      const profileViews = Math.floor(Math.random() * 200) + 50;
+
+      // Animate counters
+      animateCounter('totalApplications', applications.length);
+      animateCounter('activeProjects', activeProjects);
+      animateCounter('profileViews', profileViews);
+      
+      // Update total earnings
+      setTimeout(() => {
+        document.getElementById('totalEarnings').textContent = `RWF ${totalEarnings.toLocaleString()}`;
+      }, 500);
+    }
+
+    // Animate counter
+    function animateCounter(elementId, targetValue) {
+      const element = document.getElementById(elementId);
+      if (!element) return;
+      
+      let currentValue = 0;
+      const increment = Math.max(1, targetValue / 30);
+      const timer = setInterval(() => {
+        currentValue += increment;
+        if (currentValue >= targetValue) {
+          currentValue = targetValue;
+          clearInterval(timer);
+        }
+        element.textContent = Math.floor(currentValue);
+      }, 50);
+    }
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', function() {
+      const session = JSON.parse(localStorage.getItem('userSession') || 'null');
+      if (!session) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      // Update user info
+      const userName = session.name || session.fullName || "User";
+      const userEmail = session.email || "user@example.com";
+      
+      document.getElementById('userName').textContent = userName;
+      document.getElementById('dropdownUserName').textContent = userName;
+      document.getElementById('dropdownUserEmail').textContent = userEmail;
+      
+      // Handle profile photo
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      const user = users.find(u => u.id === session.id) || session;
+      
+      if (user.profilePhoto) {
+        const userInitialEl = document.getElementById('userInitial');
+        if (userInitialEl && userInitialEl.parentElement) {
+          userInitialEl.parentElement.innerHTML = `<img src="${user.profilePhoto}" class="w-8 h-8 rounded-full object-cover">`;
+        }
+      } else {
+        document.getElementById('userInitial').textContent = userName.charAt(0).toUpperCase();
+      }
+
+      // Update stats
+      updateFreelancerMenuStats();
+
+      // Navigation dropdowns
+      const userMenuBtn = document.getElementById('userMenuBtn');
+      const userDropdown = document.getElementById('userDropdown');
+      const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+      const mobileMenu = document.getElementById('mobileMenu');
+
+      if (userMenuBtn && userDropdown) {
+        userMenuBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          userDropdown.classList.toggle('hidden');
+        });
+      }
+
+      if (mobileMenuBtn && mobileMenu) {
+        mobileMenuBtn.addEventListener('click', () => {
+          mobileMenu.classList.toggle('hidden');
+        });
+      }
+
+      // Close dropdowns when clicking outside
+      document.addEventListener('click', () => {
+        userDropdown?.classList.add('hidden');
+      });
+
+      // Logout functionality
+      const logoutBtn = document.getElementById('logoutBtn');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+          if (confirm('Are you sure you want to logout?')) {
+            try {
+              // Clear all session data
+              localStorage.removeItem('userSession');
+              sessionStorage.clear();
+              
+              // If using Supabase, sign out
+              if (window.supabaseClient) {
+                window.supabaseClient.auth.signOut().catch(console.error);
+              }
+              
+              showNotification('Logged out successfully!', 'success');
+              setTimeout(() => {
+                window.location.href = 'login.html';
+              }, 1000);
+            } catch (error) {
+              console.error('Logout error:', error);
+              // Force logout even if there's an error
+              localStorage.clear();
+              sessionStorage.clear();
+              window.location.href = 'login.html';
+            }
+          }
+        });
+      }
+
+      // Add fade-in animation to cards
+      setTimeout(() => {
+        document.querySelectorAll('.fade-in-up').forEach((el, index) => {
+          setTimeout(() => {
+            el.style.opacity = '1';
+            el.style.transform = 'translateY(0)';
+          }, index * 100);
+        });
+      }, 100);
+    });
+
+    // Notification system
+    function showNotification(message, type = 'success', duration = 3000) {
+      const notification = document.createElement('div');
+      notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transition-all duration-300 transform translate-x-full`;
+      
+      switch(type) {
+        case 'success':
+          notification.classList.add('bg-green-500', 'text-white');
+          break;
+        case 'error':
+          notification.classList.add('bg-red-500', 'text-white');
+          break;
+        case 'warning':
+          notification.classList.add('bg-yellow-500', 'text-white');
+          break;
+        case 'info':
+          notification.classList.add('bg-blue-500', 'text-white');
+          break;
+        default:
+          notification.classList.add('bg-gray-500', 'text-white');
+      }
+      
+      notification.innerHTML = `
+        <div class="flex items-center space-x-2">
+          <span>${message}</span>
+          <button onclick="this.parentElement.parentElement.remove()" class="ml-2 text-white hover:text-gray-200">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      `;
+      
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.classList.remove('translate-x-full');
+      }, 100);
+      
+      setTimeout(() => {
+        notification.classList.add('translate-x-full');
+        setTimeout(() => {
+          if (notification.parentElement) {
+            notification.remove();
+          }
+        }, 300);
+      }, duration);
+    }
+  </script>
+</body>
+</html>

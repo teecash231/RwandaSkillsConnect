@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Job Applicants — Rwanda SkillsConnect</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #f5f7fa; }
+    .sidebar { width: 260px; background: #fff; border-right: 1px solid #E2E8F0; position: fixed; top: 0; left: 0; height: 100vh; z-index: 1000; display: flex; flex-direction: column; }
+    .main-content { margin-left: 260px; min-height: 100vh; }
+    .menu-item { display: flex; align-items: center; gap: 12px; padding: 11px 20px; color: #64748B; text-decoration: none; font-size: 14px; font-weight: 500; transition: all .2s; }
+    .menu-item:hover, .menu-item.active { background: #E8F2FF; color: #0056B3; }
+    .menu-item.active { border-left: 3px solid #0056B3; }
+    .status-badge { padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+    .status-pending     { background: #fff3cd; color: #856404; }
+    .status-reviewing   { background: #cce5ff; color: #004085; }
+    .status-shortlisted { background: #d1ecf1; color: #0c5460; }
+    .status-accepted    { background: #d4edda; color: #155724; }
+    .status-rejected    { background: #f8d7da; color: #721c24; }
+    .applicant-card { background: #fff; border-radius: 10px; border: 1px solid #E2E8F0; padding: 20px; transition: box-shadow .2s; }
+    .applicant-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.08); }
+    .avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; background: linear-gradient(135deg,#0056B3,#00C896); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 18px; flex-shrink: 0; }
+    .skill-tag { display: inline-block; background: #f1f5f9; color: #475569; padding: 2px 8px; border-radius: 12px; font-size: 11px; margin: 2px; }
+    #toast { position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 280px; }
+    @media(max-width:992px) { .sidebar { transform: translateX(-100%); } .main-content { margin-left: 0; } }
+  </style>
+</head>
+<body>
+
+<div id="toast" class="toast align-items-center border-0" role="alert">
+  <div class="d-flex">
+    <div class="toast-body fw-medium" id="toastMsg"></div>
+    <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>
+  </div>
+</div>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="p-4 border-bottom">
+    <div class="d-flex align-items-center gap-2">
+      <div style="width:36px;height:36px;background:linear-gradient(135deg,#0056B3,#00C896);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;"><i class="fas fa-hands-helping"></i></div>
+      <div><div class="fw-bold" style="font-size:15px;">SkillsConnect</div><div class="text-muted" style="font-size:11px;">Rwanda</div></div>
+    </div>
+  </div>
+  <nav class="flex-grow-1 py-3">
+    <div class="px-4 pb-2" style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;font-weight:600;">Dashboard</div>
+    <a href="employer-dashboard.html" class="menu-item"><i class="fas fa-tachometer-alt"></i>Overview</a>
+    <a href="profile.html" class="menu-item"><i class="fas fa-building"></i>Company Profile</a>
+    <div class="px-4 pb-2 pt-3" style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;font-weight:600;">Recruitment</div>
+    <a href="post-job.html" class="menu-item"><i class="fas fa-plus"></i>Post Job</a>
+    <a href="jobs.html" class="menu-item"><i class="fas fa-list"></i>Manage Jobs</a>
+    <a href="job-applications.html" class="menu-item active"><i class="fas fa-users"></i>Applicants</a>
+  </nav>
+  <div class="border-top py-2">
+    <a href="#" class="menu-item" id="logoutBtn"><i class="fas fa-sign-out-alt"></i>Logout</a>
+  </div>
+</aside>
+
+<main class="main-content">
+  <header class="bg-white border-bottom px-4 py-3 sticky-top">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <div>
+        <div class="d-flex align-items-center gap-2">
+          <a href="jobs.html" class="text-muted text-decoration-none"><i class="fas fa-arrow-left"></i></a>
+          <h5 class="mb-0 fw-bold" id="pageTitle">Job Applicants</h5>
+        </div>
+        <small class="text-muted" id="pageSubtitle">Loading...</small>
+      </div>
+      <div class="d-flex gap-2 align-items-center flex-wrap">
+        <select class="form-select form-select-sm" id="statusFilter" style="width:auto;">
+          <option value="">All Status</option>
+          <option value="pending">Pending</option>
+          <option value="reviewing">Reviewing</option>
+          <option value="shortlisted">Shortlisted</option>
+          <option value="accepted">Accepted</option>
+          <option value="rejected">Rejected</option>
+        </select>
+      </div>
+    </div>
+  </header>
+
+  <div class="p-4">
+    <!-- Stats -->
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-2"><div class="bg-white rounded-3 p-3 border text-center"><div class="fw-bold fs-5" id="statTotal">—</div><div class="text-muted small">Total</div></div></div>
+      <div class="col-6 col-md-2"><div class="bg-white rounded-3 p-3 border text-center"><div class="fw-bold fs-5 text-warning" id="statPending">—</div><div class="text-muted small">Pending</div></div></div>
+      <div class="col-6 col-md-2"><div class="bg-white rounded-3 p-3 border text-center"><div class="fw-bold fs-5 text-primary" id="statReviewing">—</div><div class="text-muted small">Reviewing</div></div></div>
+      <div class="col-6 col-md-2"><div class="bg-white rounded-3 p-3 border text-center"><div class="fw-bold fs-5 text-info" id="statShortlisted">—</div><div class="text-muted small">Shortlisted</div></div></div>
+      <div class="col-6 col-md-2"><div class="bg-white rounded-3 p-3 border text-center"><div class="fw-bold fs-5 text-success" id="statAccepted">—</div><div class="text-muted small">Accepted</div></div></div>
+      <div class="col-6 col-md-2"><div class="bg-white rounded-3 p-3 border text-center"><div class="fw-bold fs-5 text-danger" id="statRejected">—</div><div class="text-muted small">Rejected</div></div></div>
+    </div>
+
+    <div id="applicantsList">
+      <div class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+    </div>
+  </div>
+</main>
+
+<!-- Applicant Detail Modal -->
+<div class="modal fade" id="detailModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold" id="detailName">Applicant Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="detailBody"></div>
+      <div class="modal-footer border-0 pt-0 flex-wrap gap-2">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+        <button class="btn btn-outline-dark" id="btnMessage"><i class="fas fa-comment me-1"></i>Message</button>
+        <button class="btn btn-outline-primary" id="btnReviewing">Mark Reviewing</button>
+        <button class="btn btn-outline-info" id="btnShortlist">Shortlist</button>
+        <button class="btn btn-success" id="btnAccept">Accept</button>
+        <button class="btn btn-danger" id="btnReject">Reject</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/supabaseClient.js"></script>
+<script src="js/applications.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+let allApps = [];
+let currentUser = null;
+let selectedAppId = null;
+let jobId = null;
+
+const toastEl = new bootstrap.Toast(document.getElementById('toast'), { delay: 3000 });
+const detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
+
+function notify(msg, type = 'success') {
+  const el = document.getElementById('toast');
+  el.className = `toast align-items-center border-0 text-bg-${type}`;
+  document.getElementById('toastMsg').textContent = msg;
+  toastEl.show();
+}
+
+function expLabel(e) {
+  return { entry: 'Entry Level', intermediate: 'Intermediate', expert: 'Expert' }[e] || e || 'Not specified';
+}
+
+function updateStats() {
+  document.getElementById('statTotal').textContent       = allApps.length;
+  document.getElementById('statPending').textContent     = allApps.filter(a => a.status === 'pending').length;
+  document.getElementById('statReviewing').textContent   = allApps.filter(a => a.status === 'reviewing').length;
+  document.getElementById('statShortlisted').textContent = allApps.filter(a => a.status === 'shortlisted').length;
+  document.getElementById('statAccepted').textContent    = allApps.filter(a => a.status === 'accepted').length;
+  document.getElementById('statRejected').textContent    = allApps.filter(a => a.status === 'rejected').length;
+}
+
+function renderApplicants(apps) {
+  const container = document.getElementById('applicantsList');
+  if (!apps.length) {
+    container.innerHTML = `<div class="text-center py-5 text-muted">
+      <i class="fas fa-users fa-3x mb-3 d-block opacity-25"></i>
+      <p>No applicants found for this filter.</p>
+    </div>`;
+    return;
+  }
+  container.innerHTML = apps.map(app => {
+    const w = app.profiles || {};
+    const initials = (w.full_name || 'A').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+    const skills = w.skills ? w.skills.split(',').slice(0, 4) : [];
+    return `
+    <div class="applicant-card mb-3">
+      <div class="d-flex gap-3 align-items-start flex-wrap">
+        <div class="avatar">${w.profile_image
+          ? `<img src="${w.profile_image}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;">`
+          : initials}</div>
+        <div class="flex-grow-1">
+          <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+            <div>
+              <h6 class="fw-bold mb-1">${w.full_name || 'Unknown'}</h6>
+              <div class="text-muted small">
+                ${w.headline ? `<span>${w.headline}</span>` : ''}
+                ${w.location ? `<span class="ms-2"><i class="fas fa-map-marker-alt me-1"></i>${w.location}</span>` : ''}
+                ${w.phone ? `<span class="ms-2"><i class="fas fa-phone me-1"></i>${w.phone}</span>` : ''}
+              </div>
+              <div class="mt-1">
+                <span class="text-muted small"><i class="fas fa-layer-group me-1"></i>${expLabel(w.experience_level)}</span>
+                ${w.rating > 0 ? `<span class="ms-2 text-warning small"><i class="fas fa-star me-1"></i>${parseFloat(w.rating).toFixed(1)}</span>` : ''}
+              </div>
+              <div class="mt-1">${skills.map(s => `<span class="skill-tag">${s.trim()}</span>`).join('')}</div>
+            </div>
+            <div class="d-flex flex-column align-items-end gap-2">
+              <span class="status-badge status-${app.status || 'pending'}">${app.status || 'pending'}</span>
+              <span class="text-muted" style="font-size:11px;">Applied ${new Date(app.applied_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</span>
+            </div>
+          </div>
+          ${app.cover_letter ? `<div class="mt-2 p-2 bg-light rounded small text-muted" style="max-height:60px;overflow:hidden;">"${app.cover_letter.substring(0,150)}${app.cover_letter.length > 150 ? '…' : ''}"</div>` : ''}
+          <div class="d-flex gap-2 mt-3 flex-wrap">
+            <button class="btn btn-sm btn-primary" onclick="openDetail(${app.id})"><i class="fas fa-eye me-1"></i>View Profile</button>
+            ${w.resume_url ? `<a href="${w.resume_url}" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="fas fa-file-pdf me-1"></i>Resume</a>` : ''}
+            <select class="form-select form-select-sm" style="width:auto;" onchange="quickStatus(${app.id}, this.value)" title="Change status">
+              <option value="pending"     ${app.status==='pending'     ?'selected':''}>Pending</option>
+              <option value="reviewing"   ${app.status==='reviewing'   ?'selected':''}>Reviewing</option>
+              <option value="shortlisted" ${app.status==='shortlisted' ?'selected':''}>Shortlisted</option>
+              <option value="accepted"    ${app.status==='accepted'    ?'selected':''}>Accepted</option>
+              <option value="rejected"    ${app.status==='rejected'    ?'selected':''}>Rejected</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function quickStatus(appId, status) {
+  try {
+    await ApplicationService.updateStatus(appId, status);
+    const app = allApps.find(a => a.id === appId);
+    if (app) app.status = status;
+    notify(`Status updated to "${status}"`);
+    updateStats();
+    applyFilter(document.getElementById('statusFilter').value);
+  } catch (err) {
+    notify(err.message || 'Failed to update status', 'danger');
+  }
+}
+
+function applyFilter(status) {
+  renderApplicants(status ? allApps.filter(a => a.status === status) : allApps);
+}
+
+function openDetail(appId) {
+  const app = allApps.find(a => a.id === appId);
+  if (!app) return;
+  selectedAppId = appId;
+  const w = app.profiles || {};
+  const initials = (w.full_name || 'A').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+  const skills = w.skills ? w.skills.split(',') : [];
+
+  document.getElementById('detailName').textContent = w.full_name || 'Applicant';
+  document.getElementById('detailBody').innerHTML = `
+    <div class="d-flex gap-3 mb-3 align-items-center">
+      <div class="avatar" style="width:64px;height:64px;font-size:22px;">${w.profile_image
+        ? `<img src="${w.profile_image}" style="width:64px;height:64px;border-radius:50%;object-fit:cover;">`
+        : initials}</div>
+      <div>
+        <h5 class="fw-bold mb-0">${w.full_name || 'Unknown'}</h5>
+        ${w.headline ? `<div class="text-muted">${w.headline}</div>` : ''}
+        <span class="status-badge status-${app.status || 'pending'} mt-1 d-inline-block">${app.status || 'pending'}</span>
+      </div>
+    </div>
+    <div class="row g-3 mb-3">
+      ${w.phone    ? `<div class="col-sm-6"><i class="fas fa-phone me-2 text-muted"></i>${w.phone}</div>` : ''}
+      ${w.location ? `<div class="col-sm-6"><i class="fas fa-map-marker-alt me-2 text-muted"></i>${w.location}</div>` : ''}
+      <div class="col-sm-6"><i class="fas fa-layer-group me-2 text-muted"></i>${expLabel(w.experience_level)}</div>
+      ${w.rating > 0 ? `<div class="col-sm-6"><i class="fas fa-star me-2 text-warning"></i>${parseFloat(w.rating).toFixed(1)} rating</div>` : ''}
+    </div>
+    ${w.bio ? `<h6 class="fw-semibold">About</h6><p class="text-muted small">${w.bio}</p>` : ''}
+    ${skills.length ? `<h6 class="fw-semibold">Skills</h6><div class="mb-3">${skills.map(s => `<span class="skill-tag">${s.trim()}</span>`).join('')}</div>` : ''}
+    ${app.cover_letter ? `<h6 class="fw-semibold">Cover Letter</h6><div class="bg-light rounded p-3 small text-muted" style="white-space:pre-wrap;">${app.cover_letter}</div>` : ''}
+    ${w.resume_url ? `<div class="mt-3"><a href="${w.resume_url}" target="_blank" class="btn btn-outline-secondary btn-sm"><i class="fas fa-file-pdf me-2"></i>Download Resume</a></div>` : ''}
+    <div class="mt-3 text-muted small">Applied: ${new Date(app.applied_at).toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div>
+  `;
+  detailModal.show();
+}
+
+async function setStatus(status) {
+  if (!selectedAppId) return;
+  try {
+    await ApplicationService.updateStatus(selectedAppId, status);
+    const app = allApps.find(a => a.id === selectedAppId);
+    if (app) app.status = status;
+    detailModal.hide();
+    notify(`Applicant ${status}`);
+    updateStats();
+    applyFilter(document.getElementById('statusFilter').value);
+  } catch (err) {
+    notify(err.message || 'Failed to update', 'danger');
+  }
+}
+
+document.getElementById('btnMessage').addEventListener('click', () => {
+  if (!selectedAppId) return;
+  const app = allApps.find(a => a.id === selectedAppId);
+  if (app?.profiles?.id) window.open(`messages.html?with=${app.profiles.id}`, '_blank');
+});
+document.getElementById('btnReviewing').addEventListener('click', () => setStatus('reviewing'));
+document.getElementById('btnShortlist').addEventListener('click', () => setStatus('shortlisted'));
+document.getElementById('btnAccept').addEventListener('click',    () => setStatus('accepted'));
+document.getElementById('btnReject').addEventListener('click',    () => setStatus('rejected'));
+document.getElementById('statusFilter').addEventListener('change', e => applyFilter(e.target.value));
+
+document.getElementById('logoutBtn').addEventListener('click', async (e) => {
+  e.preventDefault();
+  await supabaseClient.auth.signOut();
+  window.location.href = 'login.html';
+});
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (!session) { window.location.href = 'login.html'; return; }
+
+  const { data: profile } = await supabaseClient.from('profiles').select('role').eq('id', session.user.id).single();
+  if (profile?.role !== 'employer') { window.location.href = 'freelancer-dashboard.html'; return; }
+
+  currentUser = session.user;
+
+  // Get job ID from URL param
+  const params = new URLSearchParams(location.search);
+  jobId = params.get('job') ? parseInt(params.get('job')) : null;
+
+  if (jobId) {
+    // Single job view
+    try {
+      const { data: job } = await supabaseClient.from('jobs').select('title,location,job_type').eq('id', jobId).eq('employer_id', currentUser.id).single();
+      if (!job) { window.location.href = 'jobs.html'; return; }
+      document.getElementById('pageTitle').textContent = `Applicants — ${job.title}`;
+      document.getElementById('pageSubtitle').textContent = `${job.location} · ${job.job_type?.replace('_',' ') || ''}`;
+      allApps = await ApplicationService.getJobApplications(jobId);
+    } catch (err) {
+      document.getElementById('applicantsList').innerHTML = `<div class="alert alert-danger">${err.message}</div>`;
+      return;
+    }
+  } else {
+    // All jobs view
+    document.getElementById('pageTitle').textContent = 'All Applicants';
+    document.getElementById('pageSubtitle').textContent = 'Across all your job listings';
+    try {
+      allApps = await ApplicationService.getAllEmployerApplications(currentUser.id);
+    } catch (err) {
+      document.getElementById('applicantsList').innerHTML = `<div class="alert alert-danger">${err.message}</div>`;
+      return;
+    }
+  }
+
+  updateStats();
+  applyFilter('');
+});
+
+window.openDetail   = openDetail;
+window.quickStatus  = quickStatus;
+</script>
+</body>
+</html>

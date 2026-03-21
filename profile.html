@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Profile — Rwanda SkillsConnect</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #f5f7fa; }
+    .sidebar { width: 260px; background: #fff; border-right: 1px solid #E2E8F0; position: fixed; top: 0; left: 0; height: 100vh; z-index: 1000; display: flex; flex-direction: column; }
+    .main-content { margin-left: 260px; min-height: 100vh; }
+    .menu-item { display: flex; align-items: center; gap: 12px; padding: 11px 20px; color: #64748B; text-decoration: none; font-size: 14px; font-weight: 500; transition: all .2s; }
+    .menu-item:hover, .menu-item.active { background: #E8F2FF; color: #0056B3; }
+    .menu-item.active { border-left: 3px solid #0056B3; }
+    .avatar-wrap { position: relative; width: 90px; height: 90px; margin: 0 auto; cursor: pointer; }
+    .avatar-circle { width: 90px; height: 90px; border-radius: 50%; background: linear-gradient(135deg,#0056B3,#00C896); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 32px; font-weight: 700; overflow: hidden; }
+    .avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
+    .avatar-overlay { position: absolute; inset: 0; border-radius: 50%; background: rgba(0,0,0,.45); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; opacity: 0; transition: opacity .2s; }
+    .avatar-wrap:hover .avatar-overlay { opacity: 1; }
+    #photoInput { display: none; }
+    .skill-tag { display: inline-flex; align-items: center; gap: 6px; background: #E8F2FF; color: #0056B3; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+    .skill-tag button { background: none; border: none; color: #0056B3; padding: 0; line-height: 1; cursor: pointer; font-size: 11px; }
+    #toast { position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 280px; }
+    @media(max-width:992px) { .sidebar { transform: translateX(-100%); } .main-content { margin-left: 0; } }
+  </style>
+</head>
+<body>
+
+<div id="toast" class="toast align-items-center border-0" role="alert">
+  <div class="d-flex">
+    <div class="toast-body fw-medium" id="toastMsg"></div>
+    <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>
+  </div>
+</div>
+
+<!-- Sidebar (dynamic based on role) -->
+<aside class="sidebar" id="sidebar">
+  <div class="p-4 border-bottom">
+    <div class="d-flex align-items-center gap-2">
+      <div style="width:36px;height:36px;background:linear-gradient(135deg,#0056B3,#00C896);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;"><i class="fas fa-hands-helping"></i></div>
+      <div><div class="fw-bold" style="font-size:15px;">SkillsConnect</div><div class="text-muted" style="font-size:11px;">Rwanda</div></div>
+    </div>
+  </div>
+  <nav class="flex-grow-1 py-3" id="sidebarNav"></nav>
+  <div class="border-top py-2">
+    <a href="#" class="menu-item" id="logoutBtn"><i class="fas fa-sign-out-alt"></i>Logout</a>
+  </div>
+</aside>
+
+<main class="main-content">
+  <header class="bg-white border-bottom px-4 py-3 sticky-top">
+    <h5 class="mb-0 fw-bold">My Profile</h5>
+    <small class="text-muted">Manage your account information</small>
+  </header>
+
+  <div class="p-4" style="max-width:900px;">
+    <div class="row g-4">
+
+      <!-- Left: Avatar + completion -->
+      <div class="col-lg-3">
+        <div class="bg-white rounded-3 border p-4 text-center">
+          <div class="avatar-wrap mb-3" onclick="document.getElementById('photoInput').click()" title="Click to change photo">
+            <div class="avatar-circle" id="avatarCircle">U</div>
+            <div class="avatar-overlay">
+              <i class="fas fa-camera text-white fs-5"></i>
+              <span class="text-white" style="font-size:10px;">Change</span>
+            </div>
+          </div>
+          <input type="file" id="photoInput" accept="image/jpeg,image/png,image/webp">
+          <h6 class="fw-bold mb-0" id="sidebarName">—</h6>
+          <small class="text-muted" id="sidebarRole">—</small>
+          <hr>
+          <div class="d-flex justify-content-between small text-muted mb-1">
+            <span>Profile completion</span>
+            <span id="pctLabel">0%</span>
+          </div>
+          <div class="progress" style="height:6px;">
+            <div class="progress-bar bg-primary" id="pctBar" style="width:0%"></div>
+          </div>
+          <div class="mt-3 text-start small text-muted" id="completionHints"></div>
+        </div>
+      </div>
+
+      <!-- Right: Form -->
+      <div class="col-lg-9">
+        <form id="profileForm">
+
+          <!-- Basic Info -->
+          <div class="bg-white rounded-3 border p-4 mb-4">
+            <h6 class="fw-bold mb-3"><i class="fas fa-user me-2 text-primary"></i>Basic Information</h6>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label fw-medium">Full Name <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="full_name" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-medium">Phone</label>
+                <input type="tel" class="form-control" id="phone" placeholder="+250 XXX XXX XXX">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-medium">Location</label>
+                <input type="text" class="form-control" id="location" placeholder="e.g. Kigali, Rwanda">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-medium">Headline</label>
+                <input type="text" class="form-control" id="headline" placeholder="e.g. Senior Web Developer">
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-medium">Bio</label>
+                <textarea class="form-control" id="bio" rows="3" placeholder="Tell workers about yourself..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Worker fields -->
+          <div id="workerSection" class="bg-white rounded-3 border p-4 mb-4 d-none">
+            <h6 class="fw-bold mb-3"><i class="fas fa-briefcase me-2 text-primary"></i>Professional Details</h6>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label fw-medium">Experience Level</label>
+                <select class="form-select" id="experience_level">
+                  <option value="">Select level</option>
+                  <option value="entry">Entry (0–2 yrs)</option>
+                  <option value="intermediate">Intermediate (2–5 yrs)</option>
+                  <option value="expert">Expert (5+ yrs)</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-medium">Availability</label>
+                <select class="form-select" id="availability">
+                  <option value="">Select availability</option>
+                  <option value="Full-time">Full-time</option>
+                  <option value="Part-time">Part-time</option>
+                  <option value="Freelance">Freelance / Contract</option>
+                  <option value="Not available">Not available</option>
+                </select>
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-medium">Skills</label>
+                <div class="d-flex gap-2 mb-2">
+                  <input type="text" class="form-control" id="skillInput" placeholder="Type a skill and press Enter or Add">
+                  <button type="button" class="btn btn-outline-primary px-3" id="addSkillBtn">Add</button>
+                </div>
+                <div id="skillsDisplay" class="d-flex flex-wrap gap-2 min-height-40"></div>
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-medium">Resume URL</label>
+                <input type="url" class="form-control" id="resume_url" placeholder="https://drive.google.com/...">
+                <div class="form-text">Link to your CV/resume (Google Drive, Dropbox, etc.)</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Employer fields -->
+          <div id="employerSection" class="bg-white rounded-3 border p-4 mb-4 d-none">
+            <h6 class="fw-bold mb-3"><i class="fas fa-building me-2 text-primary"></i>Company Information</h6>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label fw-medium">Company Name</label>
+                <input type="text" class="form-control" id="company_name" placeholder="Your company name">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-medium">Industry</label>
+                <select class="form-select" id="industry">
+                  <option value="">Select industry</option>
+                  <option>Technology</option>
+                  <option>Healthcare</option>
+                  <option>Finance</option>
+                  <option>Education</option>
+                  <option>Agriculture</option>
+                  <option>Construction</option>
+                  <option>Tourism</option>
+                  <option>Retail</option>
+                  <option>Manufacturing</option>
+                  <option>Other</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-medium">Company Size</label>
+                <select class="form-select" id="company_size">
+                  <option value="">Select size</option>
+                  <option value="1-10">1–10 employees</option>
+                  <option value="11-50">11–50 employees</option>
+                  <option value="51-200">51–200 employees</option>
+                  <option value="201-500">201–500 employees</option>
+                  <option value="500+">500+ employees</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-medium">Website</label>
+                <input type="url" class="form-control" id="website" placeholder="https://yourcompany.com">
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-medium">Company Description</label>
+                <textarea class="form-control" id="company_description" rows="3" placeholder="Describe your company..."></textarea>
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-medium">Address</label>
+                <input type="text" class="form-control" id="address" placeholder="Company address">
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-end">
+            <button type="submit" class="btn btn-primary px-5" id="saveBtn">
+              <i class="fas fa-save me-2"></i>Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="js/supabaseClient.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const toast = new bootstrap.Toast(document.getElementById('toast'), { delay: 3500 });
+function notify(msg, type = 'success') {
+  const el = document.getElementById('toast');
+  el.className = `toast align-items-center border-0 text-bg-${type}`;
+  document.getElementById('toastMsg').textContent = msg;
+  toast.show();
+}
+
+let _skills = [];
+let _role = 'worker';
+let _userId = null;
+
+// ── Photo upload ─────────────────────────────────────────
+async function uploadPhoto(file) {
+  if (file.size > 3 * 1024 * 1024) { notify('Image must be under 3MB', 'danger'); return; }
+
+  const ext  = file.name.split('.').pop();
+  const path = `${_userId}/avatar.${ext}`;
+
+  // Show preview immediately
+  const reader = new FileReader();
+  reader.onload = e => setAvatarImg(e.target.result);
+  reader.readAsDataURL(file);
+
+  notify('Uploading photo…', 'info');
+
+  const { error: upErr } = await supabaseClient.storage
+    .from('avatars')
+    .upload(path, file, { upsert: true, contentType: file.type });
+
+  if (upErr) { notify('Upload failed: ' + upErr.message, 'danger'); return; }
+
+  const { data: { publicUrl } } = supabaseClient.storage.from('avatars').getPublicUrl(path);
+
+  const { error: dbErr } = await supabaseClient
+    .from('profiles').update({ profile_image: publicUrl }).eq('id', _userId);
+
+  if (dbErr) { notify('Saved photo URL failed: ' + dbErr.message, 'danger'); return; }
+
+  notify('Profile photo updated!', 'success');
+}
+
+function setAvatarImg(url) {
+  const circle = document.getElementById('avatarCircle');
+  circle.innerHTML = `<img src="${url}" alt="avatar">`;
+}
+
+// ── Skills management ─────────────────────────────────────
+function renderSkills() {
+  const container = document.getElementById('skillsDisplay');
+  container.innerHTML = _skills.map(s => `
+    <span class="skill-tag">${s}
+      <button type="button" onclick="removeSkill('${s.replace(/'/g,"\\'")}')"><i class="fas fa-times"></i></button>
+    </span>`).join('');
+}
+
+function addSkill() {
+  const input = document.getElementById('skillInput');
+  const val = input.value.trim();
+  if (!val || _skills.includes(val)) { input.value = ''; return; }
+  _skills.push(val);
+  input.value = '';
+  renderSkills();
+}
+
+function removeSkill(s) {
+  _skills = _skills.filter(x => x !== s);
+  renderSkills();
+}
+window.removeSkill = removeSkill;
+
+// ── Profile completion ────────────────────────────────────
+function updateCompletion(profile) {
+  const checks = {
+    worker: [
+      ['full_name', 'Full name'],
+      ['phone', 'Phone number'],
+      ['location', 'Location'],
+      ['headline', 'Headline'],
+      ['bio', 'Bio'],
+      ['experience_level', 'Experience level'],
+      ['skills', 'Skills'],
+      ['availability', 'Availability'],
+    ],
+    employer: [
+      ['full_name', 'Full name'],
+      ['phone', 'Phone number'],
+      ['location', 'Location'],
+      ['company_name', 'Company name'],
+      ['industry', 'Industry'],
+      ['company_description', 'Company description'],
+    ]
+  };
+  const fields = checks[profile.role] || checks.worker;
+  const done = fields.filter(([k]) => {
+    if (k === 'skills') return _skills.length > 0;
+    return profile[k] && profile[k].toString().trim();
+  });
+  const pct = Math.round((done.length / fields.length) * 100);
+  document.getElementById('pctLabel').textContent = pct + '%';
+  document.getElementById('pctBar').style.width = pct + '%';
+
+  const missing = fields.filter(([k]) => {
+    if (k === 'skills') return _skills.length === 0;
+    return !profile[k] || !profile[k].toString().trim();
+  });
+  document.getElementById('completionHints').innerHTML = missing.length
+    ? '<div class="fw-medium mb-1">Missing:</div>' + missing.map(([,label]) =>
+        `<div><i class="fas fa-circle text-warning me-1" style="font-size:7px;"></i>${label}</div>`).join('')
+    : '<div class="text-success"><i class="fas fa-check-circle me-1"></i>Profile complete!</div>';
+}
+
+// ── Sidebar nav by role ───────────────────────────────────
+function buildSidebar(role) {
+  const workerNav = `
+    <div class="px-4 pb-2" style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;font-weight:600;">Dashboard</div>
+    <a href="freelancer-dashboard.html" class="menu-item"><i class="fas fa-tachometer-alt"></i>Overview</a>
+    <a href="profile.html" class="menu-item active"><i class="fas fa-user"></i>My Profile</a>
+    <div class="px-4 pb-2 pt-3" style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;font-weight:600;">Jobs</div>
+    <a href="find-jobs.html" class="menu-item"><i class="fas fa-search"></i>Find Jobs</a>
+    <a href="my-applications.html" class="menu-item"><i class="fas fa-file-alt"></i>My Applications</a>
+    <a href="messages.html" class="menu-item"><i class="fas fa-comments"></i>Messages</a>`;
+
+  const employerNav = `
+    <div class="px-4 pb-2" style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;font-weight:600;">Dashboard</div>
+    <a href="employer-dashboard.html" class="menu-item"><i class="fas fa-tachometer-alt"></i>Overview</a>
+    <a href="profile.html" class="menu-item active"><i class="fas fa-building"></i>Company Profile</a>
+    <div class="px-4 pb-2 pt-3" style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;font-weight:600;">Recruitment</div>
+    <a href="post-job.html" class="menu-item"><i class="fas fa-plus"></i>Post Job</a>
+    <a href="jobs.html" class="menu-item"><i class="fas fa-list"></i>Manage Jobs</a>
+    <a href="find-workers.html" class="menu-item"><i class="fas fa-search"></i>Find Workers</a>
+    <a href="messages.html" class="menu-item"><i class="fas fa-comments"></i>Messages</a>`;
+
+  document.getElementById('sidebarNav').innerHTML = role === 'employer' ? employerNav : workerNav;
+}
+
+// ── Load profile ──────────────────────────────────────────
+async function loadProfile(userId) {
+  const { data: profile, error } = await supabaseClient
+    .from('profiles').select('*').eq('id', userId).single();
+  if (error || !profile) { notify('Failed to load profile', 'danger'); return null; }
+  return profile;
+}
+
+// ── Populate form ─────────────────────────────────────────
+function populateForm(p) {
+  _role = p.role;
+  buildSidebar(_role);
+
+  // Avatar
+  const init = (p.full_name || 'U').charAt(0).toUpperCase();
+  if (p.profile_image) {
+    setAvatarImg(p.profile_image);
+  } else {
+    document.getElementById('avatarCircle').textContent = init;
+  }
+  document.getElementById('sidebarName').textContent = p.full_name || '—';
+  document.getElementById('sidebarRole').textContent = _role.charAt(0).toUpperCase() + _role.slice(1);
+
+  // Basic
+  setValue('full_name', p.full_name);
+  setValue('phone', p.phone);
+  setValue('location', p.location);
+  setValue('headline', p.headline);
+  setValue('bio', p.bio);
+
+  if (_role === 'worker') {
+    document.getElementById('workerSection').classList.remove('d-none');
+    setValue('experience_level', p.experience_level);
+    setValue('availability', p.availability);
+    setValue('resume_url', p.resume_url);
+    _skills = p.skills ? p.skills.split(',').map(s => s.trim()).filter(Boolean) : [];
+    renderSkills();
+  } else if (_role === 'employer') {
+    document.getElementById('employerSection').classList.remove('d-none');
+    setValue('company_name', p.company_name);
+    setValue('industry', p.industry);
+    setValue('company_size', p.company_size);
+    setValue('website', p.website);
+    setValue('company_description', p.company_description);
+    setValue('address', p.address);
+  }
+
+  updateCompletion({ ...p, skills: _skills.join(',') });
+}
+
+function setValue(id, val) {
+  const el = document.getElementById(id);
+  if (el && val != null) el.value = val;
+}
+
+// ── Save profile ──────────────────────────────────────────
+async function saveProfile(userId) {
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+
+  const payload = {
+    full_name:   document.getElementById('full_name').value.trim() || null,
+    phone:       document.getElementById('phone').value.trim() || null,
+    location:    document.getElementById('location').value.trim() || null,
+    headline:    document.getElementById('headline').value.trim() || null,
+    bio:         document.getElementById('bio').value.trim() || null,
+  };
+
+  if (_role === 'worker') {
+    payload.experience_level = document.getElementById('experience_level').value || null;
+    payload.availability     = document.getElementById('availability').value || null;
+    payload.resume_url       = document.getElementById('resume_url').value.trim() || null;
+    payload.skills           = _skills.join(', ') || null;
+  } else if (_role === 'employer') {
+    payload.company_name        = document.getElementById('company_name').value.trim() || null;
+    payload.industry            = document.getElementById('industry').value || null;
+    payload.company_size        = document.getElementById('company_size').value || null;
+    payload.website             = document.getElementById('website').value.trim() || null;
+    payload.company_description = document.getElementById('company_description').value.trim() || null;
+    payload.address             = document.getElementById('address').value.trim() || null;
+  }
+
+  const { error } = await supabaseClient
+    .from('profiles').update(payload).eq('id', userId);
+
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fas fa-save me-2"></i>Save Changes';
+
+  if (error) { notify(error.message, 'danger'); return; }
+
+  notify('Profile saved successfully!', 'success');
+
+  // Update avatar + completion
+  document.getElementById('avatarCircle').textContent = (payload.full_name || 'U').charAt(0).toUpperCase();
+  document.getElementById('sidebarName').textContent = payload.full_name || '—';
+  updateCompletion({ ...payload, role: _role, skills: payload.skills || '' });
+}
+
+// ── Init ──────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (!session) { window.location.href = 'login.html'; return; }
+
+  const profile = await loadProfile(session.user.id);
+  if (!profile) return;
+
+  populateForm(profile);
+
+  _userId = session.user.id;
+
+  document.getElementById('photoInput').addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (file) uploadPhoto(file);
+    e.target.value = '';
+  });
+
+  document.getElementById('addSkillBtn').addEventListener('click', addSkill);
+  document.getElementById('skillInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); addSkill(); }
+  });
+
+  document.getElementById('profileForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    await saveProfile(session.user.id);
+  });
+
+  document.getElementById('logoutBtn').addEventListener('click', async (e) => {
+    e.preventDefault();
+    await supabaseClient.auth.signOut();
+    window.location.href = 'login.html';
+  });
+});
+</script>
+</body>
+</html>

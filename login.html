@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | Rwanda SkillsConnect</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root{--primary:#0056B3;--primary-light:#E8F2FF;--secondary:#00C896;--accent:#FF6B6B;--dark:#1A1F36;--gray:#64748B;--border:#E2E8F0;--radius:8px;}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Open Sans',sans-serif;color:var(--dark);background:#F8FAFC;height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+    h1,h2,h3,h4,h5,h6{font-family:'Poppins',sans-serif;font-weight:600;}
+    .login-container{width:100%;max-width:400px;background:#fff;border-radius:var(--radius);box-shadow:0 2px 10px rgba(0,0,0,.05);padding:30px;animation:fadeIn .3s ease;}
+    .logo{display:inline-flex;align-items:center;gap:10px;color:var(--primary);text-decoration:none;}
+    .logo-icon{width:36px;height:36px;background:var(--primary);border-radius:6px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;}
+    .logo-text{font-size:1.4rem;font-weight:700;font-family:'Poppins',sans-serif;}
+    .form-label{display:block;margin-bottom:4px;font-weight:500;color:var(--dark);font-size:13px;}
+    .input-group{position:relative;}
+    .form-control{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;transition:all .2s ease;background:#fff;height:40px;}
+    .form-control:focus{border-color:var(--primary);box-shadow:0 0 0 2px rgba(0,86,179,.1);outline:none;}
+    .input-icon{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--gray);font-size:14px;pointer-events:none;}
+    .toggle-password{position:absolute;right:40px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--gray);cursor:pointer;padding:4px;font-size:13px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;}
+    .toggle-password:hover{color:var(--primary);}
+    .btn-login{width:100%;padding:10px;background:var(--primary);color:#fff;border:none;border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer;transition:all .2s ease;height:40px;display:flex;align-items:center;justify-content:center;gap:6px;}
+    .btn-login:hover{background:#004494;}
+    .btn-login:disabled{background:var(--border);cursor:not-allowed;}
+    .social-btn{flex:1;padding:8px;border:1px solid var(--border);border-radius:var(--radius);background:#fff;color:var(--dark);font-size:12px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .2s ease;cursor:pointer;height:36px;}
+    .social-btn:hover{border-color:var(--primary);background:var(--primary-light);}
+    .divider{display:flex;align-items:center;margin:10px 0;color:var(--gray);font-size:12px;}
+    .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
+    .divider span{padding:0 10px;}
+    .alert{border-radius:var(--radius);border:none;padding:10px 14px;margin-bottom:12px;font-size:13px;display:flex;align-items:center;gap:8px;}
+    .alert-danger{background:#FFF5F5;color:var(--accent);border-left:3px solid var(--accent);}
+    .alert-success{background:#F0F9FF;color:var(--primary);border-left:3px solid var(--primary);}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="text-center mb-4">
+      <a href="index.html" class="logo">
+        <div class="logo-icon"><i class="fas fa-hands-helping"></i></div>
+        <span class="logo-text">Rwanda SkillsConnect</span>
+      </a>
+    </div>
+    <div class="text-center mb-3">
+      <h2 style="font-size:1.3rem;">Welcome Back</h2>
+      <p style="color:var(--gray);font-size:13px;">Sign in to your account</p>
+    </div>
+
+    <div class="divider"><span>Sign in with</span></div>
+    <div class="d-flex gap-2 mb-3">
+      <button class="social-btn"><i class="fab fa-google"></i> Google</button>
+      <button class="social-btn"><i class="fab fa-linkedin-in"></i> LinkedIn</button>
+    </div>
+    <div class="divider"><span>or</span></div>
+
+    <div id="msg" class="hidden"></div>
+
+    <form id="loginForm">
+      <div class="mb-3">
+        <label class="form-label">Email Address</label>
+        <div class="input-group">
+          <input type="email" id="email" class="form-control" placeholder="you@example.com" required autocomplete="email">
+          <div class="input-icon"><i class="fas fa-envelope"></i></div>
+        </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Password</label>
+        <div class="input-group">
+          <input type="password" id="password" class="form-control" placeholder="Enter password" required>
+          <button type="button" class="toggle-password" id="togglePassword"><i class="fas fa-eye"></i></button>
+          <div class="input-icon"><i class="fas fa-lock"></i></div>
+        </div>
+      </div>
+      <div class="d-flex justify-content-between align-items-center mb-3" style="font-size:12px;">
+        <div class="d-flex align-items-center gap-2">
+          <input type="checkbox" id="remember" style="width:14px;height:14px;">
+          <label for="remember" style="color:var(--gray);">Remember me</label>
+        </div>
+        <a href="forgot-password.html" style="color:var(--primary);text-decoration:none;">Forgot password?</a>
+      </div>
+      <button type="submit" class="btn-login" id="loginBtn">
+        <i class="fas fa-sign-in-alt"></i> Sign In
+      </button>
+    </form>
+
+    <p class="text-center mt-4" style="font-size:13px;color:var(--gray);border-top:1px solid var(--border);padding-top:16px;">
+      Don't have an account? <a href="register.html" style="color:var(--primary);font-weight:600;">Sign Up</a>
+    </p>
+  </div>
+
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    // Redirect if already logged in
+    (async () => {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (session) redirectByRole(session.user);
+    })();
+
+    async function redirectByRole(user) {
+      const { data: profile } = await supabaseClient.from('profiles').select('role').eq('id', user.id).single();
+      const role = profile?.role || 'worker';
+      if (role === 'employer') window.location.href = 'employer-dashboard.html';
+      else if (role === 'admin') window.location.href = 'admin-dashboard.html';
+      else window.location.href = 'freelancer-dashboard.html';
+    }
+
+    document.getElementById('togglePassword').addEventListener('click', function() {
+      const pwd = document.getElementById('password');
+      const type = pwd.type === 'password' ? 'text' : 'password';
+      pwd.type = type;
+      this.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+    });
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('loginBtn');
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing in…';
+
+      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+      if (error) {
+        showMsg(error.message, 'danger');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In';
+      } else {
+        showMsg('✅ Login successful! Redirecting…', 'success');
+        setTimeout(() => redirectByRole(data.user), 1000);
+      }
+    });
+
+    function showMsg(text, type) {
+      const el = document.getElementById('msg');
+      el.className = `alert alert-${type}`;
+      el.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${text}`;
+    }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

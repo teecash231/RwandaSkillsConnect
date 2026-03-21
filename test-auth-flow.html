@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Auth Flow - Rwanda SkillsConnect</title>
+    <link rel="stylesheet" href="assets/css/tailwind.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-50 min-h-screen p-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white rounded-lg shadow-md p-8">
+            <h1 class="text-3xl font-bold text-center mb-8">🧪 Authentication Flow Test</h1>
+            
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- Test Signup -->
+                <div class="bg-blue-50 rounded-lg p-6">
+                    <h2 class="text-xl font-semibold text-blue-800 mb-4">Test Signup Process</h2>
+                    <form id="testSignup" class="space-y-3">
+                        <input type="email" id="signupEmail" placeholder="test@example.com" class="w-full px-3 py-2 border rounded-md" required>
+                        <input type="password" id="signupPassword" placeholder="password123" class="w-full px-3 py-2 border rounded-md" required>
+                        <select id="signupRole" class="w-full px-3 py-2 border rounded-md">
+                            <option value="freelancer">Freelancer</option>
+                            <option value="client">Client</option>
+                        </select>
+                        <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700">Test Signup</button>
+                    </form>
+                </div>
+
+                <!-- Test Login -->
+                <div class="bg-green-50 rounded-lg p-6">
+                    <h2 class="text-xl font-semibold text-green-800 mb-4">Test Login Process</h2>
+                    <form id="testLogin" class="space-y-3">
+                        <input type="email" id="loginEmail" placeholder="test@example.com" class="w-full px-3 py-2 border rounded-md" required>
+                        <input type="password" id="loginPassword" placeholder="password123" class="w-full px-3 py-2 border rounded-md" required>
+                        <button type="submit" class="w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700">Test Login</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Results -->
+            <div class="mt-8 bg-gray-100 rounded-lg p-6">
+                <h3 class="text-lg font-semibold mb-4">Test Results:</h3>
+                <div id="results" class="bg-white p-4 rounded border max-h-96 overflow-y-auto">
+                    <p class="text-gray-500">Run tests to see results...</p>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="mt-8 flex flex-wrap gap-4 justify-center">
+                <button onclick="checkSupabaseConfig()" class="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700">Check Config</button>
+                <button onclick="checkCurrentUser()" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">Check Current User</button>
+                <button onclick="clearResults()" class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700">Clear Results</button>
+                <a href="role-selection.html" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">Go to Signup</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/supabaseClient.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? 'text-red-600' : type === 'success' ? 'text-green-600' : 'text-blue-600';
+            
+            results.innerHTML += `<div class="${color} text-sm mb-1">[${timestamp}] ${message}</div>`;
+            results.scrollTop = results.scrollHeight;
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '<p class="text-gray-500">Results cleared...</p>';
+        }
+
+        async function checkSupabaseConfig() {
+            log('🔧 Checking Supabase configuration...');
+            
+            try {
+                if (!window.supabaseClient) {
+                    log('❌ Supabase client not initialized', 'error');
+                    return;
+                }
+                
+                log(`✓ Supabase URL: ${window.supabaseClient.supabaseUrl}`);
+                log(`✓ API Key: ${window.supabaseClient.supabaseKey.substring(0, 20)}...`);
+                
+                // Test connection
+                const { data, error } = await window.supabaseClient.auth.getSession();
+                if (error) {
+                    log(`❌ Connection error: ${error.message}`, 'error');
+                } else {
+                    log('✓ Connection successful', 'success');
+                    log(`Session: ${data.session ? 'Active' : 'None'}`);
+                }
+                
+            } catch (error) {
+                log(`❌ Config check failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function checkCurrentUser() {
+            log('👤 Checking current user...');
+            
+            try {
+                const { data: { user }, error } = await window.supabaseClient.auth.getUser();
+                
+                if (error) {
+                    log(`❌ User check error: ${error.message}`, 'error');
+                    return;
+                }
+                
+                if (user) {
+                    log(`✓ User logged in: ${user.email}`, 'success');
+                    log(`Email confirmed: ${user.email_confirmed_at ? 'Yes' : 'No'}`);
+                    log(`Role: ${user.user_metadata?.role || 'Not set'}`);
+                } else {
+                    log('No user currently logged in');
+                }
+                
+            } catch (error) {
+                log(`❌ User check failed: ${error.message}`, 'error');
+            }
+        }
+
+        document.getElementById('testSignup').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const role = document.getElementById('signupRole').value;
+            
+            log(`🚀 Testing signup for ${email} as ${role}...`);
+            
+            try {
+                const userData = {
+                    first_name: 'Test',
+                    last_name: 'User',
+                    email: email,
+                    password: password,
+                    role: role
+                };
+                
+                const result = await window.authSystem.signUp(userData);
+                
+                if (result.success) {
+                    log(`✓ Signup successful!`, 'success');
+                    log(`User ID: ${result.user?.id}`);
+                    
+                    if (result.needsConfirmation) {
+                        log(`📧 Email confirmation required`, 'info');
+                        log(`Check ${email} for confirmation link`);
+                    } else if (result.autoConfirmed) {
+                        log(`✓ Auto-confirmed (no email needed)`, 'success');
+                    }
+                } else {
+                    log(`❌ Signup failed: ${result.error}`, 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Signup test failed: ${error.message}`, 'error');
+            }
+        });
+
+        document.getElementById('testLogin').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            log(`🔐 Testing login for ${email}...`);
+            
+            try {
+                const result = await window.authSystem.signIn(email, password);
+                
+                if (result.success) {
+                    log(`✓ Login successful!`, 'success');
+                    log(`User: ${result.user.email}`);
+                    log(`Role: ${result.user.user_metadata?.role || 'Not set'}`);
+                } else {
+                    log(`❌ Login failed: ${result.error}`, 'error');
+                    
+                    if (result.needsVerification) {
+                        log(`📧 Email verification required`, 'info');
+                    }
+                }
+                
+            } catch (error) {
+                log(`❌ Login test failed: ${error.message}`, 'error');
+            }
+        });
+
+        // Auto-check config on load
+        window.addEventListener('load', () => {
+            setTimeout(checkSupabaseConfig, 500);
+        });
+    </script>
+</body>
+</html>

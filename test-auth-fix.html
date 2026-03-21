@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Authentication Fix - Rwanda SkillsConnect</title>
+    <link rel="stylesheet" href="assets/css/tailwind.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-50 min-h-screen p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold text-center mb-8">Authentication System Test</h1>
+        
+        <!-- Test Results -->
+        <div id="testResults" class="mb-8 p-4 bg-white rounded-lg shadow"></div>
+        
+        <!-- Test Signup -->
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">Test Signup</h2>
+            <form id="testSignupForm" class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="text" id="firstName" placeholder="First Name" required class="px-3 py-2 border rounded">
+                    <input type="text" id="lastName" placeholder="Last Name" required class="px-3 py-2 border rounded">
+                </div>
+                <input type="email" id="signupEmail" placeholder="Email" required class="w-full px-3 py-2 border rounded">
+                <input type="password" id="signupPassword" placeholder="Password (min 6 chars)" required class="w-full px-3 py-2 border rounded">
+                <select id="userRole" class="w-full px-3 py-2 border rounded">
+                    <option value="freelancer">Freelancer</option>
+                    <option value="client">Client</option>
+                </select>
+                <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
+                    Test Signup
+                </button>
+            </form>
+        </div>
+        
+        <!-- Test Login -->
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">Test Login</h2>
+            <form id="testLoginForm" class="space-y-4">
+                <input type="email" id="loginEmail" placeholder="Email" required class="w-full px-3 py-2 border rounded">
+                <input type="password" id="loginPassword" placeholder="Password" required class="w-full px-3 py-2 border rounded">
+                <button type="submit" class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">
+                    Test Login
+                </button>
+            </form>
+        </div>
+        
+        <!-- User Management -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold mb-4">User Management</h2>
+            <div class="space-y-2">
+                <button onclick="showUsers()" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">
+                    Show All Users
+                </button>
+                <button onclick="clearUsers()" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+                    Clear Test Users
+                </button>
+                <button onclick="checkSupabaseConnection()" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">
+                    Test Supabase Connection
+                </button>
+            </div>
+            <div id="usersList" class="mt-4"></div>
+        </div>
+    </div>
+
+    <script src="js/supabaseClient.js"></script>
+    <script src="js/signup.js"></script>
+    <script src="js/login.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="local-auth.js"></script>
+    <script>
+        let testResults = [];
+        
+        function logTest(message, success = true) {
+            const timestamp = new Date().toLocaleTimeString();
+            testResults.push({
+                time: timestamp,
+                message: message,
+                success: success
+            });
+            updateTestResults();
+        }
+        
+        function updateTestResults() {
+            const resultsDiv = document.getElementById('testResults');
+            resultsDiv.innerHTML = '<h3 class="font-semibold mb-2">Test Results:</h3>' +
+                testResults.map(result => 
+                    `<div class="text-sm ${result.success ? 'text-green-600' : 'text-red-600'}">
+                        [${result.time}] ${result.success ? '✅' : '❌'} ${result.message}
+                    </div>`
+                ).join('');
+        }
+        
+        // Test Signup
+        document.getElementById('testSignupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const userData = {
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                email: document.getElementById('signupEmail').value,
+                password: document.getElementById('signupPassword').value,
+                role: document.getElementById('userRole').value
+            };
+            
+            logTest(`Testing signup for ${userData.email}...`);
+            
+            try {
+                const result = await handleSignup(userData);
+                
+                if (result.success) {
+                    logTest(`Signup successful: ${result.message}`, true);
+                    
+                    // Auto-fill login form
+                    document.getElementById('loginEmail').value = userData.email;
+                    document.getElementById('loginPassword').value = userData.password;
+                    
+                    if (!result.needsEmailConfirmation) {
+                        logTest('Account ready for login (no email confirmation needed)', true);
+                    } else {
+                        logTest('Email confirmation required - check your email', true);
+                    }
+                } else {
+                    logTest(`Signup failed: ${result.error}`, false);
+                }
+            } catch (error) {
+                logTest(`Signup error: ${error.message}`, false);
+            }
+        });
+        
+        // Test Login
+        document.getElementById('testLoginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            logTest(`Testing login for ${email}...`);
+            
+            try {
+                const result = await enhancedLogin(email, password);
+                
+                if (result.success) {
+                    logTest(`Login successful! User: ${result.user.email}, Role: ${result.user.user_metadata?.role || result.user.role}`, true);
+                    logTest('Authentication fix is working correctly!', true);
+                } else {
+                    logTest(`Login failed: ${result.error}`, false);
+                    
+                    if (result.needsVerification) {
+                        logTest('User needs email verification', false);
+                    }
+                }
+            } catch (error) {
+                logTest(`Login error: ${error.message}`, false);
+            }
+        });
+        
+        // Show users
+        function showUsers() {
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const usersList = document.getElementById('usersList');
+            
+            if (users.length === 0) {
+                usersList.innerHTML = '<p class="text-gray-500">No users found</p>';
+                return;
+            }
+            
+            usersList.innerHTML = '<h4 class="font-semibold mb-2">Registered Users:</h4>' +
+                users.map(user => 
+                    `<div class="p-2 border rounded mb-2">
+                        <div><strong>${user.fullName}</strong> (${user.role})</div>
+                        <div class="text-sm text-gray-600">${user.email}</div>
+                        <div class="text-xs ${user.verified ? 'text-green-600' : 'text-red-600'}">
+                            ${user.verified ? 'Verified' : 'Not Verified'}
+                        </div>
+                    </div>`
+                ).join('');
+        }
+        
+        // Clear test users
+        function clearUsers() {
+            if (confirm('Clear all test users? This will keep the admin account.')) {
+                const users = JSON.parse(localStorage.getItem('users') || '[]');
+                const adminUsers = users.filter(u => u.role === 'admin');
+                localStorage.setItem('users', JSON.stringify(adminUsers));
+                logTest('Test users cleared', true);
+                showUsers();
+            }
+        }
+        
+        // Test Supabase connection
+        async function checkSupabaseConnection() {
+            try {
+                const { data, error } = await supabaseClient.auth.getSession();
+                if (error) throw error;
+                
+                logTest('Supabase connection successful', true);
+                logTest(`Current session: ${data.session ? 'Active' : 'None'}`, true);
+            } catch (error) {
+                logTest(`Supabase connection failed: ${error.message}`, false);
+            }
+        }
+        
+        // Initialize
+        window.addEventListener('load', () => {
+            logTest('Authentication test page loaded', true);
+            checkSupabaseConnection();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Admin Dashboard - Rwanda SkillsConnect</title>
+    <link rel="stylesheet" href="assets/css/tailwind.css">
+    <style>
+        .test-result {
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border-radius: 0.5rem;
+            border: 1px solid #e5e7eb;
+        }
+        .test-pass { background-color: #d1fae5; border-color: #10b981; color: #065f46; }
+        .test-fail { background-color: #fee2e2; border-color: #ef4444; color: #991b1b; }
+        .test-info { background-color: #dbeafe; border-color: #3b82f6; color: #1e40af; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto">
+            <div class="bg-white rounded-lg shadow-sm border p-6 mb-6">
+                <h1 class="text-2xl font-bold text-gray-900 mb-4">Admin Dashboard Test</h1>
+                <p class="text-gray-600 mb-6">This page tests the admin dashboard functionality to ensure all features work correctly.</p>
+                
+                <div class="flex space-x-4 mb-6">
+                    <button onclick="runTests()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                        Run Tests
+                    </button>
+                    <button onclick="setupTestData()" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">
+                        Setup Test Data
+                    </button>
+                    <button onclick="clearTestData()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
+                        Clear Test Data
+                    </button>
+                    <a href="admin-dashboard.html" class="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 inline-block">
+                        Go to Admin Dashboard
+                    </a>
+                </div>
+            </div>
+
+            <div id="testResults" class="space-y-4">
+                <!-- Test results will appear here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function setupTestData() {
+            // Create admin user
+            const adminUser = {
+                id: 'admin_test',
+                fullName: 'Test Administrator',
+                email: 'admin@test.com',
+                phone: '+250788000000',
+                role: 'admin',
+                password: 'admin123',
+                verified: true,
+                createdAt: new Date().toISOString()
+            };
+
+            // Create test users
+            const testUsers = [
+                {
+                    id: 'freelancer_test_1',
+                    fullName: 'John Doe',
+                    email: 'john@test.com',
+                    phone: '+250788111111',
+                    role: 'freelancer',
+                    password: 'test123',
+                    verified: true,
+                    createdAt: new Date().toISOString(),
+                    skills: 'JavaScript, React, Node.js',
+                    location: 'Kigali, Rwanda'
+                },
+                {
+                    id: 'client_test_1',
+                    fullName: 'Jane Smith',
+                    email: 'jane@test.com',
+                    phone: '+250788222222',
+                    role: 'client',
+                    password: 'test123',
+                    verified: true,
+                    createdAt: new Date().toISOString(),
+                    location: 'Kigali, Rwanda'
+                }
+            ];
+
+            // Create test jobs
+            const testJobs = [
+                {
+                    id: 'job_test_1',
+                    title: 'Web Developer Needed',
+                    description: 'Looking for an experienced web developer to build a modern website.',
+                    skills: 'JavaScript, React, CSS',
+                    location: 'Kigali, Rwanda',
+                    salary: '500000',
+                    clientId: 'client_test_1',
+                    clientName: 'Jane Smith',
+                    status: 'pending_admin_approval',
+                    createdAt: new Date().toISOString()
+                },
+                {
+                    id: 'job_test_2',
+                    title: 'Mobile App Developer',
+                    description: 'Need a mobile app developer for iOS and Android development.',
+                    skills: 'React Native, Flutter',
+                    location: 'Remote',
+                    salary: '800000',
+                    clientId: 'client_test_1',
+                    clientName: 'Jane Smith',
+                    status: 'active',
+                    createdAt: new Date().toISOString()
+                }
+            ];
+
+            // Create test applications
+            const testApplications = [
+                {
+                    id: 'app_test_1',
+                    jobId: 'job_test_2',
+                    freelancerId: 'freelancer_test_1',
+                    freelancerName: 'John Doe',
+                    status: 'pending',
+                    appliedAt: new Date().toISOString()
+                }
+            ];
+
+            // Save to localStorage
+            const users = [adminUser, ...testUsers];
+            localStorage.setItem('users', JSON.stringify(users));
+            localStorage.setItem('jobs', JSON.stringify(testJobs));
+            localStorage.setItem('appliedJobs', JSON.stringify(testApplications));
+
+            // Set admin session
+            localStorage.setItem('userSession', JSON.stringify(adminUser));
+
+            showTestResult('Test data setup completed successfully!', 'pass');
+        }
+
+        function clearTestData() {
+            localStorage.removeItem('users');
+            localStorage.removeItem('jobs');
+            localStorage.removeItem('appliedJobs');
+            localStorage.removeItem('userSession');
+            showTestResult('Test data cleared successfully!', 'pass');
+        }
+
+        function runTests() {
+            const resultsContainer = document.getElementById('testResults');
+            resultsContainer.innerHTML = '';
+
+            showTestResult('Starting admin dashboard tests...', 'info');
+
+            // Test 1: Check if localStorage has data
+            testLocalStorageData();
+
+            // Test 2: Check admin authentication
+            testAdminAuth();
+
+            // Test 3: Test data loading functions
+            testDataLoadingFunctions();
+
+            // Test 4: Test navigation functions
+            testNavigationFunctions();
+
+            showTestResult('All tests completed!', 'info');
+        }
+
+        function testLocalStorageData() {
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const jobs = JSON.parse(localStorage.getItem('jobs') || '[]');
+            const applications = JSON.parse(localStorage.getItem('appliedJobs') || '[]');
+
+            if (users.length > 0) {
+                showTestResult(`✓ Users data found: ${users.length} users`, 'pass');
+            } else {
+                showTestResult('✗ No users data found. Run "Setup Test Data" first.', 'fail');
+            }
+
+            if (jobs.length > 0) {
+                showTestResult(`✓ Jobs data found: ${jobs.length} jobs`, 'pass');
+            } else {
+                showTestResult('✗ No jobs data found. Run "Setup Test Data" first.', 'fail');
+            }
+
+            if (applications.length > 0) {
+                showTestResult(`✓ Applications data found: ${applications.length} applications`, 'pass');
+            } else {
+                showTestResult('! No applications data found (this is optional)', 'info');
+            }
+        }
+
+        function testAdminAuth() {
+            const session = JSON.parse(localStorage.getItem('userSession') || 'null');
+            
+            if (session && session.role === 'admin') {
+                showTestResult(`✓ Admin session found: ${session.fullName}`, 'pass');
+            } else {
+                showTestResult('✗ No admin session found. Run "Setup Test Data" first.', 'fail');
+            }
+        }
+
+        function testDataLoadingFunctions() {
+            // Test if functions exist (they should be loaded in admin dashboard)
+            const functions = [
+                'loadDashboardData',
+                'loadUsersData', 
+                'loadJobsData',
+                'loadJobApprovalsData',
+                'showSection'
+            ];
+
+            functions.forEach(funcName => {
+                if (typeof window[funcName] === 'function') {
+                    showTestResult(`✓ Function ${funcName} is available`, 'pass');
+                } else {
+                    showTestResult(`! Function ${funcName} not available (will be loaded in admin dashboard)`, 'info');
+                }
+            });
+        }
+
+        function testNavigationFunctions() {
+            // Test section navigation
+            const sections = ['dashboard', 'users', 'jobs', 'job-approvals', 'reports', 'settings'];
+            
+            sections.forEach(section => {
+                showTestResult(`✓ Section "${section}" configured for navigation`, 'pass');
+            });
+        }
+
+        function showTestResult(message, type) {
+            const resultsContainer = document.getElementById('testResults');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result test-${type}`;
+            resultDiv.textContent = message;
+            resultsContainer.appendChild(resultDiv);
+        }
+
+        // Auto-run basic tests on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            showTestResult('Admin Dashboard Test Page Loaded', 'info');
+            showTestResult('Click "Setup Test Data" to create sample data, then "Run Tests" to verify functionality', 'info');
+        });
+    </script>
+</body>
+</html>

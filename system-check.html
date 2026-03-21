@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Check - Rwanda SkillsConnect</title>
+    <link rel="stylesheet" href="assets/css/tailwind.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .check-item {
+            transition: all 0.3s ease;
+        }
+        .check-item.success {
+            background-color: #f0fdf4;
+            border-color: #22c55e;
+        }
+        .check-item.error {
+            background-color: #fef2f2;
+            border-color: #ef4444;
+        }
+        .check-item.warning {
+            background-color: #fffbeb;
+            border-color: #f59e0b;
+        }
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen py-8">
+        <div class="max-w-4xl mx-auto px-4">
+            <div class="bg-white rounded-lg shadow-lg p-8">
+                <div class="text-center mb-8">
+                    <h1 class="text-3xl font-bold text-gray-800 mb-2">System Health Check</h1>
+                    <p class="text-gray-600">Verifying all freelancer dashboard functionality</p>
+                </div>
+
+                <div class="mb-6">
+                    <button id="runAllChecks" class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors">
+                        <i class="fas fa-play mr-2"></i>Run All Checks
+                    </button>
+                    <button id="clearData" class="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition-colors ml-4">
+                        <i class="fas fa-trash mr-2"></i>Clear All Data
+                    </button>
+                </div>
+
+                <div class="space-y-4" id="checkResults">
+                    <!-- Check results will be populated here -->
+                </div>
+
+                <div class="mt-8 p-4 bg-gray-100 rounded-lg">
+                    <h3 class="font-semibold text-gray-800 mb-2">System Information</h3>
+                    <div class="grid md:grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <p><strong>Browser:</strong> <span id="browserInfo"></span></p>
+                            <p><strong>Local Storage:</strong> <span id="storageInfo"></span></p>
+                            <p><strong>Screen Resolution:</strong> <span id="screenInfo"></span></p>
+                        </div>
+                        <div>
+                            <p><strong>User Agent:</strong> <span id="userAgent" class="break-all"></span></p>
+                            <p><strong>Timestamp:</strong> <span id="timestamp"></span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="assets/js/error-handler.js"></script>
+    <script src="assets/js/storage-utils.js"></script>
+    <script src="assets/js/sample-data.js"></script>
+
+    <script>
+        class SystemChecker {
+            constructor() {
+                this.checks = [
+                    { name: 'Local Storage', test: this.checkLocalStorage },
+                    { name: 'Error Handler', test: this.checkErrorHandler },
+                    { name: 'Storage Utils', test: this.checkStorageUtils },
+                    { name: 'Sample Data', test: this.checkSampleData },
+                    { name: 'User Management', test: this.checkUserManagement },
+                    { name: 'Job Management', test: this.checkJobManagement },
+                    { name: 'Application System', test: this.checkApplicationSystem },
+                    { name: 'Profile System', test: this.checkProfileSystem },
+                    { name: 'Settings System', test: this.checkSettingsSystem },
+                    { name: 'Data Validation', test: this.checkDataValidation },
+                    { name: 'Chart.js Library', test: this.checkChartJS },
+                    { name: 'Font Awesome Icons', test: this.checkFontAwesome }
+                ];
+                
+                this.initializeUI();
+                this.displaySystemInfo();
+            }
+
+            initializeUI() {
+                document.getElementById('runAllChecks').addEventListener('click', () => this.runAllChecks());
+                document.getElementById('clearData').addEventListener('click', () => this.clearAllData());
+            }
+
+            displaySystemInfo() {
+                document.getElementById('browserInfo').textContent = navigator.userAgent.split(' ').pop();
+                document.getElementById('userAgent').textContent = navigator.userAgent;
+                document.getElementById('screenInfo').textContent = `${screen.width}x${screen.height}`;
+                document.getElementById('timestamp').textContent = new Date().toLocaleString();
+                
+                // Check storage usage
+                try {
+                    const stats = storageUtils ? storageUtils.getStorageStats() : null;
+                    if (stats) {
+                        document.getElementById('storageInfo').textContent = 
+                            `${stats.totalSizeKB}KB used (${stats.quotaUsed.toFixed(1)}%)`;
+                    } else {
+                        document.getElementById('storageInfo').textContent = 'Unable to determine';
+                    }
+                } catch (error) {
+                    document.getElementById('storageInfo').textContent = 'Error checking storage';
+                }
+            }
+
+            async runAllChecks() {
+                const container = document.getElementById('checkResults');
+                container.innerHTML = '';
+
+                for (const check of this.checks) {
+                    const checkElement = this.createCheckElement(check.name);
+                    container.appendChild(checkElement);
+                    
+                    try {
+                        const result = await check.test.call(this);
+                        this.updateCheckResult(checkElement, result);
+                    } catch (error) {
+                        this.updateCheckResult(checkElement, {
+                            success: false,
+                            message: `Error: ${error.message}`,
+                            details: error.stack
+                        });
+                    }
+                    
+                    // Small delay for visual effect
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+            }
+
+            createCheckElement(name) {
+                const div = document.createElement('div');
+                div.className = 'check-item border-2 border-gray-200 rounded-lg p-4';
+                div.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="spinner w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full mr-3"></div>
+                            <span class="font-medium">${name}</span>
+                        </div>
+                        <div class="check-status text-sm text-gray-500">Running...</div>
+                    </div>
+                    <div class="check-details mt-2 text-sm text-gray-600 hidden"></div>
+                `;
+                return div;
+            }
+
+            updateCheckResult(element, result) {
+                const spinner = element.querySelector('.spinner');
+                const status = element.querySelector('.check-status');
+                const details = element.querySelector('.check-details');
+                
+                spinner.remove();
+                
+                if (result.success) {
+                    element.classList.add('success');
+                    status.innerHTML = '<i class="fas fa-check text-green-600 mr-1"></i>Passed';
+                    status.className = 'check-status text-sm text-green-600';
+                } else {
+                    element.classList.add(result.warning ? 'warning' : 'error');
+                    const icon = result.warning ? 'fa-exclamation-triangle text-yellow-600' : 'fa-times text-red-600';
+                    status.innerHTML = `<i class="fas ${icon} mr-1"></i>${result.warning ? 'Warning' : 'Failed'}`;
+                    status.className = `check-status text-sm ${result.warning ? 'text-yellow-600' : 'text-red-600'}`;
+                }
+                
+                if (result.message || result.details) {
+                    details.textContent = result.message || result.details;
+                    details.classList.remove('hidden');
+                }
+            }
+
+            // Individual check methods
+            checkLocalStorage() {
+                try {
+                    const testKey = 'test_' + Date.now();
+                    const testValue = { test: true, timestamp: Date.now() };
+                    
+                    localStorage.setItem(testKey, JSON.stringify(testValue));
+                    const retrieved = JSON.parse(localStorage.getItem(testKey));
+                    localStorage.removeItem(testKey);
+                    
+                    if (retrieved.test === testValue.test) {
+                        return { success: true, message: 'Local storage is working correctly' };
+                    } else {
+                        return { success: false, message: 'Local storage data integrity issue' };
+                    }
+                } catch (error) {
+                    return { success: false, message: `Local storage error: ${error.message}` };
+                }
+            }
+
+            checkErrorHandler() {
+                if (typeof ErrorHandler === 'undefined') {
+                    return { success: false, message: 'ErrorHandler class not found' };
+                }
+                
+                if (typeof safeLocalStorageGet !== 'function' || typeof safeLocalStorageSet !== 'function') {
+                    return { success: false, message: 'Error handler utility functions not available' };
+                }
+                
+                // Test validation
+                const testData = { email: 'test@example.com', name: 'Test User' };
+                const rules = { email: { required: true, email: true }, name: { required: true } };
+                const validation = ErrorHandler.validateFormData(testData, rules);
+                
+                if (!validation.isValid) {
+                    return { success: false, message: 'Form validation not working correctly' };
+                }
+                
+                return { success: true, message: 'Error handler is working correctly' };
+            }
+
+            checkStorageUtils() {
+                if (typeof StorageUtils === 'undefined' || !window.storageUtils) {
+                    return { success: false, message: 'StorageUtils not available' };
+                }
+                
+                // Test basic operations
+                const testUser = {
+                    id: 'test_user_' + Date.now(),
+                    fullName: 'Test User',
+                    email: 'test@example.com',
+                    role: 'freelancer'
+                };
+                
+                const users = storageUtils.safeGet('users', []);
+                const originalLength = users.length;
+                
+                // Test user operations
+                users.push(testUser);
+                storageUtils.safeSet('users', users);
+                
+                const retrievedUser = storageUtils.getUser(testUser.id);
+                if (!retrievedUser) {
+                    return { success: false, message: 'User retrieval failed' };
+                }
+                
+                // Clean up
+                const cleanUsers = users.filter(u => u.id !== testUser.id);
+                storageUtils.safeSet('users', cleanUsers);
+                
+                return { success: true, message: 'Storage utilities are working correctly' };
+            }
+
+            checkSampleData() {
+                if (typeof initializeSampleData !== 'function') {
+                    return { success: false, message: 'Sample data initialization function not found' };
+                }
+                
+                const users = storageUtils.safeGet('users', []);
+                const jobs = storageUtils.safeGet('jobs', []);
+                
+                if (users.length === 0) {
+                    return { success: false, message: 'No sample users found' };
+                }
+                
+                if (jobs.length === 0) {
+                    return { success: false, message: 'No sample jobs found' };
+                }
+                
+                // Check for required demo accounts
+                const adminUser = users.find(u => u.role === 'admin');
+                const freelancerUser = users.find(u => u.role === 'freelancer');
+                const clientUser = users.find(u => u.role === 'client');
+                
+                if (!adminUser || !freelancerUser || !clientUser) {
+                    return { 
+                        success: false, 
+                        message: 'Missing required demo accounts (admin, freelancer, client)' 
+                    };
+                }
+                
+                return { 
+                    success: true, 
+                    message: `Sample data loaded: ${users.length} users, ${jobs.length} jobs` 
+                };
+            }
+
+            checkUserManagement() {
+                const users = storageUtils.safeGet('users', []);
+                
+                if (users.length === 0) {
+                    return { success: false, message: 'No users in system' };
+                }
+                
+                // Check user data structure
+                const sampleUser = users[0];
+                const requiredFields = ['id', 'fullName', 'email', 'role'];
+                const missingFields = requiredFields.filter(field => !sampleUser[field]);
+                
+                if (missingFields.length > 0) {
+                    return { 
+                        success: false, 
+                        message: `Users missing required fields: ${missingFields.join(', ')}` 
+                    };
+                }
+                
+                return { success: true, message: `User management working with ${users.length} users` };
+            }
+
+            checkJobManagement() {
+                const jobs = storageUtils.safeGet('jobs', []);
+                
+                if (jobs.length === 0) {
+                    return { success: false, message: 'No jobs in system' };
+                }
+                
+                // Check job data structure
+                const sampleJob = jobs[0];
+                const requiredFields = ['id', 'title', 'description', 'clientId', 'salary'];
+                const missingFields = requiredFields.filter(field => !sampleJob[field]);
+                
+                if (missingFields.length > 0) {
+                    return { 
+                        success: false, 
+                        message: `Jobs missing required fields: ${missingFields.join(', ')}` 
+                    };
+                }
+                
+                return { success: true, message: `Job management working with ${jobs.length} jobs` };
+            }
+
+            checkApplicationSystem() {
+                const applications = storageUtils.safeGet('appliedJobs', []);
+                
+                // Test application creation
+                const testApplication = {
+                    jobId: 'test_job',
+                    freelancerId: 'test_freelancer',
+                    jobTitle: 'Test Job',
+                    freelancerName: 'Test Freelancer'
+                };
+                
+                const result = storageUtils.addJobApplication(testApplication);
+                
+                if (!result.success) {
+                    return { success: false, message: 'Application creation failed' };
+                }
+                
+                // Clean up test application
+                const updatedApplications = storageUtils.safeGet('appliedJobs', []);
+                const cleanApplications = updatedApplications.filter(app => app.jobId !== 'test_job');
+                storageUtils.safeSet('appliedJobs', cleanApplications);
+                
+                return { 
+                    success: true, 
+                    message: `Application system working with ${applications.length} applications` 
+                };
+            }
+
+            checkProfileSystem() {
+                const users = storageUtils.safeGet('users', []);
+                const freelancers = users.filter(u => u.role === 'freelancer');
+                
+                if (freelancers.length === 0) {
+                    return { success: false, message: 'No freelancer profiles found' };
+                }
+                
+                // Check profile completeness
+                const sampleFreelancer = freelancers[0];
+                const profileFields = ['professionalTitle', 'location', 'skills', 'hourlyRate'];
+                const completedFields = profileFields.filter(field => sampleFreelancer[field]);
+                
+                const completionRate = (completedFields.length / profileFields.length) * 100;
+                
+                return { 
+                    success: true, 
+                    message: `Profile system working. Sample profile ${completionRate}% complete` 
+                };
+            }
+
+            checkSettingsSystem() {
+                const settings = storageUtils.safeGet('settings', {});
+                
+                if (Object.keys(settings).length === 0) {
+                    return { success: false, message: 'No system settings found' };
+                }
+                
+                // Test user settings
+                const testUserId = 'test_user_settings';
+                const testSettings = { emailNotifications: 'all', profileVisibility: 'public' };
+                
+                storageUtils.updateUserSettings(testUserId, testSettings);
+                const retrievedSettings = storageUtils.getUserSettings(testUserId);
+                
+                if (retrievedSettings.emailNotifications !== 'all') {
+                    return { success: false, message: 'User settings not working correctly' };
+                }
+                
+                return { success: true, message: 'Settings system working correctly' };
+            }
+
+            checkDataValidation() {
+                // Test various validation scenarios
+                const validEmail = ErrorHandler.isValidEmail('test@example.com');
+                const invalidEmail = ErrorHandler.isValidEmail('invalid-email');
+                
+                if (!validEmail || invalidEmail) {
+                    return { success: false, message: 'Email validation not working correctly' };
+                }
+                
+                const validPhone = ErrorHandler.isValidPhone('+250788123456');
+                const invalidPhone = ErrorHandler.isValidPhone('123');
+                
+                if (!validPhone || invalidPhone) {
+                    return { success: false, message: 'Phone validation not working correctly' };
+                }
+                
+                return { success: true, message: 'Data validation working correctly' };
+            }
+
+            checkChartJS() {
+                if (typeof Chart === 'undefined') {
+                    return { 
+                        success: false, 
+                        warning: true,
+                        message: 'Chart.js library not loaded. Earnings charts will not work.' 
+                    };
+                }
+                
+                return { success: true, message: 'Chart.js library loaded successfully' };
+            }
+
+            checkFontAwesome() {
+                // Check if Font Awesome CSS is loaded
+                const testIcon = document.createElement('i');
+                testIcon.className = 'fas fa-check';
+                testIcon.style.position = 'absolute';
+                testIcon.style.left = '-9999px';
+                document.body.appendChild(testIcon);
+                
+                const computed = window.getComputedStyle(testIcon);
+                const fontFamily = computed.getPropertyValue('font-family');
+                
+                document.body.removeChild(testIcon);
+                
+                if (fontFamily.includes('Font Awesome')) {
+                    return { success: true, message: 'Font Awesome icons loaded successfully' };
+                } else {
+                    return { 
+                        success: false, 
+                        warning: true,
+                        message: 'Font Awesome icons may not be loading correctly' 
+                    };
+                }
+            }
+
+            clearAllData() {
+                if (confirm('Are you sure you want to clear all data? This will reset the system to default state.')) {
+                    try {
+                        if (storageUtils && typeof storageUtils.clearAllData === 'function') {
+                            storageUtils.clearAllData();
+                            alert('All data cleared successfully. The page will reload.');
+                            window.location.reload();
+                        } else {
+                            // Fallback manual clear
+                            localStorage.clear();
+                            alert('Data cleared. The page will reload.');
+                            window.location.reload();
+                        }
+                    } catch (error) {
+                        alert('Error clearing data: ' + error.message);
+                    }
+                }
+            }
+        }
+
+        // Initialize system checker when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new SystemChecker();
+        });
+    </script>
+</body>
+</html>

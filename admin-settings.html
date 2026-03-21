@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Settings - Rwanda SkillsConnect</title>  <!-- Tailwind CSS Production -->
+  <link rel="stylesheet" href="assets/css/tailwind.css" />
+  
+  <!-- Font Awesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <link rel="stylesheet" href="assets/css/admin-styles.css" />
+  
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="bg-gray-50">
+
+  <!-- Header -->
+  <header class="bg-white shadow-sm border-b">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+      <div class="flex items-center">
+        <a href="admin-dashboard.html" class="text-blue-600 hover:text-blue-800 mr-4">
+          <i class="fas fa-arrow-left text-lg"></i>
+        </a>
+        <h1 class="text-2xl font-bold text-gray-900">Admin Settings</h1>
+      </div>
+      <div class="flex items-center space-x-4">
+        <div class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
+          <span class="text-white font-semibold text-sm">A</span>
+        </div>
+        <span class="text-gray-700 font-medium">Admin</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-6 py-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- Settings Navigation -->
+      <div class="lg:col-span-1">
+        <div class="bg-white rounded-xl shadow-sm border p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">Settings Categories</h3>
+          <nav class="space-y-2">
+            <a href="#general" class="settings-nav-item flex items-center px-4 py-3 text-blue-600 bg-blue-50 rounded-lg active">
+              <i class="fas fa-cog mr-3"></i>
+              General Settings
+            </a>
+            <a href="#email" class="settings-nav-item flex items-center px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-lg">
+              <i class="fas fa-envelope mr-3"></i>
+              Email Configuration
+            </a>
+            <a href="#security" class="settings-nav-item flex items-center px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-lg">
+              <i class="fas fa-shield-alt mr-3"></i>
+              Security Settings
+            </a>
+            <a href="#payment" class="settings-nav-item flex items-center px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-lg">
+              <i class="fas fa-credit-card mr-3"></i>
+              Payment Settings
+            </a>
+            <a href="#notifications" class="settings-nav-item flex items-center px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-lg">
+              <i class="fas fa-bell mr-3"></i>
+              Notifications
+            </a>
+            <a href="#backup" class="settings-nav-item flex items-center px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-lg">
+              <i class="fas fa-database mr-3"></i>
+              Backup & Restore
+            </a>
+          </nav>
+        </div>
+      </div>
+
+      <!-- Settings Content -->
+      <div class="lg:col-span-2">
+        
+        <!-- General Settings -->
+        <div id="general-section" class="settings-section bg-white rounded-xl shadow-sm border p-6 mb-6">
+          <h3 class="text-xl font-semibold text-gray-900 mb-6">General Settings</h3>
+          
+          <form class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Platform Name</label>
+                <input type="text" value="Rwanda SkillsConnect" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Platform URL</label>
+                <input type="url" value="https://skillsconnect.rw" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Default Currency</label>
+                <select class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                  <option value="USD">USD ($)</option>
+                  <option value="RWF" selected>RWF (₣)</option>
+                  <option value="EUR">EUR (€)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Commission Rate (%)</label>
+                <input type="number" value="10" min="0" max="50" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              </div>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Platform Description</label>
+              <textarea rows="4" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Describe your platform...">Rwanda SkillsConnect is the premier platform for connecting skilled professionals with clients across Rwanda.</textarea>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+              <label class="flex items-center">
+                <input type="checkbox" checked class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                <span class="ml-2 text-sm text-gray-700">Allow user registration</span>
+              </label>
+              <label class="flex items-center">
+                <input type="checkbox" checked class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                <span class="ml-2 text-sm text-gray-700">Require email verification</span>
+              </label>
+            </div>
+            
+            <button type="submit" class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+              <i class="fas fa-save mr-2"></i>Save General Settings
+            </button>
+          </form>
+        </div>
+
+        <!-- Email Configuration -->
+        <div id="email-section" class="settings-section bg-white rounded-xl shadow-sm border p-6 mb-6 hidden">
+          <h3 class="text-xl font-semibold text-gray-900 mb-6">Email Configuration</h3>
+          
+          <form class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">SMTP Server</label>
+                <input type="text" placeholder="smtp.gmail.com" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">SMTP Port</label>
+                <input type="number" value="587" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+                <input type="text" placeholder="your-email@gmail.com" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                <input type="password" placeholder="••••••••" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              </div>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">From Email</label>
+              <input type="email" placeholder="noreply@skillsconnect.rw" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            </div>
+            
+            <div class="flex items-center space-x-4">
+              <label class="flex items-center">
+                <input type="checkbox" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                <span class="ml-2 text-sm text-gray-700">Use SSL/TLS</span>
+              </label>
+            </div>
+            
+            <div class="flex space-x-4">
+              <button type="button" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors">
+                <i class="fas fa-paper-plane mr-2"></i>Test Email
+              </button>
+              <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors">
+                <i class="fas fa-save mr-2"></i>Save Email Settings
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Security Settings -->
+        <div id="security-section" class="settings-section bg-white rounded-xl shadow-sm border p-6 mb-6 hidden">
+          <h3 class="text-xl font-semibold text-gray-900 mb-6">Security Settings</h3>
+          
+          <div class="space-y-6">
+            <div class="border-b border-gray-200 pb-6">
+              <h4 class="text-lg font-medium text-gray-900 mb-4">Password Policy</h4>
+              <div class="space-y-4">
+                <label class="flex items-center">
+                  <input type="checkbox" checked class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                  <span class="ml-2 text-sm text-gray-700">Minimum 8 characters</span>
+                </label>
+                <label class="flex items-center">
+                  <input type="checkbox" checked class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                  <span class="ml-2 text-sm text-gray-700">Require uppercase letters</span>
+                </label>
+                <label class="flex items-center">
+                  <input type="checkbox" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                  <span class="ml-2 text-sm text-gray-700">Require special characters</span>
+                </label>
+              </div>
+            </div>
+            
+            <div class="border-b border-gray-200 pb-6">
+              <h4 class="text-lg font-medium text-gray-900 mb-4">Two-Factor Authentication</h4>
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm text-gray-600">Enable 2FA for admin accounts</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" class="sr-only peer">
+                  <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+              </div>
+            </div>
+            
+            <div>
+              <h4 class="text-lg font-medium text-gray-900 mb-4">Session Management</h4>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Session Timeout (minutes)</label>
+                  <input type="number" value="30" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Max Login Attempts</label>
+                  <input type="number" value="5" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+              </div>
+            </div>
+            
+            <button type="submit" class="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 transition-colors">
+              <i class="fas fa-shield-alt mr-2"></i>Save Security Settings
+            </button>
+          </div>
+        </div>
+
+        <!-- Payment Settings -->
+        <div id="payment-section" class="settings-section bg-white rounded-xl shadow-sm border p-6 mb-6 hidden">
+          <h3 class="text-xl font-semibold text-gray-900 mb-6">Payment Settings</h3>
+          
+          <div class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Payment Gateway</label>
+                <select class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                  <option value="stripe">Stripe</option>
+                  <option value="paypal">PayPal</option>
+                  <option value="momo">MTN Mobile Money</option>
+                  <option value="airtel">Airtel Money</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Processing Fee (%)</label>
+                <input type="number" value="2.9" step="0.1" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Minimum Withdrawal</label>
+                <input type="number" value="50" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Payout Schedule</label>
+                <select class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                  <option value="daily">Daily</option>
+                  <option value="weekly" selected>Weekly</option>
+                  <option value="monthly">Monthly</option>
+                </select>
+              </div>
+            </div>
+            
+            <button type="submit" class="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition-colors">
+              <i class="fas fa-credit-card mr-2"></i>Save Payment Settings
+            </button>
+          </div>
+        </div>
+
+        <!-- Notifications -->
+        <div id="notifications-section" class="settings-section bg-white rounded-xl shadow-sm border p-6 mb-6 hidden">
+          <h3 class="text-xl font-semibold text-gray-900 mb-6">Notification Settings</h3>
+          
+          <div class="space-y-6">
+            <div class="space-y-4">
+              <h4 class="text-lg font-medium text-gray-900">Email Notifications</h4>
+              <div class="space-y-3">
+                <label class="flex items-center justify-between">
+                  <span class="text-sm text-gray-700">New user registrations</span>
+                  <input type="checkbox" checked class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                </label>
+                <label class="flex items-center justify-between">
+                  <span class="text-sm text-gray-700">New job postings</span>
+                  <input type="checkbox" checked class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                </label>
+                <label class="flex items-center justify-between">
+                  <span class="text-sm text-gray-700">Payment notifications</span>
+                  <input type="checkbox" checked class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                </label>
+                <label class="flex items-center justify-between">
+                  <span class="text-sm text-gray-700">System alerts</span>
+                  <input type="checkbox" checked class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                </label>
+              </div>
+            </div>
+            
+            <div class="space-y-4">
+              <h4 class="text-lg font-medium text-gray-900">SMS Notifications</h4>
+              <div class="space-y-3">
+                <label class="flex items-center justify-between">
+                  <span class="text-sm text-gray-700">Critical system alerts</span>
+                  <input type="checkbox" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                </label>
+                <label class="flex items-center justify-between">
+                  <span class="text-sm text-gray-700">Payment confirmations</span>
+                  <input type="checkbox" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                </label>
+              </div>
+            </div>
+            
+            <button type="submit" class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+              <i class="fas fa-bell mr-2"></i>Save Notification Settings
+            </button>
+          </div>
+        </div>
+
+        <!-- Backup & Restore -->
+        <div id="backup-section" class="settings-section bg-white rounded-xl shadow-sm border p-6 mb-6 hidden">
+          <h3 class="text-xl font-semibold text-gray-900 mb-6">Backup & Restore</h3>
+          
+          <div class="space-y-6">
+            <div class="border-b border-gray-200 pb-6">
+              <h4 class="text-lg font-medium text-gray-900 mb-4">Automatic Backups</h4>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Backup Frequency</label>
+                  <select class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="daily" selected>Daily</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Retention Period (days)</label>
+                  <input type="number" value="30" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+              </div>
+            </div>
+            
+            <div class="border-b border-gray-200 pb-6">
+              <h4 class="text-lg font-medium text-gray-900 mb-4">Manual Backup</h4>
+              <p class="text-sm text-gray-600 mb-4">Create a backup of your current data</p>
+              <button type="button" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                <i class="fas fa-download mr-2"></i>Create Backup
+              </button>
+            </div>
+            
+            <div>
+              <h4 class="text-lg font-medium text-gray-900 mb-4">Restore from Backup</h4>
+              <p class="text-sm text-gray-600 mb-4">Upload and restore from a backup file</p>
+              <div class="flex items-center space-x-4">
+                <input type="file" accept=".sql,.json" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                <button type="button" class="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors">
+                  <i class="fas fa-upload mr-2"></i>Restore
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- JS -->
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/admin-settings.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const navItems = document.querySelectorAll('.settings-nav-item');
+      const sections = document.querySelectorAll('.settings-section');
+      
+      navItems.forEach(item => {
+        item.addEventListener('click', (e) => {
+          e.preventDefault();
+          
+          const targetId = item.getAttribute('href').substring(1) + '-section';
+          
+          // Update active nav item
+          navItems.forEach(nav => {
+            nav.classList.remove('text-blue-600', 'bg-blue-50', 'active');
+            nav.classList.add('text-gray-600');
+          });
+          item.classList.remove('text-gray-600');
+          item.classList.add('text-blue-600', 'bg-blue-50', 'active');
+          
+          // Show/hide sections
+          sections.forEach(section => {
+            section.classList.add('hidden');
+          });
+          document.getElementById(targetId).classList.remove('hidden');
+        });
+      });
+      
+      // Form submissions
+      document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', (e) => {
+          e.preventDefault();
+          showNotification('Settings saved successfully!', 'success');
+        });
+      });
+      
+      // Test email button
+      document.querySelector('button[type="button"]').addEventListener('click', () => {
+        showNotification('Test email sent successfully!', 'success');
+      });
+    });
+  </script>
+</body>
+</html>

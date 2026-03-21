@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rwanda SkillsConnect | Bridge Talent with Opportunity</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root{--primary:#0056B3;--primary-light:#E8F2FF;--secondary:#00C896;--dark:#1A1F36;--gray:#64748B;--border:#E2E8F0;--radius:12px;}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Open Sans',sans-serif;color:var(--dark);background:#fff;overflow-x:hidden;}
+    h1,h2,h3,h4,h5,h6{font-family:'Poppins',sans-serif;font-weight:600;}
+    ::-webkit-scrollbar{width:8px;} ::-webkit-scrollbar-thumb{background:var(--primary);border-radius:4px;}
+    .topbar{background:linear-gradient(90deg,var(--primary) 0%,#003D82 100%);color:#fff;font-size:.82rem;padding:.4rem 0;}
+    .topbar a{color:rgba(255,255,255,.85);text-decoration:none;transition:color .2s;}
+    .topbar a:hover{color:#fff;}
+    .navbar{padding:.7rem 0;background:rgba(255,255,255,.98);backdrop-filter:blur(12px);box-shadow:0 2px 20px rgba(0,0,0,.06);position:sticky;top:0;left:0;right:0;z-index:1030;transition:all .3s ease;}
+    .navbar .container{display:flex;align-items:center;}
+    .navbar.scrolled{padding:.45rem 0;box-shadow:0 5px 24px rgba(0,0,0,.11);}
+    .navbar-brand{font-family:'Poppins',sans-serif;font-weight:700;font-size:1.5rem;color:var(--primary)!important;display:flex;align-items:center;gap:10px;}
+    .navbar-brand .logo-icon{color:var(--secondary);font-size:1.7rem;}
+    .navbar-toggler{border:none;padding:.5rem;color:var(--primary);}
+    .navbar-toggler:focus{box-shadow:none;}
+    .nav-link{font-weight:500;color:var(--dark)!important;padding:.45rem .9rem!important;border-radius:8px;transition:all .25s ease;font-size:.93rem;}
+    .nav-link:hover,.nav-link.active{color:var(--primary)!important;background:var(--primary-light);}
+    .nav-link .nav-icon{font-size:.75rem;margin-right:5px;opacity:.7;}
+    .dropdown-menu{border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 16px 40px rgba(0,0,0,.1);padding:.5rem;min-width:200px;}
+    .dropdown-item{border-radius:8px;padding:.5rem .9rem;font-size:.88rem;color:var(--dark);transition:all .2s;}
+    .dropdown-item:hover{background:var(--primary-light);color:var(--primary);}
+    .dropdown-item i{width:18px;margin-right:6px;color:var(--primary);opacity:.8;}
+    .nav-badge{background:var(--secondary);color:#fff;font-size:.65rem;font-weight:700;padding:.15rem .45rem;border-radius:20px;margin-left:5px;vertical-align:middle;}
+    .navbar-actions{display:flex;align-items:center;gap:.6rem;}
+    .btn-nav-login{border:1.5px solid var(--primary);color:var(--primary);background:transparent;padding:.45rem 1.2rem;border-radius:8px;font-weight:600;font-size:.88rem;transition:all .25s;}
+    .btn-nav-login:hover{background:var(--primary-light);}
+    .btn-nav-register{background:var(--primary);color:#fff;padding:.45rem 1.2rem;border-radius:8px;font-weight:600;font-size:.88rem;border:none;transition:all .25s;box-shadow:0 3px 10px rgba(0,86,179,.2);}
+    .btn-nav-register:hover{background:#004494;box-shadow:0 5px 14px rgba(0,86,179,.3);transform:translateY(-1px);}
+    @media(max-width:991.98px){.navbar-collapse{background:#fff;border-radius:var(--radius);box-shadow:0 20px 40px rgba(0,0,0,.08);padding:1rem;margin-top:.75rem;border:1px solid var(--border);}.nav-item{width:100%;margin-bottom:.2rem;}.nav-link{text-align:left;width:100%;}.navbar-actions{flex-direction:column;width:100%;gap:.5rem;margin-top:.5rem;}.navbar-actions a{width:100%;text-align:center;}.topbar .d-none{display:none!important;}}
+    .hero{padding:80px 0 80px;background:linear-gradient(135deg,#F8FAFC 0%,#E8F2FF 100%);position:relative;overflow:hidden;}
+    .hero h1{font-size:3rem;font-weight:700;line-height:1.2;margin-bottom:1.5rem;background:linear-gradient(90deg,var(--primary) 0%,var(--secondary) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+    .hero p{font-size:1.1rem;color:var(--gray);max-width:600px;margin-bottom:2rem;}
+    .cta-buttons{display:flex;gap:1rem;flex-wrap:wrap;}
+    .btn-primary{background:var(--primary);border:none;padding:12px 32px;border-radius:8px;font-weight:600;transition:all .3s ease;box-shadow:0 4px 12px rgba(0,86,179,.2);}
+    .btn-primary:hover{background:#004494;transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,86,179,.3);}
+    .btn-secondary-outline{background:#fff;color:var(--primary);border:2px solid var(--primary);padding:12px 32px;border-radius:8px;font-weight:600;transition:all .3s ease;}
+    .btn-secondary-outline:hover{background:var(--primary-light);transform:translateY(-2px);}
+    .stats-container{display:flex;gap:2rem;margin-top:3rem;flex-wrap:wrap;}
+    .stat-item{display:flex;flex-direction:column;min-width:140px;}
+    .stat-number{font-size:2.2rem;font-weight:700;color:var(--primary);line-height:1;}
+    .section-title{text-align:center;margin-bottom:3rem;}
+    .section-title h2{font-size:2.3rem;font-weight:700;color:var(--dark);margin-bottom:1rem;}
+    .section-title p{color:var(--gray);max-width:600px;margin:0 auto;}
+    .job-card{background:#fff;border-radius:var(--radius);padding:1.5rem;box-shadow:0 8px 24px rgba(0,0,0,.06);transition:all .3s ease;border:1px solid var(--border);display:flex;flex-direction:column;gap:.75rem;}
+    .job-card:hover{transform:translateY(-6px);box-shadow:0 16px 36px rgba(0,0,0,.1);border-color:var(--primary);}
+    .job-badge{display:inline-block;padding:.25rem .75rem;border-radius:20px;font-size:.75rem;font-weight:600;}
+    .badge-type{background:#E8F2FF;color:var(--primary);}
+    .badge-salary{background:#E6FBF4;color:#00A876;}
+    .skill-pill{display:flex;align-items:center;gap:.75rem;background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem;transition:all .3s ease;cursor:pointer;}
+    .skill-pill:hover{border-color:var(--primary);background:var(--primary-light);transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,86,179,.1);}
+    .skill-pill-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;}
+    .feature-card{background:#fff;border-radius:var(--radius);padding:2rem;box-shadow:0 10px 25px rgba(0,0,0,.05);height:100%;transition:all .3s ease;border-top:4px solid var(--primary);}
+    .feature-card:hover{transform:translateY(-8px);box-shadow:0 20px 40px rgba(0,0,0,.08);}
+    .feature-icon{width:70px;height:70px;border-radius:50%;background:var(--primary-light);display:flex;align-items:center;justify-content:center;margin-bottom:1.5rem;}
+    .feature-icon i{font-size:28px;color:var(--primary);}
+    .steps-container{position:relative;padding:4rem 0;}
+    .steps-container::before{content:'';position:absolute;top:50%;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--primary) 0%,var(--secondary) 100%);z-index:0;}
+    .step-card{background:#fff;padding:2rem;border-radius:var(--radius);box-shadow:0 10px 25px rgba(0,0,0,.05);text-align:center;position:relative;z-index:1;transition:all .3s ease;height:100%;}
+    .step-card:hover{transform:translateY(-5px);box-shadow:0 20px 40px rgba(0,0,0,.08);}
+    .step-number{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,var(--primary) 0%,var(--secondary) 100%);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;margin:0 auto 1.5rem;}
+    .testimonial-card{background:#fff;padding:2rem;border-radius:var(--radius);box-shadow:0 10px 25px rgba(0,0,0,.05);position:relative;height:100%;}
+    .testimonial-card::before{content:'"';position:absolute;top:20px;left:20px;font-size:4rem;color:var(--primary-light);font-family:serif;line-height:1;}
+    .client-avatar{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,var(--primary) 0%,var(--secondary) 100%);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:1.5rem;}
+    .cta-section{background:linear-gradient(135deg,var(--primary) 0%,#003D82 100%);color:#fff;padding:5rem 0;border-radius:var(--radius);position:relative;overflow:hidden;margin:0 1rem;}
+    footer{background-color:var(--dark);color:#fff;padding:4rem 0 2rem;}
+    .footer-links h5{color:#fff;margin-bottom:1.5rem;font-weight:600;}
+    .footer-links a{color:#B0B7C3;text-decoration:none;display:block;margin-bottom:.8rem;transition:all .3s ease;}
+    .footer-links a:hover{color:#fff;padding-left:5px;}
+    .social-links{display:flex;gap:1rem;margin-top:1.5rem;}
+    .social-icon{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;color:#fff;transition:all .3s ease;}
+    .social-icon:hover{background:var(--primary);transform:translateY(-3px);}
+    .copyright{border-top:1px solid rgba(255,255,255,.1);padding-top:2rem;margin-top:3rem;text-align:center;color:#B0B7C3;}
+    @media(max-width:991.98px){.hero{padding:60px 0 50px;}.hero h1{font-size:2.2rem;}.steps-container::before{display:none;}.stats-container{justify-content:center;gap:1.5rem;}}
+    @media(max-width:767.98px){.hero{padding:50px 0 40px;text-align:center;}.hero h1{font-size:1.8rem;}.cta-buttons{justify-content:center;}.stats-container{flex-direction:column;align-items:center;text-align:center;}}
+    @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+    .float-animation{animation:float 3s ease-in-out infinite;}
+  </style>
+</head>
+<body>
+  <!-- Top announcement bar -->
+  <div class="topbar">
+    <div class="container d-flex justify-content-between align-items-center">
+      <span><i class="fas fa-bolt me-1"></i> 120+ new jobs posted this week &mdash; <a href="#jobs">Browse now</a></span>
+      <span class="d-none d-md-flex gap-3">
+        <a href="#contact"><i class="fas fa-phone me-1"></i>+250 788 123 456</a>
+        <a href="#contact"><i class="fas fa-envelope me-1"></i>connect@rwandaskills.rw</a>
+      </span>
+    </div>
+  </div>
+
+  <nav class="navbar navbar-expand-lg">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">
+        <i class="fas fa-hands-helping logo-icon"></i>
+        <span>Rwanda SkillsConnect</span>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+        <i class="fas fa-bars"></i>
+      </button>
+      <div class="collapse navbar-collapse align-items-center" id="navbarMain">
+        <ul class="navbar-nav mx-auto mb-0 align-items-center">
+          <li class="nav-item"><a class="nav-link active" href="#home"><i class="fas fa-home nav-icon"></i>Home</a></li>
+
+          <!-- Find Work dropdown -->
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+              <i class="fas fa-briefcase nav-icon"></i>Find Work <span class="nav-badge">New</span>
+            </a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="#jobs"><i class="fas fa-list-ul"></i>Browse Jobs</a></li>
+              <li><a class="dropdown-item" href="#skills"><i class="fas fa-tools"></i>Skills Categories</a></li>
+              <li><a class="dropdown-item" href="find-jobs.html"><i class="fas fa-search"></i>Advanced Search</a></li>
+            </ul>
+          </li>
+
+          <!-- Hire Talent dropdown -->
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+              <i class="fas fa-users nav-icon"></i>Hire Talent
+            </a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="find-workers.html"><i class="fas fa-user-tie"></i>Find Workers</a></li>
+              <li><a class="dropdown-item" href="post-job.html"><i class="fas fa-plus-circle"></i>Post a Job</a></li>
+            </ul>
+          </li>
+
+          <li class="nav-item"><a class="nav-link" href="#features"><i class="fas fa-star nav-icon"></i>Features</a></li>
+          <li class="nav-item"><a class="nav-link" href="#how-it-works"><i class="fas fa-info-circle nav-icon"></i>How It Works</a></li>
+          <li class="nav-item"><a class="nav-link" href="#contact"><i class="fas fa-envelope nav-icon"></i>Contact</a></li>
+        </ul>
+        <div class="navbar-actions align-items-center">
+          <a href="login.html" class="btn-nav-login">Login</a>
+          <a href="register.html" class="btn-nav-register"><i class="fas fa-rocket me-1"></i>Get Started</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <section id="home" class="hero">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-lg-6">
+          <h1>Bridge Talent with Opportunity in Rwanda</h1>
+          <p>Connect skilled professionals with businesses across Rwanda. Find the perfect match based on skills, location, and expertise. Streamline your hiring or job search today.</p>
+          <div class="cta-buttons">
+            <a href="register.html" class="btn btn-primary btn-lg">Find Talent <i class="fas fa-arrow-right ms-2"></i></a>
+            <a href="#how-it-works" class="btn btn-secondary-outline btn-lg">How It Works</a>
+          </div>
+          <div class="stats-container">
+            <div class="stat-item"><span class="stat-number">1,500+</span><span>Professionals</span></div>
+            <div class="stat-item"><span class="stat-number">400+</span><span>Businesses</span></div>
+            <div class="stat-item"><span class="stat-number">95%</span><span>Success Rate</span></div>
+          </div>
+        </div>
+        <div class="col-lg-6 text-center mt-5 mt-lg-0">
+          <div class="float-animation">
+            <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                 alt="Team Collaboration" class="img-fluid rounded-3 shadow-lg" style="max-width:90%;border:8px solid white;">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Jobs -->
+  <section id="jobs" class="py-5">
+    <div class="container py-5">
+      <div class="section-title">
+        <h2>Featured Jobs</h2>
+        <p>Fresh opportunities posted by top businesses across Rwanda — apply today</p>
+      </div>
+      <div class="row g-4">
+        <div class="col-lg-4 col-md-6">
+          <div class="job-card">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <h5 class="mb-1">Senior Web Developer</h5>
+                <p class="mb-0" style="color:var(--gray);font-size:.9rem;"><i class="fas fa-building me-1"></i> TechRwanda Ltd</p>
+              </div>
+              <div style="width:46px;height:46px;border-radius:10px;background:var(--primary-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <i class="fas fa-laptop-code" style="color:var(--primary);"></i>
+              </div>
+            </div>
+            <div class="d-flex align-items-center gap-2" style="color:var(--gray);font-size:.85rem;">
+              <i class="fas fa-map-marker-alt"></i> Kigali, Rwanda
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+              <span class="job-badge badge-type">Full-time</span>
+              <span class="job-badge badge-salary">RWF 800K – 1.2M/mo</span>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+              <span style="background:#F1F5F9;color:var(--gray);font-size:.75rem;padding:.2rem .6rem;border-radius:6px;">React</span>
+              <span style="background:#F1F5F9;color:var(--gray);font-size:.75rem;padding:.2rem .6rem;border-radius:6px;">Node.js</span>
+              <span style="background:#F1F5F9;color:var(--gray);font-size:.75rem;padding:.2rem .6rem;border-radius:6px;">PostgreSQL</span>
+            </div>
+            <a href="register.html" class="btn btn-primary btn-sm mt-auto">Apply Now <i class="fas fa-arrow-right ms-1"></i></a>
+          </div>
+        </div>
+        <div class="col-lg-4 col-md-6">
+          <div class="job-card">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <h5 class="mb-1">Civil Engineer</h5>
+                <p class="mb-0" style="color:var(--gray);font-size:.9rem;"><i class="fas fa-building me-1"></i> BuildRight Construction</p>
+              </div>
+              <div style="width:46px;height:46px;border-radius:10px;background:#FFF3E0;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <i class="fas fa-hard-hat" style="color:#F57C00;"></i>
+              </div>
+            </div>
+            <div class="d-flex align-items-center gap-2" style="color:var(--gray);font-size:.85rem;">
+              <i class="fas fa-map-marker-alt"></i> Musanze, Rwanda
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+              <span class="job-badge badge-type">Contract</span>
+              <span class="job-badge badge-salary">RWF 600K – 900K/mo</span>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+              <span style="background:#F1F5F9;color:var(--gray);font-size:.75rem;padding:.2rem .6rem;border-radius:6px;">AutoCAD</span>
+              <span style="background:#F1F5F9;color:var(--gray);font-size:.75rem;padding:.2rem .6rem;border-radius:6px;">Structural Design</span>
+            </div>
+            <a href="register.html" class="btn btn-primary btn-sm mt-auto">Apply Now <i class="fas fa-arrow-right ms-1"></i></a>
+          </div>
+        </div>
+        <div class="col-lg-4 col-md-6">
+          <div class="job-card">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <h5 class="mb-1">Medical Lab Technician</h5>
+                <p class="mb-0" style="color:var(--gray);font-size:.9rem;"><i class="fas fa-building me-1"></i> King Faisal Hospital</p>
+              </div>
+              <div style="width:46px;height:46px;border-radius:10px;background:#E8F5E9;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <i class="fas fa-microscope" style="color:#2E7D32;"></i>
+              </div>
+            </div>
+            <div class="d-flex align-items-center gap-2" style="color:var(--gray);font-size:.85rem;">
+              <i class="fas fa-map-marker-alt"></i> Kigali, Rwanda
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+              <span class="job-badge badge-type">Full-time</span>
+              <span class="job-badge badge-salary">RWF 500K – 750K/mo</span>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+              <span style="background:#F1F5F9;color:var(--gray);font-size:.75rem;padding:.2rem .6rem;border-radius:6px;">Lab Analysis</span>
+              <span style="background:#F1F5F9;color:var(--gray);font-size:.75rem;padding:.2rem .6rem;border-radius:6px;">PCR Testing</span>
+            </div>
+            <a href="register.html" class="btn btn-primary btn-sm mt-auto">Apply Now <i class="fas fa-arrow-right ms-1"></i></a>
+          </div>
+        </div>
+      </div>
+      <div class="text-center mt-5">
+        <a href="register.html" class="btn btn-outline-primary btn-lg px-5">View All Jobs <i class="fas fa-briefcase ms-2"></i></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Skills We Offer -->
+  <section id="skills" class="py-5" style="background:#F8FAFC;">
+    <div class="container py-5">
+      <div class="section-title">
+        <h2>Skills We Offer</h2>
+        <p>Explore professionals across Rwanda's most in-demand skill categories</p>
+      </div>
+      <div class="row g-3">
+        <div class="col-lg-3 col-md-4 col-6">
+          <div class="skill-pill">
+            <div class="skill-pill-icon" style="background:#E8F2FF;"><i class="fas fa-code" style="color:var(--primary);"></i></div>
+            <div><div style="font-weight:600;font-size:.95rem;">Technology</div><div style="color:var(--gray);font-size:.8rem;">320+ Professionals</div></div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-4 col-6">
+          <div class="skill-pill">
+            <div class="skill-pill-icon" style="background:#FFF3E0;"><i class="fas fa-hard-hat" style="color:#F57C00;"></i></div>
+            <div><div style="font-weight:600;font-size:.95rem;">Construction</div><div style="color:var(--gray);font-size:.8rem;">280+ Professionals</div></div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-4 col-6">
+          <div class="skill-pill">
+            <div class="skill-pill-icon" style="background:#E8F5E9;"><i class="fas fa-heartbeat" style="color:#2E7D32;"></i></div>
+            <div><div style="font-weight:600;font-size:.95rem;">Healthcare</div><div style="color:var(--gray);font-size:.8rem;">190+ Professionals</div></div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-4 col-6">
+          <div class="skill-pill">
+            <div class="skill-pill-icon" style="background:#F3E5F5;"><i class="fas fa-chalkboard-teacher" style="color:#7B1FA2;"></i></div>
+            <div><div style="font-weight:600;font-size:.95rem;">Education</div><div style="color:var(--gray);font-size:.8rem;">150+ Professionals</div></div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-4 col-6">
+          <div class="skill-pill">
+            <div class="skill-pill-icon" style="background:#E0F7FA;"><i class="fas fa-paint-brush" style="color:#00838F;"></i></div>
+            <div><div style="font-weight:600;font-size:.95rem;">Design & Creative</div><div style="color:var(--gray);font-size:.8rem;">210+ Professionals</div></div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-4 col-6">
+          <div class="skill-pill">
+            <div class="skill-pill-icon" style="background:#FFF8E1;"><i class="fas fa-tractor" style="color:#F9A825;"></i></div>
+            <div><div style="font-weight:600;font-size:.95rem;">Agriculture</div><div style="color:var(--gray);font-size:.8rem;">175+ Professionals</div></div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-4 col-6">
+          <div class="skill-pill">
+            <div class="skill-pill-icon" style="background:#FCE4EC;"><i class="fas fa-chart-line" style="color:#C62828;"></i></div>
+            <div><div style="font-weight:600;font-size:.95rem;">Finance & Business</div><div style="color:var(--gray);font-size:.8rem;">130+ Professionals</div></div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-4 col-6">
+          <div class="skill-pill">
+            <div class="skill-pill-icon" style="background:#E8EAF6;"><i class="fas fa-bolt" style="color:#3949AB;"></i></div>
+            <div><div style="font-weight:600;font-size:.95rem;">Electrical</div><div style="color:var(--gray);font-size:.8rem;">160+ Professionals</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="text-center mt-5">
+        <a href="register.html" class="btn btn-primary btn-lg px-5">Browse All Skills <i class="fas fa-search ms-2"></i></a>
+      </div>
+    </div>
+  </section>
+
+  <section id="features" class="py-5" style="background-color:#F8FAFC;">
+    <div class="container py-5">
+      <div class="section-title">
+        <h2>Powerful Features</h2>
+        <p>Designed to connect the right talent with the right opportunities across Rwanda</p>
+      </div>
+      <div class="row g-3">
+        <div class="col-lg-4 col-md-6"><div class="feature-card" style="padding:1.25rem;"><div class="feature-icon" style="width:50px;height:50px;margin-bottom:1rem;"><i class="fas fa-search-location" style="font-size:20px;"></i></div><h6 class="mb-1">Location-Based Matching</h6><p style="font-size:.83rem;margin:0;">Find professionals or opportunities in your city or province. From Kigali to Rubavu, connect locally.</p></div></div>
+        <div class="col-lg-4 col-md-6"><div class="feature-card" style="padding:1.25rem;"><div class="feature-icon" style="width:50px;height:50px;margin-bottom:1rem;"><i class="fas fa-award" style="font-size:20px;"></i></div><h6 class="mb-1">Verified Skills</h6><p style="font-size:.83rem;margin:0;">Every professional's skills are verified through our assessment system. Trust the expertise.</p></div></div>
+        <div class="col-lg-4 col-md-6"><div class="feature-card" style="padding:1.25rem;"><div class="feature-icon" style="width:50px;height:50px;margin-bottom:1rem;"><i class="fas fa-comments-dollar" style="font-size:20px;"></i></div><h6 class="mb-1">Transparent Pricing</h6><p style="font-size:.83rem;margin:0;">Clear pricing models for both professionals and employers. No hidden fees or surprises.</p></div></div>
+        <div class="col-lg-4 col-md-6"><div class="feature-card" style="padding:1.25rem;"><div class="feature-icon" style="width:50px;height:50px;margin-bottom:1rem;"><i class="fas fa-mobile-alt" style="font-size:20px;"></i></div><h6 class="mb-1">Mobile-First Design</h6><p style="font-size:.83rem;margin:0;">Access our platform anywhere, anytime. Fully responsive design for all devices.</p></div></div>
+        <div class="col-lg-4 col-md-6"><div class="feature-card" style="padding:1.25rem;"><div class="feature-icon" style="width:50px;height:50px;margin-bottom:1rem;"><i class="fas fa-shield-alt" style="font-size:20px;"></i></div><h6 class="mb-1">Secure Platform</h6><p style="font-size:.83rem;margin:0;">Your data and transactions are protected with enterprise-grade security measures.</p></div></div>
+        <div class="col-lg-4 col-md-6"><div class="feature-card" style="padding:1.25rem;"><div class="feature-icon" style="width:50px;height:50px;margin-bottom:1rem;"><i class="fas fa-headset" style="font-size:20px;"></i></div><h6 class="mb-1">24/7 Support</h6><p style="font-size:.83rem;margin:0;">Our dedicated support team is always ready to help you with any questions or issues.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="how-it-works" class="py-5">
+    <div class="container py-5">
+      <div class="section-title">
+        <h2>Simple &amp; Effective Process</h2>
+        <p>Get started in just a few easy steps</p>
+      </div>
+      <div class="steps-container">
+        <div class="row g-4">
+          <div class="col-lg-3 col-md-6"><div class="step-card"><div class="step-number">1</div><h4>Create Profile</h4><p>Sign up as a professional or employer and complete your profile with skills, experience, and preferences.</p></div></div>
+          <div class="col-lg-3 col-md-6"><div class="step-card"><div class="step-number">2</div><h4>Search &amp; Match</h4><p>Use our intelligent filters to find perfect matches based on skills, location, and requirements.</p></div></div>
+          <div class="col-lg-3 col-md-6"><div class="step-card"><div class="step-number">3</div><h4>Connect &amp; Communicate</h4><p>Send messages, schedule interviews, and discuss project details through our secure platform.</p></div></div>
+          <div class="col-lg-3 col-md-6"><div class="step-card"><div class="step-number">4</div><h4>Work &amp; Review</h4><p>Complete your project and leave reviews to build your reputation in the Rwandan market.</p></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="testimonials" class="py-5" style="background-color:#F8FAFC;">
+    <div class="container py-5">
+      <div class="section-title">
+        <h2>Trusted by Professionals &amp; Businesses</h2>
+        <p>See what our users are saying about Rwanda SkillsConnect</p>
+      </div>
+      <div class="row g-3">
+        <div class="col-lg-4"><div class="testimonial-card" style="padding:1.25rem;"><div class="d-flex align-items-center mb-2"><div class="client-avatar me-2" style="width:44px;height:44px;font-size:1.1rem;">JP</div><div><h6 class="mb-0">Jean Paul Uwimana</h6><small style="font-size:.75rem;">Construction Business Owner, Kigali</small></div></div><p style="font-size:.83rem;margin:0;">"Finding skilled masons and carpenters used to take weeks. Now with Rwanda SkillsConnect, I find qualified professionals in my area within days. This platform has transformed my business."</p></div></div>
+        <div class="col-lg-4"><div class="testimonial-card" style="padding:1.25rem;"><div class="d-flex align-items-center mb-2"><div class="client-avatar me-2" style="width:44px;height:44px;font-size:1.1rem;background:linear-gradient(135deg,#FF6B6B 0%,#FF8E53 100%);">AM</div><div><h6 class="mb-0">Aline Mukamana</h6><small style="font-size:.75rem;">Web Developer, Huye</small></div></div><p style="font-size:.83rem;margin:0;">"As a developer in Huye, I struggled to find clients. Rwanda SkillsConnect connected me with businesses across Rwanda. I've tripled my income in just 6 months!"</p></div></div>
+        <div class="col-lg-4"><div class="testimonial-card" style="padding:1.25rem;"><div class="d-flex align-items-center mb-2"><div class="client-avatar me-2" style="width:44px;height:44px;font-size:1.1rem;background:linear-gradient(135deg,#00C896 0%,#00A896 100%);">KN</div><div><h6 class="mb-0">Kigali National Hospital</h6><small style="font-size:.75rem;">Healthcare Institution</small></div></div><p style="font-size:.83rem;margin:0;">"We urgently needed specialized technicians for medical equipment maintenance. Rwanda SkillsConnect helped us find certified professionals within 48 hours. Incredible service!"</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="py-5">
+    <div class="container">
+      <div class="cta-section">
+        <div class="row justify-content-center text-center">
+          <div class="col-lg-8 position-relative">
+            <h2 class="mb-4">Ready to Transform Your Workforce?</h2>
+            <p class="mb-5" style="opacity:.9;">Join thousands of professionals and businesses who are already building Rwanda's future together.</p>
+            <div class="d-flex flex-wrap justify-content-center gap-3">
+              <a href="register.html" class="btn btn-light btn-lg px-4 py-3"><i class="fas fa-user-tie me-2"></i> Hire Talent</a>
+              <a href="register.html" class="btn btn-outline-light btn-lg px-4 py-3"><i class="fas fa-briefcase me-2"></i> Find Work</a>
+            </div>
+            <p class="mt-4" style="opacity:.8;">Already have an account? <a href="login.html" class="text-white fw-bold">Login here</a></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer id="contact">
+    <div class="container">
+      <div class="row g-4">
+        <div class="col-lg-4">
+          <div class="footer-links">
+            <h5><i class="fas fa-hands-helping me-2"></i> Rwanda SkillsConnect</h5>
+            <p style="color:#B0B7C3;">Bridging the gap between skilled professionals and opportunities across Rwanda's provinces.</p>
+            <div class="social-links">
+              <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+              <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+              <a href="#" class="social-icon"><i class="fab fa-linkedin-in"></i></a>
+              <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-2 col-md-4"><div class="footer-links"><h5>Platform</h5><a href="#features">Features</a><a href="#how-it-works">How It Works</a><a href="#testimonials">Testimonials</a><a href="#">Pricing</a></div></div>
+        <div class="col-lg-2 col-md-4"><div class="footer-links"><h5>Company</h5><a href="#">About Us</a><a href="#">Careers</a><a href="#">Blog</a><a href="#">Press</a></div></div>
+        <div class="col-lg-4 col-md-4"><div class="footer-links"><h5>Contact Us</h5><p><i class="fas fa-map-marker-alt me-2"></i> KG 7 Ave, Kigali, Rwanda</p><p><i class="fas fa-phone me-2"></i> +250 788 123 456</p><p><i class="fas fa-envelope me-2"></i> connect@rwandaskills.rw</p></div></div>
+      </div>
+      <div class="copyright">
+        <p>&copy; 2026 Rwanda SkillsConnect. All rights reserved. | <a href="#" style="color:#B0B7C3;">Privacy Policy</a> | <a href="#" style="color:#B0B7C3;">Terms of Service</a></p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    window.addEventListener('scroll', () => {
+      document.querySelector('.navbar').classList.toggle('scrolled', window.scrollY > 50);
+    });
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          const offset = document.querySelector('.navbar').offsetHeight + 20;
+          window.scrollTo({ top: target.offsetTop - offset, behavior: 'smooth' });
+          document.querySelector('.navbar-collapse')?.classList.remove('show');
+        }
+      });
+    });
+    document.querySelectorAll('.feature-card,.step-card,.testimonial-card').forEach(el => {
+      el.style.opacity = '0'; el.style.transform = 'translateY(20px)'; el.style.transition = 'opacity .5s ease,transform .5s ease';
+    });
+    new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.style.opacity='1'; e.target.style.transform='translateY(0)'; }});
+    }, { threshold: .1 }).observe && document.querySelectorAll('.feature-card,.step-card,.testimonial-card').forEach(el => {
+      new IntersectionObserver((entries) => {
+        entries.forEach(e => { if (e.isIntersecting) { e.target.style.opacity='1'; e.target.style.transform='translateY(0)'; }});
+      }, { threshold: .1 }).observe(el);
+    });
+  </script>
+</body>
+</html>

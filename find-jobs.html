@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Find Jobs — Rwanda SkillsConnect</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #f5f7fa; }
+    .sidebar { width: 260px; background: #fff; border-right: 1px solid #E2E8F0; position: fixed; top: 0; left: 0; height: 100vh; z-index: 1000; display: flex; flex-direction: column; }
+    .main-content { margin-left: 260px; min-height: 100vh; }
+    .menu-item { display: flex; align-items: center; gap: 12px; padding: 11px 20px; color: #64748B; text-decoration: none; font-size: 14px; font-weight: 500; transition: all .2s; }
+    .menu-item:hover, .menu-item.active { background: #E8F2FF; color: #0056B3; }
+    .menu-item.active { border-left: 3px solid #0056B3; }
+    .job-card { background: #fff; border-radius: 10px; border: 1px solid #E2E8F0; padding: 20px; transition: box-shadow .2s, transform .2s; cursor: pointer; }
+    .job-card:hover { box-shadow: 0 6px 24px rgba(0,86,179,.12); transform: translateY(-2px); }
+    .badge-type { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; background: #E8F2FF; color: #0056B3; }
+    .badge-exp { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; background: #f0fdf4; color: #166534; }
+    .skill-tag { display: inline-block; background: #f1f5f9; color: #475569; padding: 2px 8px; border-radius: 12px; font-size: 11px; margin: 2px; }
+    #toast { position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 280px; }
+    @media(max-width:992px) { .sidebar { transform: translateX(-100%); } .main-content { margin-left: 0; } }
+  </style>
+</head>
+<body>
+
+<div id="toast" class="toast align-items-center border-0" role="alert">
+  <div class="d-flex">
+    <div class="toast-body fw-medium" id="toastMsg"></div>
+    <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>
+  </div>
+</div>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="p-4 border-bottom">
+    <div class="d-flex align-items-center gap-2">
+      <div style="width:36px;height:36px;background:linear-gradient(135deg,#0056B3,#00C896);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;"><i class="fas fa-hands-helping"></i></div>
+      <div><div class="fw-bold" style="font-size:15px;">SkillsConnect</div><div class="text-muted" style="font-size:11px;">Rwanda</div></div>
+    </div>
+  </div>
+  <nav class="flex-grow-1 py-3">
+    <div class="px-4 pb-2" style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;font-weight:600;">Dashboard</div>
+    <a href="freelancer-dashboard.html" class="menu-item"><i class="fas fa-tachometer-alt"></i>Overview</a>
+    <a href="profile.html" class="menu-item"><i class="fas fa-user"></i>My Profile</a>
+    <div class="px-4 pb-2 pt-3" style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;font-weight:600;">Jobs</div>
+    <a href="find-jobs.html" class="menu-item active"><i class="fas fa-search"></i>Find Jobs</a>
+    <a href="my-applications.html" class="menu-item"><i class="fas fa-file-alt"></i>My Applications</a>
+    <div class="px-4 pb-2 pt-3" style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;font-weight:600;">Earnings</div>
+    <a href="worker-earnings.html" class="menu-item"><i class="fas fa-wallet"></i>Earnings</a>
+    <a href="worker-transactions.html" class="menu-item"><i class="fas fa-history"></i>Transactions</a>
+    <a href="worker-earnings.html#invoices" class="menu-item"><i class="fas fa-file-invoice"></i>Invoices</a>
+    <div class="px-4 pb-2 pt-3" style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;font-weight:600;">Communication</div>
+    <a href="messages.html" class="menu-item"><i class="fas fa-comments"></i>Messages</a>
+    <a href="notifications.html" class="menu-item"><i class="fas fa-bell"></i>Notifications</a>
+  </nav>
+  <div class="border-top py-2">
+    <a href="client-settings.html" class="menu-item"><i class="fas fa-cog"></i>Settings</a>
+    <a href="#" class="menu-item" id="logoutBtn"><i class="fas fa-sign-out-alt"></i>Logout</a>
+  </div>
+</aside>
+
+<main class="main-content">
+  <header class="bg-white border-bottom px-4 py-3 sticky-top">
+    <h5 class="mb-0 fw-bold">Find Jobs</h5>
+    <small class="text-muted">Browse available opportunities</small>
+  </header>
+
+  <div class="p-4">
+    <!-- Search & Filters -->
+    <div class="bg-white rounded-3 border p-3 mb-4">
+      <div class="row g-2">
+        <div class="col-md-5">
+          <div class="input-group">
+            <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+            <input type="text" class="form-control border-start-0" id="searchInput" placeholder="Search job title or skills...">
+          </div>
+        </div>
+        <div class="col-md-3">
+          <select class="form-select" id="locationFilter">
+            <option value="">All Locations</option>
+            <option value="Kigali">Kigali</option>
+            <option value="Huye">Huye</option>
+            <option value="Rubavu">Rubavu</option>
+            <option value="Musanze">Musanze</option>
+            <option value="Nyagatare">Nyagatare</option>
+            <option value="Remote">Remote</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <select class="form-select" id="typeFilter">
+            <option value="">All Types</option>
+            <option value="full_time">Full Time</option>
+            <option value="part_time">Part Time</option>
+            <option value="contract">Contract</option>
+            <option value="internship">Internship</option>
+          </select>
+        </div>
+        <div class="col-md-1">
+          <button class="btn btn-primary w-100" id="searchBtn"><i class="fas fa-search"></i></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <span class="text-muted small" id="resultCount">Loading...</span>
+    </div>
+
+    <!-- Jobs Grid -->
+    <div id="jobsGrid">
+      <div class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+    </div>
+  </div>
+</main>
+
+<!-- Apply Modal -->
+<div class="modal fade" id="applyModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold" id="applyJobTitle">Apply for Job</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="bg-light rounded-3 p-3 mb-3" id="applyJobMeta"></div>
+        <label class="form-label fw-medium">Cover Letter <span class="text-muted fw-normal">(optional)</span></label>
+        <textarea class="form-control" id="coverLetter" rows="5" placeholder="Introduce yourself and explain why you're a great fit for this role..."></textarea>
+        <div class="form-text">A strong cover letter increases your chances of being shortlisted.</div>
+      </div>
+      <div class="modal-footer border-0 pt-0">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-primary" id="submitApply">
+          <i class="fas fa-paper-plane me-2"></i>Submit Application
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Job Detail Modal -->
+<div class="modal fade" id="jobDetailModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header border-0">
+        <h5 class="modal-title fw-bold" id="detailTitle"></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="detailBody"></div>
+      <div class="modal-footer border-0">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+        <button class="btn btn-primary" id="detailApplyBtn">Apply Now</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/supabaseClient.js"></script>
+<script src="js/jobs.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+let currentUser = null;
+let appliedJobIds = new Set();
+let selectedJobId = null;
+
+const toastEl = new bootstrap.Toast(document.getElementById('toast'), { delay: 3500 });
+const applyModal = new bootstrap.Modal(document.getElementById('applyModal'));
+const detailModal = new bootstrap.Modal(document.getElementById('jobDetailModal'));
+
+function notify(msg, type = 'success') {
+  const el = document.getElementById('toast');
+  el.className = `toast align-items-center border-0 text-bg-${type}`;
+  document.getElementById('toastMsg').textContent = msg;
+  toastEl.show();
+}
+
+function jobTypeLabel(t) {
+  return { full_time: 'Full Time', part_time: 'Part Time', contract: 'Contract', internship: 'Internship' }[t] || t;
+}
+
+function expLabel(e) {
+  return { entry: 'Entry Level', intermediate: 'Intermediate', expert: 'Expert' }[e] || e;
+}
+
+function salaryText(job) {
+  if (!job.salary_range_min && !job.salary_range_max) return 'Salary not specified';
+  const min = job.salary_range_min ? `RWF ${parseInt(job.salary_range_min).toLocaleString()}` : '';
+  const max = job.salary_range_max ? `RWF ${parseInt(job.salary_range_max).toLocaleString()}` : '';
+  return min && max ? `${min} – ${max}` : min || max;
+}
+
+function renderJobs(jobs) {
+  const grid = document.getElementById('jobsGrid');
+  document.getElementById('resultCount').textContent = `${jobs.length} job${jobs.length !== 1 ? 's' : ''} found`;
+
+  if (!jobs.length) {
+    grid.innerHTML = `<div class="text-center py-5 text-muted"><i class="fas fa-search fa-3x mb-3 d-block opacity-25"></i><p>No jobs match your search.</p></div>`;
+    return;
+  }
+
+  grid.innerHTML = `<div class="row g-3">${jobs.map(job => {
+    const applied = appliedJobIds.has(job.id);
+    const employer = job.profiles;
+    const skills = job.skills_required ? job.skills_required.split(',').slice(0, 4) : [];
+    return `
+    <div class="col-md-6 col-lg-4">
+      <div class="job-card h-100 d-flex flex-column" onclick="showDetail(${job.id})">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <div>
+            <h6 class="fw-bold mb-1">${job.title}</h6>
+            <div class="text-muted small">${employer?.company_name || employer?.full_name || 'Company'}</div>
+          </div>
+          ${applied ? '<span class="badge bg-success-subtle text-success" style="font-size:10px;">Applied</span>' : ''}
+        </div>
+        <div class="d-flex gap-1 flex-wrap mb-2">
+          <span class="badge-type">${jobTypeLabel(job.job_type)}</span>
+          ${job.experience_level ? `<span class="badge-exp">${expLabel(job.experience_level)}</span>` : ''}
+        </div>
+        <div class="text-muted small mb-2"><i class="fas fa-map-marker-alt me-1"></i>${job.location}</div>
+        <div class="text-success small fw-medium mb-2">${salaryText(job)}</div>
+        <div class="mb-3">${skills.map(s => `<span class="skill-tag">${s.trim()}</span>`).join('')}</div>
+        <div class="mt-auto d-flex justify-content-between align-items-center">
+          <span class="text-muted" style="font-size:11px;">${new Date(job.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</span>
+          <button class="btn btn-sm ${applied ? 'btn-outline-secondary' : 'btn-primary'}" 
+                  onclick="event.stopPropagation(); ${applied ? '' : `openApply(${job.id})`}"
+                  ${applied ? 'disabled' : ''}>
+            ${applied ? '<i class="fas fa-check me-1"></i>Applied' : 'Apply Now'}
+          </button>
+        </div>
+      </div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+async function loadJobs() {
+  const search   = document.getElementById('searchInput').value.trim();
+  const location = document.getElementById('locationFilter').value;
+  const jobType  = document.getElementById('typeFilter').value;
+  try {
+    const jobs = await JobService.getOpenJobs({ search, location, jobType });
+    renderJobs(jobs);
+  } catch (err) {
+    document.getElementById('jobsGrid').innerHTML = `<div class="alert alert-danger">${err.message}</div>`;
+  }
+}
+
+async function showDetail(jobId) {
+  try {
+    const job = await JobService.getJobById(jobId);
+    const employer = job.profiles;
+    const applied = appliedJobIds.has(job.id);
+    selectedJobId = job.id;
+
+    document.getElementById('detailTitle').textContent = job.title;
+    document.getElementById('detailBody').innerHTML = `
+      <div class="d-flex gap-2 flex-wrap mb-3">
+        <span class="badge-type">${jobTypeLabel(job.job_type)}</span>
+        ${job.experience_level ? `<span class="badge-exp">${expLabel(job.experience_level)}</span>` : ''}
+      </div>
+      <div class="row g-3 mb-3">
+        <div class="col-sm-6"><i class="fas fa-building me-2 text-muted"></i>${employer?.company_name || employer?.full_name || 'N/A'}</div>
+        <div class="col-sm-6"><i class="fas fa-map-marker-alt me-2 text-muted"></i>${job.location}</div>
+        <div class="col-sm-6"><i class="fas fa-money-bill me-2 text-muted"></i>${salaryText(job)}</div>
+        <div class="col-sm-6"><i class="fas fa-users me-2 text-muted"></i>${job.vacancy_count || 1} vacancy</div>
+        ${job.application_deadline ? `<div class="col-sm-6"><i class="fas fa-calendar me-2 text-muted"></i>Deadline: ${new Date(job.application_deadline).toLocaleDateString()}</div>` : ''}
+      </div>
+      <h6 class="fw-semibold">Description</h6>
+      <p class="text-muted">${job.description}</p>
+      ${job.requirements ? `<h6 class="fw-semibold">Requirements</h6><p class="text-muted">${job.requirements}</p>` : ''}
+      ${job.skills_required ? `<h6 class="fw-semibold">Skills</h6><div>${job.skills_required.split(',').map(s => `<span class="skill-tag">${s.trim()}</span>`).join('')}</div>` : ''}
+    `;
+
+    const applyBtn = document.getElementById('detailApplyBtn');
+    applyBtn.disabled = applied;
+    applyBtn.textContent = applied ? '✓ Already Applied' : 'Apply Now';
+    applyBtn.onclick = applied ? null : () => { detailModal.hide(); openApply(job.id); };
+
+    detailModal.show();
+  } catch (err) {
+    notify(err.message, 'danger');
+  }
+}
+
+function openApply(jobId) {
+  selectedJobId = jobId;
+  const jobs = document.querySelectorAll('.job-card');
+  // Find job title from rendered cards
+  document.getElementById('coverLetter').value = '';
+  document.getElementById('applyJobTitle').textContent = 'Apply for Job';
+  document.getElementById('applyJobMeta').innerHTML = `<i class="fas fa-info-circle me-2 text-primary"></i>Job ID: ${jobId}`;
+  applyModal.show();
+}
+
+document.getElementById('submitApply').addEventListener('click', async () => {
+  const btn = document.getElementById('submitApply');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Submitting...';
+
+  try {
+    await JobService.applyToJob(selectedJobId, currentUser.id, document.getElementById('coverLetter').value.trim());
+    appliedJobIds.add(selectedJobId);
+    applyModal.hide();
+    notify('Application submitted successfully! 🎉', 'success');
+    loadJobs();
+  } catch (err) {
+    const msg = err.message?.includes('unique') ? 'You have already applied to this job.' : (err.message || 'Failed to apply');
+    notify(msg, 'danger');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Submit Application';
+  }
+});
+
+document.getElementById('searchBtn').addEventListener('click', loadJobs);
+document.getElementById('searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') loadJobs(); });
+
+document.getElementById('logoutBtn').addEventListener('click', async (e) => {
+  e.preventDefault();
+  await supabaseClient.auth.signOut();
+  window.location.href = 'login.html';
+});
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (!session) { window.location.href = 'login.html'; return; }
+
+  const { data: profile } = await supabaseClient.from('profiles').select('role').eq('id', session.user.id).single();
+  if (profile?.role === 'employer') { window.location.href = 'employer-dashboard.html'; return; }
+  if (profile?.role === 'admin')    { window.location.href = 'admin-dashboard.html'; return; }
+
+  currentUser = session.user;
+
+  // Load already-applied job IDs
+  const { data: apps } = await supabaseClient
+    .from('job_applications')
+    .select('job_id')
+    .eq('worker_id', currentUser.id);
+  if (apps) apps.forEach(a => appliedJobIds.add(a.job_id));
+
+  loadJobs();
+});
+
+window.showDetail = showDetail;
+window.openApply  = openApply;
+</script>
+</body>
+</html>

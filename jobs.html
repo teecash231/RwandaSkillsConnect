@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Jobs — Rwanda SkillsConnect</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #f5f7fa; }
+    .sidebar { width: 260px; background: #fff; border-right: 1px solid #E2E8F0; position: fixed; top: 0; left: 0; height: 100vh; z-index: 1000; display: flex; flex-direction: column; }
+    .main-content { margin-left: 260px; min-height: 100vh; }
+    .menu-item { display: flex; align-items: center; gap: 12px; padding: 11px 20px; color: #64748B; text-decoration: none; font-size: 14px; font-weight: 500; transition: all .2s; }
+    .menu-item:hover, .menu-item.active { background: #E8F2FF; color: #0056B3; }
+    .menu-item.active { border-left: 3px solid #0056B3; }
+    .badge-status { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    .badge-active { background: #d4edda; color: #155724; }
+    .badge-draft { background: #fff3cd; color: #856404; }
+    .badge-inactive { background: #f8d7da; color: #721c24; }
+    .badge-filled { background: #d1ecf1; color: #0c5460; }
+    .job-card { background: #fff; border-radius: 10px; border: 1px solid #E2E8F0; padding: 20px; transition: box-shadow .2s; }
+    .job-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.08); }
+    #toast { position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 280px; }
+    @media(max-width:992px) { .sidebar { transform: translateX(-100%); } .main-content { margin-left: 0; } }
+  </style>
+</head>
+<body>
+
+<div id="toast" class="toast align-items-center border-0" role="alert">
+  <div class="d-flex">
+    <div class="toast-body fw-medium" id="toastMsg"></div>
+    <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>
+  </div>
+</div>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="p-4 border-bottom">
+    <div class="d-flex align-items-center gap-2">
+      <div style="width:36px;height:36px;background:linear-gradient(135deg,#0056B3,#00C896);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;"><i class="fas fa-hands-helping"></i></div>
+      <div><div class="fw-bold" style="font-size:15px;">SkillsConnect</div><div class="text-muted" style="font-size:11px;">Rwanda</div></div>
+    </div>
+  </div>
+  <nav class="flex-grow-1 py-3">
+    <div class="px-4 pb-2" style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;font-weight:600;">Dashboard</div>
+    <a href="employer-dashboard.html" class="menu-item"><i class="fas fa-tachometer-alt"></i>Overview</a>
+    <a href="profile.html" class="menu-item"><i class="fas fa-building"></i>Company Profile</a>
+    <div class="px-4 pb-2 pt-3" style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;font-weight:600;">Recruitment</div>
+    <a href="post-job.html" class="menu-item"><i class="fas fa-plus"></i>Post Job</a>
+    <a href="jobs.html" class="menu-item active"><i class="fas fa-list"></i>Manage Jobs</a>
+    <a href="find-workers.html" class="menu-item"><i class="fas fa-search"></i>Find Workers</a>
+    <a href="job-applications.html" class="menu-item"><i class="fas fa-users"></i>Applicants</a>
+    <div class="px-4 pb-2 pt-3" style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;font-weight:600;">Payments</div>
+    <a href="employer-payments.html" class="menu-item"><i class="fas fa-credit-card"></i>Payments</a>
+    <a href="wallet.html" class="menu-item"><i class="fas fa-wallet"></i>E-Wallet</a>
+    <div class="px-4 pb-2 pt-3" style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;font-weight:600;">Communication</div>
+    <a href="messages.html" class="menu-item"><i class="fas fa-comments"></i>Messages</a>
+    <a href="notifications.html" class="menu-item"><i class="fas fa-bell"></i>Notifications</a>
+  </nav>
+  <div class="border-top py-2">
+    <a href="client-settings.html" class="menu-item"><i class="fas fa-cog"></i>Settings</a>
+    <a href="#" class="menu-item logout" id="logoutBtn"><i class="fas fa-sign-out-alt"></i>Logout</a>
+  </div>
+</aside>
+
+<main class="main-content">
+  <header class="bg-white border-bottom px-4 py-3 d-flex align-items-center justify-content-between sticky-top">
+    <div>
+      <h5 class="mb-0 fw-bold">Manage Jobs</h5>
+      <small class="text-muted">View and manage your job listings</small>
+    </div>
+    <a href="post-job.html" class="btn btn-primary btn-sm"><i class="fas fa-plus me-2"></i>Post New Job</a>
+  </header>
+
+  <div class="p-4">
+    <!-- Filter Bar -->
+    <div class="d-flex gap-2 mb-4 flex-wrap">
+      <button class="btn btn-sm btn-primary filter-btn active" data-status="">All</button>
+      <button class="btn btn-sm btn-outline-secondary filter-btn" data-status="active">Active</button>
+      <button class="btn btn-sm btn-outline-secondary filter-btn" data-status="draft">Draft</button>
+      <button class="btn btn-sm btn-outline-secondary filter-btn" data-status="inactive">Inactive</button>
+      <button class="btn btn-sm btn-outline-secondary filter-btn" data-status="filled">Filled</button>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="row g-3 mb-4" id="statsRow">
+      <div class="col-6 col-md-3"><div class="bg-white rounded-3 p-3 border text-center"><div class="fw-bold fs-4" id="statTotal">—</div><div class="text-muted small">Total Jobs</div></div></div>
+      <div class="col-6 col-md-3"><div class="bg-white rounded-3 p-3 border text-center"><div class="fw-bold fs-4 text-success" id="statActive">—</div><div class="text-muted small">Active</div></div></div>
+      <div class="col-6 col-md-3"><div class="bg-white rounded-3 p-3 border text-center"><div class="fw-bold fs-4 text-warning" id="statDraft">—</div><div class="text-muted small">Drafts</div></div></div>
+      <div class="col-6 col-md-3"><div class="bg-white rounded-3 p-3 border text-center"><div class="fw-bold fs-4 text-info" id="statApps">—</div><div class="text-muted small">Total Applications</div></div></div>
+    </div>
+
+    <!-- Jobs List -->
+    <div id="jobsList">
+      <div class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+    </div>
+  </div>
+</main>
+
+<!-- Delete Confirm Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-body text-center p-4">
+        <i class="fas fa-trash-alt fa-2x text-danger mb-3"></i>
+        <h6 class="fw-bold">Delete this job?</h6>
+        <p class="text-muted small mb-3">This will also remove all applications. This cannot be undone.</p>
+        <div class="d-flex gap-2 justify-content-center">
+          <button class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button class="btn btn-sm btn-danger" id="confirmDelete">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/supabaseClient.js"></script>
+<script src="js/jobs.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+let allJobs = [];
+let currentFilter = '';
+let deleteJobId = null;
+let currentUser = null;
+
+const toastEl = new bootstrap.Toast(document.getElementById('toast'), { delay: 3000 });
+const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+
+function notify(msg, type = 'success') {
+  const el = document.getElementById('toast');
+  el.className = `toast align-items-center border-0 text-bg-${type}`;
+  document.getElementById('toastMsg').textContent = msg;
+  toastEl.show();
+}
+
+function statusBadge(s) {
+  const map = { active: 'active', draft: 'draft', inactive: 'inactive', filled: 'filled' };
+  return `<span class="badge-status badge-${map[s] || 'draft'}">${s}</span>`;
+}
+
+function jobTypeLabel(t) {
+  return { full_time: 'Full Time', part_time: 'Part Time', contract: 'Contract', internship: 'Internship' }[t] || t;
+}
+
+function renderJobs(jobs) {
+  const container = document.getElementById('jobsList');
+  if (!jobs.length) {
+    container.innerHTML = `<div class="text-center py-5 text-muted"><i class="fas fa-briefcase fa-3x mb-3 d-block opacity-25"></i><p>No jobs found.</p><a href="post-job.html" class="btn btn-primary btn-sm">Post Your First Job</a></div>`;
+    return;
+  }
+  container.innerHTML = jobs.map(job => {
+    const appCount = job.job_applications?.[0]?.count || 0;
+    return `
+    <div class="job-card mb-3">
+      <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+        <div>
+          <h6 class="fw-bold mb-1">${job.title}</h6>
+          <div class="d-flex gap-2 flex-wrap align-items-center">
+            ${statusBadge(job.status)}
+            <span class="text-muted small"><i class="fas fa-map-marker-alt me-1"></i>${job.location}</span>
+            <span class="text-muted small"><i class="fas fa-briefcase me-1"></i>${jobTypeLabel(job.job_type)}</span>
+            <span class="text-muted small"><i class="fas fa-users me-1"></i>${appCount} application${appCount !== 1 ? 's' : ''}</span>
+          </div>
+          ${job.salary_range_min ? `<div class="text-success small mt-1 fw-medium">RWF ${parseInt(job.salary_range_min).toLocaleString()} – ${parseInt(job.salary_range_max || job.salary_range_min).toLocaleString()}</div>` : ''}
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+          <select class="form-select form-select-sm" style="width:auto;" onchange="changeStatus(${job.id}, this.value)">
+            <option value="active"   ${job.status==='active'   ? 'selected':''}>Active</option>
+            <option value="inactive" ${job.status==='inactive' ? 'selected':''}>Inactive</option>
+            <option value="filled"   ${job.status==='filled'   ? 'selected':''}>Filled</option>
+            <option value="draft"    ${job.status==='draft'    ? 'selected':''}>Draft</option>
+          </select>
+          <a href="post-job.html?edit=${job.id}" class="btn btn-sm btn-outline-primary"><i class="fas fa-edit"></i></a>
+          <a href="job-applications.html?job=${job.id}" class="btn btn-sm btn-outline-success" title="View Applicants"><i class="fas fa-users"></i>${appCount > 0 ? `<span class="ms-1">${appCount}</span>` : ''}</a>
+          <button class="btn btn-sm btn-outline-danger" onclick="confirmDelete(${job.id})"><i class="fas fa-trash"></i></button>
+        </div>
+      </div>
+      <div class="mt-2 text-muted small">${job.description?.substring(0, 120)}${job.description?.length > 120 ? '…' : ''}</div>
+      <div class="mt-2 text-muted" style="font-size:11px;">Posted ${new Date(job.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div>
+    </div>`;
+  }).join('');
+}
+
+function applyFilter(status) {
+  currentFilter = status;
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    b.classList.toggle('btn-primary', b.dataset.status === status);
+    b.classList.toggle('active', b.dataset.status === status);
+    b.classList.toggle('btn-outline-secondary', b.dataset.status !== status);
+  });
+  const filtered = status ? allJobs.filter(j => j.status === status) : allJobs;
+  renderJobs(filtered);
+}
+
+async function changeStatus(jobId, status) {
+  try {
+    await JobService.updateJob(jobId, currentUser.id, { status });
+    const job = allJobs.find(j => j.id === jobId);
+    if (job) job.status = status;
+    notify('Status updated');
+    applyFilter(currentFilter);
+    updateStats();
+  } catch (err) {
+    notify(err.message || 'Failed to update status', 'danger');
+  }
+}
+
+function confirmDelete(jobId) {
+  deleteJobId = jobId;
+  deleteModal.show();
+}
+
+document.getElementById('confirmDelete').addEventListener('click', async () => {
+  deleteModal.hide();
+  try {
+    await JobService.deleteJob(deleteJobId, currentUser.id);
+    allJobs = allJobs.filter(j => j.id !== deleteJobId);
+    notify('Job deleted');
+    applyFilter(currentFilter);
+    updateStats();
+  } catch (err) {
+    notify(err.message || 'Failed to delete job', 'danger');
+  }
+});
+
+function updateStats() {
+  document.getElementById('statTotal').textContent  = allJobs.length;
+  document.getElementById('statActive').textContent = allJobs.filter(j => j.status === 'active').length;
+  document.getElementById('statDraft').textContent  = allJobs.filter(j => j.status === 'draft').length;
+  const totalApps = allJobs.reduce((sum, j) => sum + (j.job_applications?.[0]?.count || 0), 0);
+  document.getElementById('statApps').textContent   = totalApps;
+}
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => applyFilter(btn.dataset.status));
+});
+
+document.getElementById('logoutBtn').addEventListener('click', async (e) => {
+  e.preventDefault();
+  await supabaseClient.auth.signOut();
+  window.location.href = 'login.html';
+});
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (!session) { window.location.href = 'login.html'; return; }
+
+  const { data: profile } = await supabaseClient.from('profiles').select('role').eq('id', session.user.id).single();
+  if (profile?.role !== 'employer') { window.location.href = 'freelancer-dashboard.html'; return; }
+
+  currentUser = session.user;
+
+  try {
+    allJobs = await JobService.getEmployerJobs(currentUser.id);
+    updateStats();
+    applyFilter('');
+  } catch (err) {
+    document.getElementById('jobsList').innerHTML = `<div class="alert alert-danger">${err.message}</div>`;
+  }
+});
+
+window.changeStatus = changeStatus;
+window.confirmDelete = confirmDelete;
+</script>
+</body>
+</html>

@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notifications — Rwanda SkillsConnect</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #f5f7fa; }
+    .sidebar { width: 260px; background: #fff; border-right: 1px solid #E2E8F0; position: fixed; top: 0; left: 0; height: 100vh; z-index: 1000; display: flex; flex-direction: column; }
+    .main-content { margin-left: 260px; min-height: 100vh; }
+    .menu-item { display: flex; align-items: center; gap: 12px; padding: 11px 20px; color: #64748B; text-decoration: none; font-size: 14px; font-weight: 500; transition: all .2s; }
+    .menu-item:hover, .menu-item.active { background: #E8F2FF; color: #0056B3; }
+    .menu-item.active { border-left: 3px solid #0056B3; }
+    .notif-item { background: #fff; border-radius: 10px; border: 1px solid #E2E8F0; padding: 16px 20px; transition: box-shadow .15s; cursor: pointer; position: relative; }
+    .notif-item:hover { box-shadow: 0 4px 16px rgba(0,0,0,.07); }
+    .notif-item.unread { border-left: 3px solid #0056B3; background: #f8fbff; }
+    .notif-item.unread::before { content: ''; width: 8px; height: 8px; background: #0056B3; border-radius: 50%; position: absolute; top: 20px; right: 16px; }
+    .notif-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+    .type-application  { background: #E8F2FF; color: #0056B3; }
+    .type-message      { background: #f0fdf4; color: #166534; }
+    .type-status       { background: #fff3cd; color: #856404; }
+    .type-system       { background: #f1f5f9; color: #475569; }
+    .type-payment      { background: #fdf4ff; color: #7e22ce; }
+    .filter-btn { border-radius: 20px; font-size: 13px; padding: 5px 16px; }
+    @media(max-width:992px) { .sidebar { transform: translateX(-100%); } .main-content { margin-left: 0; } }
+  </style>
+</head>
+<body>
+
+<!-- Sidebar (role-aware, set by JS) -->
+<aside class="sidebar" id="sidebar">
+  <div class="p-4 border-bottom">
+    <div class="d-flex align-items-center gap-2">
+      <div style="width:36px;height:36px;background:linear-gradient(135deg,#0056B3,#00C896);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;"><i class="fas fa-hands-helping"></i></div>
+      <div><div class="fw-bold" style="font-size:15px;">SkillsConnect</div><div class="text-muted" style="font-size:11px;">Rwanda</div></div>
+    </div>
+  </div>
+  <nav class="flex-grow-1 py-3" id="sidebarNav"></nav>
+  <div class="border-top py-2">
+    <a href="#" class="menu-item" id="logoutBtn"><i class="fas fa-sign-out-alt"></i>Logout</a>
+  </div>
+</aside>
+
+<main class="main-content">
+  <header class="bg-white border-bottom px-4 py-3 sticky-top">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <div>
+        <h5 class="mb-0 fw-bold">Notifications</h5>
+        <small class="text-muted" id="unreadLabel">Loading…</small>
+      </div>
+      <button class="btn btn-sm btn-outline-secondary" id="markAllBtn" style="display:none;">
+        <i class="fas fa-check-double me-1"></i>Mark all as read
+      </button>
+    </div>
+  </header>
+
+  <div class="p-4">
+    <!-- Filter tabs -->
+    <div class="d-flex gap-2 mb-4 flex-wrap">
+      <button class="btn btn-sm btn-primary filter-btn active" data-filter="all">All</button>
+      <button class="btn btn-sm btn-outline-secondary filter-btn" data-filter="unread">Unread</button>
+      <button class="btn btn-sm btn-outline-secondary filter-btn" data-filter="application">Applications</button>
+      <button class="btn btn-sm btn-outline-secondary filter-btn" data-filter="message">Messages</button>
+      <button class="btn btn-sm btn-outline-secondary filter-btn" data-filter="status">Status Updates</button>
+      <button class="btn btn-sm btn-outline-secondary filter-btn" data-filter="payment">Payments</button>
+    </div>
+
+    <div id="notifList">
+      <div class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+    </div>
+  </div>
+</main>
+
+<script src="js/supabaseClient.js"></script>
+<script src="js/notifications.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+let _userId = null;
+let _allNotifs = [];
+let _currentFilter = 'all';
+
+const TYPE_ICONS = {
+  application: { icon: 'fa-file-alt',    cls: 'type-application' },
+  message:     { icon: 'fa-comment',      cls: 'type-message'     },
+  status:      { icon: 'fa-info-circle',  cls: 'type-status'      },
+  payment:     { icon: 'fa-credit-card',  cls: 'type-payment'     },
+  system:      { icon: 'fa-bell',         cls: 'type-system'      },
+};
+
+function typeInfo(type) {
+  return TYPE_ICONS[type] || TYPE_ICONS.system;
+}
+
+function fmtTime(ts) {
+  const d = new Date(ts), now = new Date(), diff = now - d;
+  if (diff < 60000)    return 'Just now';
+  if (diff < 3600000)  return Math.floor(diff / 60000) + 'm ago';
+  if (diff < 86400000) return Math.floor(diff / 3600000) + 'h ago';
+  if (diff < 604800000)return Math.floor(diff / 86400000) + 'd ago';
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function renderNotifs(notifs) {
+  const container = document.getElementById('notifList');
+  const unread = _allNotifs.filter(n => !n.is_read).length;
+
+  document.getElementById('unreadLabel').textContent =
+    unread > 0 ? `${unread} unread notification${unread !== 1 ? 's' : ''}` : 'All caught up!';
+  document.getElementById('markAllBtn').style.display = unread > 0 ? '' : 'none';
+
+  if (!notifs.length) {
+    container.innerHTML = `<div class="text-center py-5 text-muted">
+      <i class="fas fa-bell-slash fa-3x mb-3 d-block opacity-25"></i>
+      <p>No notifications here.</p>
+    </div>`;
+    return;
+  }
+
+  container.innerHTML = notifs.map(n => {
+    const { icon, cls } = typeInfo(n.type);
+    return `
+    <div class="notif-item mb-2 ${n.is_read ? '' : 'unread'}" onclick="handleClick(${n.id}, '${n.link || ''}', ${n.is_read})">
+      <div class="d-flex gap-3 align-items-start">
+        <div class="notif-icon ${cls}"><i class="fas ${icon}"></i></div>
+        <div class="flex-grow-1 min-w-0">
+          <div class="d-flex justify-content-between align-items-start gap-2">
+            <div class="fw-semibold" style="font-size:14px;">${n.title || 'Notification'}</div>
+            <div class="d-flex align-items-center gap-2 shrink-0">
+              <span class="text-muted" style="font-size:11px;white-space:nowrap;">${fmtTime(n.created_at)}</span>
+              <button class="btn btn-sm p-0 text-muted" style="line-height:1;" title="Delete"
+                onclick="event.stopPropagation(); deleteNotif(${n.id})">
+                <i class="fas fa-times" style="font-size:11px;"></i>
+              </button>
+            </div>
+          </div>
+          ${n.message ? `<div class="text-muted mt-1" style="font-size:13px;">${n.message}</div>` : ''}
+          ${n.link ? `<div class="mt-1" style="font-size:12px;color:#0056B3;"><i class="fas fa-arrow-right me-1"></i>View details</div>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function applyFilter(filter) {
+  _currentFilter = filter;
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    b.classList.toggle('btn-primary', b.dataset.filter === filter);
+    b.classList.toggle('active', b.dataset.filter === filter);
+    b.classList.toggle('btn-outline-secondary', b.dataset.filter !== filter);
+  });
+
+  let filtered = _allNotifs;
+  if (filter === 'unread')      filtered = _allNotifs.filter(n => !n.is_read);
+  else if (filter !== 'all')    filtered = _allNotifs.filter(n => n.type === filter);
+  renderNotifs(filtered);
+}
+
+async function handleClick(id, link, isRead) {
+  if (!isRead) {
+    await NotificationService.markRead(id);
+    const n = _allNotifs.find(n => n.id === id);
+    if (n) n.is_read = true;
+    applyFilter(_currentFilter);
+  }
+  if (link) window.location.href = link;
+}
+
+async function deleteNotif(id) {
+  await NotificationService.deleteNotification(id);
+  _allNotifs = _allNotifs.filter(n => n.id !== id);
+  applyFilter(_currentFilter);
+}
+
+document.getElementById('markAllBtn').addEventListener('click', async () => {
+  await NotificationService.markAllRead(_userId);
+  _allNotifs.forEach(n => n.is_read = true);
+  applyFilter(_currentFilter);
+});
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => applyFilter(btn.dataset.filter));
+});
+
+document.getElementById('logoutBtn').addEventListener('click', async (e) => {
+  e.preventDefault();
+  await supabaseClient.auth.signOut();
+  window.location.href = 'login.html';
+});
+
+// Role-aware sidebar
+function buildSidebar(role) {
+  const dashLink = role === 'employer' ? 'employer-dashboard.html' : 'freelancer-dashboard.html';
+  const workerNav = `
+    <div class="px-4 pb-2" style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;font-weight:600;">Dashboard</div>
+    <a href="${dashLink}" class="menu-item"><i class="fas fa-tachometer-alt"></i>Overview</a>
+    <a href="profile.html" class="menu-item"><i class="fas fa-user"></i>My Profile</a>
+    <div class="px-4 pb-2 pt-3" style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;font-weight:600;">Jobs</div>
+    <a href="find-jobs.html" class="menu-item"><i class="fas fa-search"></i>Find Jobs</a>
+    <a href="my-applications.html" class="menu-item"><i class="fas fa-file-alt"></i>Applications</a>
+    <div class="px-4 pb-2 pt-3" style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;font-weight:600;">Communication</div>
+    <a href="messages.html" class="menu-item"><i class="fas fa-comments"></i>Messages</a>
+    <a href="notifications.html" class="menu-item active"><i class="fas fa-bell"></i>Notifications</a>`;
+
+  const employerNav = `
+    <div class="px-4 pb-2" style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;font-weight:600;">Dashboard</div>
+    <a href="${dashLink}" class="menu-item"><i class="fas fa-tachometer-alt"></i>Overview</a>
+    <a href="profile.html" class="menu-item"><i class="fas fa-building"></i>Company Profile</a>
+    <div class="px-4 pb-2 pt-3" style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;font-weight:600;">Recruitment</div>
+    <a href="post-job.html" class="menu-item"><i class="fas fa-plus"></i>Post Job</a>
+    <a href="jobs.html" class="menu-item"><i class="fas fa-list"></i>Manage Jobs</a>
+    <a href="find-workers.html" class="menu-item"><i class="fas fa-search"></i>Find Workers</a>
+    <a href="job-applications.html" class="menu-item"><i class="fas fa-users"></i>Applicants</a>
+    <div class="px-4 pb-2 pt-3" style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;font-weight:600;">Communication</div>
+    <a href="messages.html" class="menu-item"><i class="fas fa-comments"></i>Messages</a>
+    <a href="notifications.html" class="menu-item active"><i class="fas fa-bell"></i>Notifications</a>`;
+
+  document.getElementById('sidebarNav').innerHTML = role === 'employer' ? employerNav : workerNav;
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (!session) { window.location.href = 'login.html'; return; }
+
+  _userId = session.user.id;
+  const { data: profile } = await supabaseClient.from('profiles').select('role').eq('id', _userId).single();
+  if (profile?.role === 'admin') { window.location.href = 'admin-dashboard.html'; return; }
+
+  buildSidebar(profile?.role || 'worker');
+
+  _allNotifs = await NotificationService.getNotifications(_userId);
+  applyFilter('all');
+
+  // Realtime: prepend new notifications live
+  NotificationService.subscribeToNotifications(_userId, (newNotif) => {
+    _allNotifs.unshift(newNotif);
+    applyFilter(_currentFilter);
+  });
+});
+
+window.handleClick  = handleClick;
+window.deleteNotif  = deleteNotif;
+</script>
+</body>
+</html>

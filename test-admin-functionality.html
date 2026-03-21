@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Admin Dashboard Functionality</title>
+    <link rel="stylesheet" href="assets/css/tailwind.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .test-section { border: 2px solid #e5e7eb; border-radius: 8px; padding: 1rem; margin: 1rem 0; }
+        .test-pass { border-color: #10b981; background-color: #f0fdf4; }
+        .test-fail { border-color: #ef4444; background-color: #fef2f2; }
+        .test-pending { border-color: #f59e0b; background-color: #fffbeb; }
+    </style>
+</head>
+<body class="bg-gray-50 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold text-gray-900 mb-8">Admin Dashboard Functionality Test</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Navigation Test -->
+            <div class="test-section test-pending" id="nav-test">
+                <h3 class="text-lg font-semibold mb-4">
+                    <i class="fas fa-bars mr-2"></i>Navigation Test
+                </h3>
+                <div class="space-y-2">
+                    <button onclick="testNavigation('dashboard')" class="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                        Test Dashboard
+                    </button>
+                    <button onclick="testNavigation('users')" class="w-full px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+                        Test Users Section
+                    </button>
+                    <button onclick="testNavigation('jobs')" class="w-full px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600">
+                        Test Jobs Section
+                    </button>
+                    <button onclick="testNavigation('job-approvals')" class="w-full px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600">
+                        Test Job Approvals
+                    </button>
+                </div>
+                <div id="nav-results" class="mt-4 text-sm"></div>
+            </div>
+
+            <!-- Data Loading Test -->
+            <div class="test-section test-pending" id="data-test">
+                <h3 class="text-lg font-semibold mb-4">
+                    <i class="fas fa-database mr-2"></i>Data Loading Test
+                </h3>
+                <div class="space-y-2">
+                    <button onclick="testDataLoading()" class="w-full px-4 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600">
+                        Test Data Loading
+                    </button>
+                    <button onclick="initializeSampleData()" class="w-full px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600">
+                        Initialize Sample Data
+                    </button>
+                    <button onclick="clearAllData()" class="w-full px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
+                        Clear All Data
+                    </button>
+                </div>
+                <div id="data-results" class="mt-4 text-sm"></div>
+            </div>
+
+            <!-- Controller Test -->
+            <div class="test-section test-pending" id="controller-test">
+                <h3 class="text-lg font-semibold mb-4">
+                    <i class="fas fa-cogs mr-2"></i>Controller Test
+                </h3>
+                <div class="space-y-2">
+                    <button onclick="testController()" class="w-full px-4 py-2 bg-teal-500 text-white rounded hover:bg-teal-600">
+                        Test Admin Controller
+                    </button>
+                    <button onclick="testFunctions()" class="w-full px-4 py-2 bg-pink-500 text-white rounded hover:bg-pink-600">
+                        Test Functions
+                    </button>
+                </div>
+                <div id="controller-results" class="mt-4 text-sm"></div>
+            </div>
+
+            <!-- Quick Actions Test -->
+            <div class="test-section test-pending" id="actions-test">
+                <h3 class="text-lg font-semibold mb-4">
+                    <i class="fas fa-bolt mr-2"></i>Quick Actions Test
+                </h3>
+                <div class="space-y-2">
+                    <button onclick="testQuickActions()" class="w-full px-4 py-2 bg-cyan-500 text-white rounded hover:bg-cyan-600">
+                        Test Quick Actions
+                    </button>
+                    <button onclick="testJobActions()" class="w-full px-4 py-2 bg-lime-500 text-white rounded hover:bg-lime-600">
+                        Test Job Actions
+                    </button>
+                </div>
+                <div id="actions-results" class="mt-4 text-sm"></div>
+            </div>
+        </div>
+
+        <!-- Results Summary -->
+        <div class="mt-8 p-6 bg-white rounded-lg shadow">
+            <h2 class="text-xl font-semibold mb-4">Test Results Summary</h2>
+            <div id="summary-results" class="space-y-2"></div>
+        </div>
+
+        <!-- Admin Dashboard Link -->
+        <div class="mt-8 text-center">
+            <a href="admin-dashboard.html" class="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors">
+                <i class="fas fa-external-link-alt mr-2"></i>
+                Open Admin Dashboard
+            </a>
+        </div>
+    </div>
+
+    <script>
+        let testResults = {};
+
+        function testNavigation(section) {
+            const results = document.getElementById('nav-results');
+            
+            try {
+                // Test if we can simulate navigation
+                console.log('Testing navigation to:', section);
+                
+                // Check if admin controller exists
+                if (typeof window.adminController !== 'undefined') {
+                    results.innerHTML += `<div class="text-green-600">✓ Admin Controller found</div>`;
+                    testResults.navigation = 'pass';
+                } else {
+                    results.innerHTML += `<div class="text-red-600">✗ Admin Controller not found</div>`;
+                    testResults.navigation = 'fail';
+                }
+                
+                // Test section switching
+                results.innerHTML += `<div class="text-blue-600">→ Testing ${section} section</div>`;
+                
+                updateTestStatus('nav-test', testResults.navigation);
+            } catch (error) {
+                results.innerHTML += `<div class="text-red-600">✗ Error: ${error.message}</div>`;
+                testResults.navigation = 'fail';
+                updateTestStatus('nav-test', 'fail');
+            }
+        }
+
+        function testDataLoading() {
+            const results = document.getElementById('data-results');
+            
+            try {
+                const users = JSON.parse(localStorage.getItem('users') || '[]');
+                const jobs = JSON.parse(localStorage.getItem('jobs') || '[]');
+                
+                results.innerHTML = `
+                    <div class="text-blue-600">Users in storage: ${users.length}</div>
+                    <div class="text-blue-600">Jobs in storage: ${jobs.length}</div>
+                `;
+                
+                if (users.length > 0 && jobs.length > 0) {
+                    results.innerHTML += `<div class="text-green-600">✓ Data loaded successfully</div>`;
+                    testResults.data = 'pass';
+                } else {
+                    results.innerHTML += `<div class="text-yellow-600">⚠ No data found - initialize sample data</div>`;
+                    testResults.data = 'pending';
+                }
+                
+                updateTestStatus('data-test', testResults.data);
+            } catch (error) {
+                results.innerHTML += `<div class="text-red-600">✗ Error: ${error.message}</div>`;
+                testResults.data = 'fail';
+                updateTestStatus('data-test', 'fail');
+            }
+        }
+
+        function testController() {
+            const results = document.getElementById('controller-results');
+            
+            try {
+                if (typeof window.adminController !== 'undefined') {
+                    results.innerHTML = `<div class="text-green-600">✓ Admin Controller available</div>`;
+                    
+                    // Test controller methods
+                    const methods = ['showSection', 'loadDashboardData', 'loadUsersData', 'loadJobsData'];
+                    let methodsFound = 0;
+                    
+                    methods.forEach(method => {
+                        if (typeof window.adminController[method] === 'function') {
+                            results.innerHTML += `<div class="text-green-600">✓ ${method} method found</div>`;
+                            methodsFound++;
+                        } else {
+                            results.innerHTML += `<div class="text-red-600">✗ ${method} method missing</div>`;
+                        }
+                    });
+                    
+                    testResults.controller = methodsFound === methods.length ? 'pass' : 'fail';
+                } else {
+                    results.innerHTML = `<div class="text-red-600">✗ Admin Controller not found</div>`;
+                    testResults.controller = 'fail';
+                }
+                
+                updateTestStatus('controller-test', testResults.controller);
+            } catch (error) {
+                results.innerHTML += `<div class="text-red-600">✗ Error: ${error.message}</div>`;
+                testResults.controller = 'fail';
+                updateTestStatus('controller-test', 'fail');
+            }
+        }
+
+        function testFunctions() {
+            const results = document.getElementById('controller-results');
+            
+            const globalFunctions = ['quickShowSection', 'initializeSampleData'];
+            let functionsFound = 0;
+            
+            globalFunctions.forEach(func => {
+                if (typeof window[func] === 'function') {
+                    results.innerHTML += `<div class="text-green-600">✓ ${func} function available</div>`;
+                    functionsFound++;
+                } else {
+                    results.innerHTML += `<div class="text-yellow-600">⚠ ${func} function not found</div>`;
+                }
+            });
+        }
+
+        function testQuickActions() {
+            const results = document.getElementById('actions-results');
+            
+            try {
+                if (typeof window.quickShowSection === 'function') {
+                    results.innerHTML = `<div class="text-green-600">✓ Quick actions available</div>`;
+                    testResults.actions = 'pass';
+                } else {
+                    results.innerHTML = `<div class="text-red-600">✗ Quick actions not found</div>`;
+                    testResults.actions = 'fail';
+                }
+                
+                updateTestStatus('actions-test', testResults.actions);
+            } catch (error) {
+                results.innerHTML += `<div class="text-red-600">✗ Error: ${error.message}</div>`;
+                testResults.actions = 'fail';
+                updateTestStatus('actions-test', 'fail');
+            }
+        }
+
+        function testJobActions() {
+            const results = document.getElementById('actions-results');
+            
+            if (window.adminController) {
+                const jobMethods = ['approveJob', 'rejectJob', 'viewJobDetails', 'deleteJob'];
+                let methodsFound = 0;
+                
+                jobMethods.forEach(method => {
+                    if (typeof window.adminController[method] === 'function') {
+                        results.innerHTML += `<div class="text-green-600">✓ ${method} available</div>`;
+                        methodsFound++;
+                    } else {
+                        results.innerHTML += `<div class="text-red-600">✗ ${method} missing</div>`;
+                    }
+                });
+            }
+        }
+
+        function clearAllData() {
+            localStorage.removeItem('users');
+            localStorage.removeItem('jobs');
+            localStorage.removeItem('appliedJobs');
+            
+            const results = document.getElementById('data-results');
+            results.innerHTML += `<div class="text-red-600">✓ All data cleared</div>`;
+        }
+
+        function updateTestStatus(testId, status) {
+            const testElement = document.getElementById(testId);
+            testElement.className = testElement.className.replace(/test-(pass|fail|pending)/, `test-${status}`);
+            
+            updateSummary();
+        }
+
+        function updateSummary() {
+            const summary = document.getElementById('summary-results');
+            const totalTests = Object.keys(testResults).length;
+            const passedTests = Object.values(testResults).filter(r => r === 'pass').length;
+            const failedTests = Object.values(testResults).filter(r => r === 'fail').length;
+            
+            summary.innerHTML = `
+                <div class="text-lg font-semibold">
+                    Tests: ${totalTests} | Passed: ${passedTests} | Failed: ${failedTests}
+                </div>
+                <div class="text-sm text-gray-600 mt-2">
+                    ${Object.entries(testResults).map(([test, result]) => 
+                        `<span class="inline-block mr-4 ${result === 'pass' ? 'text-green-600' : result === 'fail' ? 'text-red-600' : 'text-yellow-600'}">${test}: ${result}</span>`
+                    ).join('')}
+                </div>
+            `;
+        }
+
+        // Auto-run basic tests on load
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                testDataLoading();
+                testController();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

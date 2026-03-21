@@ -1,0 +1,2525 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | Rwanda SkillsConnect</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root{--primary:#0056B3;--primary-light:#E8F2FF;--secondary:#00C896;--accent:#FF6B6B;--dark:#1A1F36;--gray:#64748B;--border:#E2E8F0;--radius:10px;--sidebar-width:280px;--shadow:0 4px 20px rgba(0,0,0,.08);}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Inter',sans-serif;color:var(--dark);background:#f5f7fa;overflow-x:hidden;min-height:100vh;}
+    h1,h2,h3,h4,h5,h6{font-family:'Poppins',sans-serif;font-weight:600;}
+    ::-webkit-scrollbar{width:8px;} ::-webkit-scrollbar-thumb{background:var(--primary);border-radius:4px;}
+    .dashboard-wrapper{display:flex;min-height:100vh;}
+    .sidebar{width:var(--sidebar-width);background:#fff;border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:1000;box-shadow:2px 0 10px rgba(0,0,0,.05);transition:transform .3s ease;}
+    .sidebar.collapsed{width:80px;}
+    .sidebar.collapsed .logo-text,.sidebar.collapsed .menu-text,.sidebar.collapsed .section-title{display:none;}
+    .sidebar-header{padding:20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+    .logo{display:flex;align-items:center;gap:12px;}
+    .logo-icon{width:40px;height:40px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;}
+    .brand-name{font-family:'Poppins',sans-serif;font-weight:700;font-size:18px;color:var(--dark);}
+    .brand-tagline{font-size:11px;color:var(--gray);}
+    .sidebar-toggle{background:var(--primary-light);border:none;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--primary);cursor:pointer;}
+    .sidebar-toggle:hover{background:var(--primary);color:#fff;}
+    .sidebar-menu{flex:1;padding:20px 0;overflow-y:auto;}
+    .menu-section{margin-bottom:20px;}
+    .section-title{padding:0 20px 8px;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--gray);font-weight:600;}
+    .menu-item{display:flex;align-items:center;gap:12px;padding:12px 20px;color:var(--gray);text-decoration:none;transition:all .2s ease;}
+    .menu-item:hover,.menu-item.active{background:var(--primary-light);color:var(--primary);}
+    .menu-item.active{border-left:3px solid var(--primary);}
+    .menu-item i{width:20px;text-align:center;font-size:16px;}
+    .menu-text{flex:1;font-size:14px;font-weight:500;}
+    .sidebar-footer{border-top:1px solid var(--border);padding:15px 0;}
+    .sidebar-item{display:flex;align-items:center;gap:12px;padding:10px 20px;color:var(--gray);text-decoration:none;transition:all .2s ease;}
+    .sidebar-item:hover{background:var(--primary-light);color:var(--primary);}
+    .sidebar-item.logout:hover{background:#ffe6e6;color:var(--accent);}
+    .main-content{flex:1;margin-left:var(--sidebar-width);transition:margin-left .3s ease;min-height:100vh;}
+    .top-nav{background:#fff;border-bottom:1px solid var(--border);padding:0 30px;height:70px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 10px rgba(0,0,0,.05);}
+    .nav-left{display:flex;align-items:center;gap:20px;}
+    .mobile-toggle{display:none;background:none;border:none;color:var(--primary);font-size:1.2rem;cursor:pointer;}
+    .page-title{font-size:1.5rem;font-weight:600;color:var(--dark);}
+    .page-subtitle{color:var(--gray);font-size:14px;margin:0;}
+    .nav-right{display:flex;align-items:center;gap:20px;}
+    .user-avatar-sm{width:36px;height:36px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:14px;}
+    .content-area{padding:1rem 1.5rem;background:#f5f7fa;min-height:calc(100vh - 70px);}
+    .dashboard-container{max-width:1400px;margin:0 auto;}
+    .welcome-banner{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);border-radius:10px;padding:1.25rem 1.5rem;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;color:#fff;}
+    .welcome-banner h2{font-size:1.25rem;font-weight:600;margin-bottom:.25rem;}
+    .welcome-banner p{opacity:.9;margin:0;font-size:.875rem;}
+    .welcome-actions .btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;padding:.5rem 1rem;border-radius:6px;font-size:.875rem;}
+    .welcome-actions .btn:hover{background:rgba(255,255,255,.2);}
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem;}
+    .stat-card-compact{background:#fff;border-radius:10px;padding:1rem;border:1px solid #e2e8f0;transition:all .2s ease;}
+    .stat-card-compact:hover{border-color:#cbd5e1;box-shadow:0 4px 12px rgba(0,0,0,.05);}
+    .stat-icon-sm{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:8px;margin-bottom:.75rem;}
+    .stat-icon-sm i{font-size:1rem;color:#fff;}
+    .stat-content-compact h3{font-size:1.5rem;font-weight:700;margin-bottom:.25rem;color:#1e293b;line-height:1;}
+    .stat-content-compact p{color:#64748b;font-size:.875rem;margin-bottom:.25rem;font-weight:500;}
+    .stat-content-compact small{color:#94a3b8;font-size:.75rem;display:block;}
+    .dashboard-grid{display:grid;grid-template-columns:2fr 1fr;gap:1.5rem;}
+    .card{border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;background:#fff;}
+    .card-header{padding:.875rem 1rem;border-bottom:1px solid #e2e8f0;background:#f8fafc;display:flex;align-items:center;justify-content:space-between;}
+    .card-title{font-size:.9375rem;font-weight:600;color:#1e293b;margin:0;}
+    .card-body{padding:1rem;}
+    .chart-container{height:250px;position:relative;}
+    .table-compact{font-size:.8125rem;margin:0;}
+    .table-compact thead th{padding:.75rem;background:#f8fafc;border-bottom:2px solid #e2e8f0;font-weight:600;color:#475569;white-space:nowrap;}
+    .table-compact tbody td{padding:.75rem;vertical-align:middle;border-bottom:1px solid #f1f5f9;}
+    .table-compact tbody tr:last-child td{border-bottom:none;}
+    .user-avatar-xs{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:.875rem;}
+    .badge-sm{padding:.25em .5em;font-size:.6875rem;font-weight:600;border-radius:4px;}
+    .quick-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;margin-bottom:1rem;}
+    .quick-stat-item{background:#f8fafc;border-radius:8px;padding:.75rem;text-align:center;}
+    .quick-stat-item .stat-value{font-size:1.25rem;font-weight:700;color:#1e293b;display:block;margin-bottom:.125rem;}
+    .quick-stat-item .stat-label{font-size:.75rem;color:#64748b;font-weight:500;}
+    .quick-actions-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;}
+    .btn-action-compact{padding:.75rem;text-align:center;border-radius:8px;border:1px solid #e2e8f0;background:#fff;color:#475569;font-size:.8125rem;font-weight:500;transition:all .2s ease;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60px;text-decoration:none;}
+    .btn-action-compact:hover{background:#f1f5f9;border-color:#cbd5e1;color:#334155;transform:translateY(-2px);}
+    .btn-action-compact i{font-size:1rem;margin-bottom:.5rem;color:#667eea;}
+    .sidebar-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:999;}
+    .sidebar-overlay.show{display:block;}
+    @media(max-width:1024px){.dashboard-grid{grid-template-columns:1fr;}}
+    @media(max-width:992px){.sidebar{transform:translateX(-100%);}.sidebar.show{transform:translateX(0);}.main-content{margin-left:0!important;}.mobile-toggle{display:block;}}
+    @media(max-width:768px){.welcome-banner{flex-direction:column;text-align:center;gap:.75rem;}.stats-grid{grid-template-columns:repeat(2,1fr);}.content-area{padding:.75rem;}}
+  </style>
+</head>
+<body>
+<div class="dashboard-wrapper">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <div class="logo-icon"><i class="fas fa-shield-alt"></i></div>
+        <div class="logo-text">
+          <span class="brand-name">Admin Panel</span>
+          <span class="brand-tagline">SkillsConnect</span>
+        </div>
+      </div>
+      <button class="sidebar-toggle" id="sidebarCollapse"><i class="fas fa-chevron-left"></i></button>
+    </div>
+    <nav class="sidebar-menu">
+      <div class="menu-section">
+        <div class="section-title">Dashboard</div>
+        <a href="#" class="menu-item active" data-section="overview"><i class="fas fa-tachometer-alt"></i><span class="menu-text">Overview</span></a>
+      </div>
+      <div class="menu-section">
+        <div class="section-title">Users</div>
+        <a href="#" class="menu-item" data-section="users-all"><i class="fas fa-users"></i><span class="menu-text">All Users</span></a>
+        <a href="#" class="menu-item" data-section="users-workers"><i class="fas fa-tools"></i><span class="menu-text">Workers</span></a>
+        <a href="#" class="menu-item" data-section="users-employers"><i class="fas fa-building"></i><span class="menu-text">Employers</span></a>
+      </div>
+      <div class="menu-section">
+        <div class="section-title">Content</div>
+        <a href="#" class="menu-item" data-section="skills"><i class="fas fa-tags"></i><span class="menu-text">Skill Catalog</span></a>
+        <a href="#" class="menu-item" data-section="jobs"><i class="fas fa-briefcase"></i><span class="menu-text">Jobs</span></a>
+      </div>
+      <div class="menu-section">
+        <div class="section-title">Finance</div>
+        <a href="#" class="menu-item" data-section="transactions"><i class="fas fa-exchange-alt"></i><span class="menu-text">Transactions</span></a>
+        <a href="#" class="menu-item" data-section="withdrawals"><i class="fas fa-money-check-alt"></i><span class="menu-text">Withdrawals</span></a>
+      </div>
+      <div class="menu-section">
+        <div class="section-title">System</div>
+        <a href="#" class="menu-item" data-section="analytics"><i class="fas fa-chart-bar"></i><span class="menu-text">Analytics</span></a>
+        <a href="#" class="menu-item" data-section="reports"><i class="fas fa-file-alt"></i><span class="menu-text">Reports</span></a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <a href="#" class="sidebar-item" data-section="settings"><i class="fas fa-cog"></i><span>Settings</span></a>
+      <a href="#" class="sidebar-item logout" id="logoutBtn"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a>
+    </div>
+  </aside>
+
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <main class="main-content">
+    <header class="top-nav">
+      <div class="nav-left">
+        <button class="mobile-toggle" id="mobileToggle"><i class="fas fa-bars"></i></button>
+        <div>
+          <h1 class="page-title">Admin Dashboard</h1>
+          <p class="page-subtitle">Platform overview and management</p>
+        </div>
+      </div>
+      <div class="nav-right">
+        <div class="user-avatar-sm" id="userAvatar">A</div>
+        <div>
+          <div style="font-size:14px;font-weight:500;" id="userName">Admin</div>
+          <div style="font-size:12px;color:var(--gray);">Administrator</div>
+        </div>
+      </div>
+    </header>
+
+    <div class="content-area">
+      <div class="dashboard-container">
+        <!-- Overview pane -->
+        <div id="pane-overview" class="pane">
+          <div class="welcome-banner">
+            <div class="welcome-content">
+              <h2>Admin Dashboard</h2>
+              <p>Monitor and manage platform performance</p>
+            </div>
+            <div class="welcome-actions">
+              <a href="#" class="btn"><i class="fas fa-users me-1"></i> Users</a>
+            </div>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-card-compact"><div class="stat-icon-sm bg-primary"><i class="fas fa-users"></i></div><div class="stat-content-compact"><h3 id="statTotalUsers">0</h3><p>Total Users</p><small id="statUserBreakdown">0 workers / 0 employers</small></div></div>
+            <div class="stat-card-compact"><div class="stat-icon-sm bg-success"><i class="fas fa-briefcase"></i></div><div class="stat-content-compact"><h3 id="statActiveJobs">0</h3><p>Active Jobs</p><small id="statJobBreakdown">0 total</small></div></div>
+            <div class="stat-card-compact"><div class="stat-icon-sm bg-warning"><i class="fas fa-money-bill-wave"></i></div><div class="stat-content-compact"><h3>RWF 0</h3><p>Total Revenue</p><small>Platform commissions</small></div></div>
+            <div class="stat-card-compact"><div class="stat-icon-sm bg-info"><i class="fas fa-chart-line"></i></div><div class="stat-content-compact"><h3 id="statGrowth">0%</h3><p>Growth Rate</p><small>User growth this month</small></div></div>
+          </div>
+
+          <div class="dashboard-grid">
+            <div class="left-column">
+              <div class="card mb-3">
+                <div class="card-header">
+                  <h5 class="card-title">Revenue Overview</h5>
+                  <select class="form-select form-select-sm" style="width:auto;"><option>Last 6 months</option></select>
+                </div>
+                <div class="card-body"><div class="chart-container"><canvas id="revenueChart"></canvas></div></div>
+              </div>
+              <div class="card">
+                <div class="card-header">
+                  <h5 class="card-title">Recent Users</h5>
+                  <a href="#" class="btn btn-sm btn-primary">View All</a>
+                </div>
+                <div class="card-body p-0">
+                  <div class="table-responsive">
+                    <table class="table table-compact mb-0">
+                      <thead><tr><th>User</th><th>Role</th><th>Joined</th><th>Status</th></tr></thead>
+                      <tbody id="recentUsersTable">
+                        <tr><td colspan="4" class="text-center py-4"><i class="fas fa-users fa-2x text-muted mb-2 d-block"></i><p class="text-muted mb-0" style="font-size:.875rem;">No users found</p></td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="right-column">
+              <div class="card mb-3">
+                <div class="card-header"><h5 class="card-title">Quick Stats</h5></div>
+                <div class="card-body">
+                  <div class="quick-stats">
+                    <div class="quick-stat-item"><span class="stat-value" id="qsApplications">0</span><span class="stat-label">Applications</span></div>
+                    <div class="quick-stat-item"><span class="stat-value" id="qsAccepted">0</span><span class="stat-label">Accepted</span></div>
+                    <div class="quick-stat-item"><span class="stat-value" id="qsPayments">0</span><span class="stat-label">Payments</span></div>
+                    <div class="quick-stat-item"><span class="stat-value" id="qsTransactions">0</span><span class="stat-label">Transactions</span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-header"><h5 class="card-title">Quick Actions</h5></div>
+                <div class="card-body">
+                  <div class="quick-actions-grid">
+                    <a href="#" class="btn-action-compact" data-section="users-all"><i class="fas fa-user-cog"></i><span>Users</span></a>
+                    <a href="#" class="btn-action-compact" data-section="jobs"><i class="fas fa-briefcase"></i><span>Jobs</span></a>
+                    <a href="#" class="btn-action-compact" data-section="transactions"><i class="fas fa-exchange-alt"></i><span>Transactions</span></a>
+                    <a href="#" class="btn-action-compact" data-section="reports"><i class="fas fa-chart-pie"></i><span>Reports</span></a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Users pane (shared layout, role controlled by data-role) -->
+        <div id="pane-users-all" class="pane" style="display:none;">
+          <div class="card">
+            <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+              <h5 class="card-title mb-0">All Users</h5>
+              <div class="d-flex gap-2 flex-wrap align-items-center">
+                <input id="usersSearch" class="form-control form-control-sm" placeholder="Search name or email&hellip;" style="width:200px;">
+                <select id="usersRoleFilter" class="form-select form-select-sm" style="width:130px;">
+                  <option value="">All roles</option>
+                  <option value="worker">Worker</option>
+                  <option value="employer">Employer</option>
+                  <option value="admin">Admin</option>
+                </select>
+                <select id="usersStatusFilter" class="form-select form-select-sm" style="width:130px;">
+                  <option value="">All statuses</option>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                  <option value="suspended">Suspended</option>
+                </select>
+                <button class="btn btn-sm btn-outline-primary" id="refreshUsers"><i class="fas fa-sync-alt me-1"></i>Refresh</button>
+              </div>
+            </div>
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table table-compact mb-0">
+                  <thead><tr><th>User</th><th>Email</th><th>Role</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
+                  <tbody id="usersTable"><tr><td colspan="6" class="text-center py-4 text-muted">Loading&hellip;</td></tr></tbody>
+                </table>
+              </div>
+              <div id="usersPagination" class="d-flex justify-content-between align-items-center px-3 py-2 border-top" style="font-size:.8125rem;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="pane-users-workers" class="pane" style="display:none;">
+          <div class="card">
+            <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+              <h5 class="card-title mb-0">Workers</h5>
+              <div class="d-flex gap-2 flex-wrap align-items-center">
+                <input id="workersSearch" class="form-control form-control-sm" placeholder="Search name, email or skill&hellip;" style="width:210px;">
+                <select id="workersExpFilter" class="form-select form-select-sm" style="width:140px;">
+                  <option value="">All levels</option>
+                  <option value="entry">Entry</option>
+                  <option value="intermediate">Intermediate</option>
+                  <option value="senior">Senior</option>
+                  <option value="expert">Expert</option>
+                </select>
+                <select id="workersStatusFilter" class="form-select form-select-sm" style="width:130px;">
+                  <option value="">All statuses</option>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                  <option value="suspended">Suspended</option>
+                </select>
+                <button class="btn btn-sm btn-outline-primary" id="refreshWorkers"><i class="fas fa-sync-alt me-1"></i>Refresh</button>
+              </div>
+            </div>
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table table-compact mb-0">
+                  <thead>
+                    <tr>
+                      <th>Worker</th>
+                      <th>Email</th>
+                      <th>Skills</th>
+                      <th>Level</th>
+                      <th>Availability</th>
+                      <th>Applications</th>
+                      <th>Status</th>
+                      <th>Joined</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="usersWorkersTable"><tr><td colspan="9" class="text-center py-4 text-muted">Loading&hellip;</td></tr></tbody>
+                </table>
+              </div>
+              <div id="workersPagination" class="d-flex justify-content-between align-items-center px-3 py-2 border-top" style="font-size:.8125rem;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="pane-users-employers" class="pane" style="display:none;">
+          <div class="card">
+            <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+              <h5 class="card-title mb-0">Employers</h5>
+              <div class="d-flex gap-2 flex-wrap align-items-center">
+                <input id="employersSearch" class="form-control form-control-sm" placeholder="Search name or email&hellip;" style="width:200px;">
+                <select id="employersStatusFilter" class="form-select form-select-sm" style="width:130px;">
+                  <option value="">All statuses</option>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                  <option value="suspended">Suspended</option>
+                </select>
+                <button class="btn btn-sm btn-outline-primary" id="refreshEmployers"><i class="fas fa-sync-alt me-1"></i>Refresh</button>
+              </div>
+            </div>
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table table-compact mb-0">
+                  <thead><tr><th>User</th><th>Email</th><th>Company</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
+                  <tbody id="usersEmployersTable"><tr><td colspan="6" class="text-center py-4 text-muted">Loading&hellip;</td></tr></tbody>
+                </table>
+              </div>
+              <div id="employersPagination" class="d-flex justify-content-between align-items-center px-3 py-2 border-top" style="font-size:.8125rem;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Skills pane -->
+        <div id="pane-skills" class="pane" style="display:none;">
+          <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <div>
+                <h5 class="card-title mb-0">Skill Catalog</h5>
+                <p class="text-muted mb-0" style="font-size:.8125rem;">Manage the platform-wide list of recognized skills</p>
+              </div>
+              <button class="btn btn-sm btn-outline-primary" id="refreshSkills"><i class="fas fa-sync-alt me-1"></i>Refresh</button>
+            </div>
+            <div class="card-body p-3">
+              <div class="row g-4">
+                <div class="col-md-7">
+                  <h6 class="fw-semibold mb-1">Platform Skills</h6>
+                  <p class="text-muted mb-3" style="font-size:.875rem;">This is the authoritative skill catalog for Rwanda SkillsConnect. Skills listed here are used to tag job postings and worker profiles, enabling accurate matching between employers and candidates. Keep this list current by adding emerging skills and removing obsolete ones.</p>
+                  <div class="table-responsive">
+                    <table class="table table-compact mb-0">
+                      <thead><tr><th>Skill Name</th><th style="width:120px">Usage Count</th><th style="width:140px">Actions</th></tr></thead>
+                      <tbody id="skillsTableBody"><tr><td colspan="3" class="text-center py-4 text-muted">Loading&hellip;</td></tr></tbody>
+                    </table>
+                  </div>
+                </div>
+                <div class="col-md-5">
+                  <h6 class="fw-semibold mb-1">Add a New Skill</h6>
+                  <p class="text-muted mb-3" style="font-size:.875rem;">Enter a skill name to add it to the platform catalog. Use clear, industry-standard terminology for best results.</p>
+                  <form id="skillForm" class="mb-3">
+                    <div class="mb-3">
+                      <label class="form-label fw-semibold">Skill Name</label>
+                      <input id="newSkillName" class="form-control" placeholder="e.g. Data Analysis, Carpentry, Customer Service"/>
+                    </div>
+                    <div class="d-flex gap-2">
+                      <button id="addSkillBtn" class="btn btn-primary" type="submit"><i class="fas fa-plus me-1"></i>Add Skill</button>
+                      <button id="clearLocalSkills" class="btn btn-outline-secondary" type="button">Clear Local Cache</button>
+                    </div>
+                  </form>
+                  <div id="skillsInfo" class="text-muted" style="font-size:.875rem"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Jobs pane -->
+        <div id="pane-jobs" class="pane" style="display:none;">
+          <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+              <h5 class="card-title mb-0">Jobs</h5>
+              <div class="d-flex align-items-center gap-2 flex-wrap">
+                <input id="jobsSearch" class="form-control form-control-sm" placeholder="Search title or employer&hellip;" style="width:200px;">
+                <select id="jobsStatusFilter" class="form-select form-select-sm" style="width:130px;">
+                  <option value="">All statuses</option>
+                  <option value="active">Active</option>
+                  <option value="draft">Draft</option>
+                  <option value="inactive">Inactive</option>
+                  <option value="filled">Filled</option>
+                </select>
+                <button class="btn btn-sm btn-outline-primary" id="refreshJobs"><i class="fas fa-sync-alt me-1"></i>Refresh</button>
+              </div>
+            </div>
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table table-compact mb-0">
+                  <thead>
+                    <tr>
+                      <th>Title</th>
+                      <th>Employer</th>
+                      <th>Location</th>
+                      <th>Budget (RWF)</th>
+                      <th>Applications</th>
+                      <th>Status</th>
+                      <th>Posted</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="jobsTable"><tr><td colspan="8" class="text-center py-4 text-muted">Loading&hellip;</td></tr></tbody>
+                </table>
+              </div>
+              <div id="jobsPagination" class="d-flex justify-content-between align-items-center px-3 py-2 border-top" style="font-size:.8125rem;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Transactions pane -->
+        <div id="pane-transactions" class="pane" style="display:none;">
+          <!-- KPI summary -->
+          <div class="row g-3 mb-3">
+            <div class="col-6 col-md-3"><div class="stat-card-compact"><div class="stat-icon-sm bg-primary"><i class="fas fa-exchange-alt"></i></div><div class="stat-content-compact"><h3 id="txKpiTotal">—</h3><p>Total Transactions</p><small>all time</small></div></div></div>
+            <div class="col-6 col-md-3"><div class="stat-card-compact"><div class="stat-icon-sm bg-success"><i class="fas fa-check-circle"></i></div><div class="stat-content-compact"><h3 id="txKpiCompleted">—</h3><p>Completed</p><small>all time</small></div></div></div>
+            <div class="col-6 col-md-3"><div class="stat-card-compact"><div class="stat-icon-sm bg-warning"><i class="fas fa-clock"></i></div><div class="stat-content-compact"><h3 id="txKpiPending">—</h3><p>Pending</p><small>awaiting processing</small></div></div></div>
+            <div class="col-6 col-md-3"><div class="stat-card-compact"><div class="stat-icon-sm bg-info"><i class="fas fa-money-bill-wave"></i></div><div class="stat-content-compact"><h3 id="txKpiVolume">—</h3><p>Total Volume (RWF)</p><small>completed payments</small></div></div></div>
+          </div>
+          <div class="card">
+            <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+              <div>
+                <h5 class="card-title mb-0">Transaction Ledger</h5>
+                <p class="text-muted mb-0" style="font-size:.8125rem;">All platform financial activity</p>
+              </div>
+              <div class="d-flex gap-2 flex-wrap align-items-center">
+                <input id="txSearch" class="form-control form-control-sm" placeholder="Search user or reference&hellip;" style="width:200px;">
+                <select id="txTypeFilter" class="form-select form-select-sm" style="width:160px;">
+                  <option value="">All types</option>
+                  <option value="payment_received">Payment Received</option>
+                  <option value="deposit">Deposit</option>
+                  <option value="withdrawal">Withdrawal</option>
+                  <option value="refund">Refund</option>
+                </select>
+                <select id="txStatusFilter" class="form-select form-select-sm" style="width:130px;">
+                  <option value="">All statuses</option>
+                  <option value="completed">Completed</option>
+                  <option value="pending">Pending</option>
+                  <option value="failed">Failed</option>
+                </select>
+                <button class="btn btn-sm btn-outline-primary" id="refreshTransactions"><i class="fas fa-sync-alt me-1"></i>Refresh</button>
+              </div>
+            </div>
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table table-compact mb-0">
+                  <thead>
+                    <tr>
+                      <th>Date &amp; Time</th>
+                      <th>User</th>
+                      <th>Transaction Type</th>
+                      <th class="text-end">Amount (RWF)</th>
+                      <th class="text-end">Platform Fee</th>
+                      <th>Reference</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="transactionsTable"><tr><td colspan="7" class="text-center py-4 text-muted">Loading&hellip;</td></tr></tbody>
+                </table>
+              </div>
+              <div id="txPagination" class="d-flex justify-content-between align-items-center px-3 py-2 border-top" style="font-size:.8125rem;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Withdrawals pane -->
+        <div id="pane-withdrawals" class="pane" style="display:none;">
+          <!-- KPI summary -->
+          <div class="row g-3 mb-3">
+            <div class="col-6 col-md-3"><div class="stat-card-compact"><div class="stat-icon-sm bg-warning"><i class="fas fa-clock"></i></div><div class="stat-content-compact"><h3 id="wdKpiPending">&mdash;</h3><p>Pending</p><small>awaiting approval</small></div></div></div>
+            <div class="col-6 col-md-3"><div class="stat-card-compact"><div class="stat-icon-sm bg-info"><i class="fas fa-spinner"></i></div><div class="stat-content-compact"><h3 id="wdKpiProcessing">&mdash;</h3><p>Processing</p><small>in progress</small></div></div></div>
+            <div class="col-6 col-md-3"><div class="stat-card-compact"><div class="stat-icon-sm bg-success"><i class="fas fa-check-circle"></i></div><div class="stat-content-compact"><h3 id="wdKpiCompleted">&mdash;</h3><p>Completed</p><small>all time</small></div></div></div>
+            <div class="col-6 col-md-3"><div class="stat-card-compact"><div class="stat-icon-sm bg-primary"><i class="fas fa-money-check-alt"></i></div><div class="stat-content-compact"><h3 id="wdKpiVolume">&mdash;</h3><p>Total Paid Out (RWF)</p><small>completed withdrawals</small></div></div></div>
+          </div>
+          <div class="card">
+            <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+              <div>
+                <h5 class="card-title mb-0">Withdrawal Requests</h5>
+                <p class="text-muted mb-0" style="font-size:.8125rem;">Review and process worker withdrawal requests</p>
+              </div>
+              <div class="d-flex gap-2 flex-wrap align-items-center">
+                <input id="wdSearch" class="form-control form-control-sm" placeholder="Search user or method&hellip;" style="width:200px;">
+                <select id="wdStatusFilter" class="form-select form-select-sm" style="width:140px;">
+                  <option value="">All statuses</option>
+                  <option value="pending">Pending</option>
+                  <option value="processing">Processing</option>
+                  <option value="completed">Completed</option>
+                  <option value="rejected">Rejected</option>
+                </select>
+                <button class="btn btn-sm btn-outline-primary" id="refreshWithdrawals"><i class="fas fa-sync-alt me-1"></i>Refresh</button>
+              </div>
+            </div>
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table table-compact mb-0">
+                  <thead>
+                    <tr>
+                      <th>Date &amp; Time</th>
+                      <th>User</th>
+                      <th>Method</th>
+                      <th class="text-end">Amount (RWF)</th>
+                      <th class="text-end">Fee</th>
+                      <th class="text-end">Net Payout</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="withdrawalsTable"><tr><td colspan="8" class="text-center py-4 text-muted">Loading&hellip;</td></tr></tbody>
+                </table>
+              </div>
+              <div id="wdPagination" class="d-flex justify-content-between align-items-center px-3 py-2 border-top" style="font-size:.8125rem;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Analytics pane -->
+        <div id="pane-analytics" class="pane" style="display:none;">
+          <!-- KPI row -->
+          <div class="row g-3 mb-3" id="analyticsKpis">
+            <div class="col-6 col-md-3"><div class="stat-card-compact"><div class="stat-icon-sm bg-primary"><i class="fas fa-user-plus"></i></div><div class="stat-content-compact"><h3 id="aKpiNewUsers">&mdash;</h3><p>New Users</p><small>last 30 days</small></div></div></div>
+            <div class="col-6 col-md-3"><div class="stat-card-compact"><div class="stat-icon-sm bg-success"><i class="fas fa-briefcase"></i></div><div class="stat-content-compact"><h3 id="aKpiNewJobs">&mdash;</h3><p>New Jobs</p><small>last 30 days</small></div></div></div>
+            <div class="col-6 col-md-3"><div class="stat-card-compact"><div class="stat-icon-sm bg-warning"><i class="fas fa-file-alt"></i></div><div class="stat-content-compact"><h3 id="aKpiApplications">&mdash;</h3><p>Applications</p><small>last 30 days</small></div></div></div>
+            <div class="col-6 col-md-3"><div class="stat-card-compact"><div class="stat-icon-sm bg-info"><i class="fas fa-money-bill-wave"></i></div><div class="stat-content-compact"><h3 id="aKpiRevenue">&mdash;</h3><p>Revenue (RWF)</p><small>last 30 days</small></div></div></div>
+          </div>
+          <!-- Charts row 1 -->
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                  <h5 class="card-title">User Registrations</h5>
+                  <select id="aUsersRange" class="form-select form-select-sm" style="width:auto;">
+                    <option value="6">Last 6 months</option>
+                    <option value="12">Last 12 months</option>
+                  </select>
+                </div>
+                <div class="card-body"><div class="chart-container"><canvas id="analyticsUsersChart"></canvas></div></div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                  <h5 class="card-title">Job Postings</h5>
+                  <select id="aJobsRange" class="form-select form-select-sm" style="width:auto;">
+                    <option value="6">Last 6 months</option>
+                    <option value="12">Last 12 months</option>
+                  </select>
+                </div>
+                <div class="card-body"><div class="chart-container"><canvas id="analyticsJobsChart"></canvas></div></div>
+              </div>
+            </div>
+          </div>
+          <!-- Charts row 2 -->
+          <div class="row g-3">
+            <div class="col-md-8">
+              <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                  <h5 class="card-title">Transaction Volume (RWF)</h5>
+                  <select id="aTxRange" class="form-select form-select-sm" style="width:auto;">
+                    <option value="6">Last 6 months</option>
+                    <option value="12">Last 12 months</option>
+                  </select>
+                </div>
+                <div class="card-body"><div class="chart-container"><canvas id="analyticsTxChart"></canvas></div></div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="card h-100">
+                <div class="card-header"><h5 class="card-title">Job Status Breakdown</h5></div>
+                <div class="card-body d-flex align-items-center justify-content-center">
+                  <div style="max-width:220px;width:100%;"><canvas id="analyticsJobStatusChart"></canvas></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reports pane -->
+        <div id="pane-reports" class="pane" style="display:none;">
+          <!-- Header -->
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+            <div>
+              <h5 class="mb-0" style="font-family:'Poppins',sans-serif;font-weight:600;">Platform Reports</h5>
+              <p class="text-muted mb-0" style="font-size:.8125rem;">Snapshot of key platform metrics</p>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+              <select id="reportPeriod" class="form-select form-select-sm" style="width:150px;">
+                <option value="30">Last 30 days</option>
+                <option value="90">Last 90 days</option>
+                <option value="180">Last 6 months</option>
+                <option value="365">Last 12 months</option>
+                <option value="0">All time</option>
+              </select>
+              <button class="btn btn-sm btn-outline-primary" id="refreshReportBtn"><i class="fas fa-sync-alt me-1"></i>Refresh</button>
+              <button class="btn btn-sm btn-success" id="exportReportBtn"><i class="fas fa-download me-1"></i>Export CSV</button>
+            </div>
+          </div>
+
+          <!-- KPI summary cards -->
+          <div class="row g-3 mb-3" id="reportKpis"></div>
+
+          <!-- Detail tables -->
+          <div class="row g-3">
+            <!-- Users breakdown -->
+            <div class="col-md-6">
+              <div class="card h-100">
+                <div class="card-header"><h5 class="card-title">Users</h5></div>
+                <div class="card-body p-0">
+                  <table class="table table-compact mb-0">
+                    <thead><tr><th>Metric</th><th class="text-end">Value</th></tr></thead>
+                    <tbody id="rptUsersBody"><tr><td colspan="2" class="text-center py-3 text-muted">Loading&hellip;</td></tr></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <!-- Jobs breakdown -->
+            <div class="col-md-6">
+              <div class="card h-100">
+                <div class="card-header"><h5 class="card-title">Jobs</h5></div>
+                <div class="card-body p-0">
+                  <table class="table table-compact mb-0">
+                    <thead><tr><th>Metric</th><th class="text-end">Value</th></tr></thead>
+                    <tbody id="rptJobsBody"><tr><td colspan="2" class="text-center py-3 text-muted">Loading&hellip;</td></tr></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <!-- Applications breakdown -->
+            <div class="col-md-6">
+              <div class="card h-100">
+                <div class="card-header"><h5 class="card-title">Applications</h5></div>
+                <div class="card-body p-0">
+                  <table class="table table-compact mb-0">
+                    <thead><tr><th>Metric</th><th class="text-end">Value</th></tr></thead>
+                    <tbody id="rptAppsBody"><tr><td colspan="2" class="text-center py-3 text-muted">Loading&hellip;</td></tr></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <!-- Finance breakdown -->
+            <div class="col-md-6">
+              <div class="card h-100">
+                <div class="card-header"><h5 class="card-title">Finance</h5></div>
+                <div class="card-body p-0">
+                  <table class="table table-compact mb-0">
+                    <thead><tr><th>Metric</th><th class="text-end">Value</th></tr></thead>
+                    <tbody id="rptFinanceBody"><tr><td colspan="2" class="text-center py-3 text-muted">Loading&hellip;</td></tr></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <!-- Top employers -->
+            <div class="col-md-6">
+              <div class="card">
+                <div class="card-header"><h5 class="card-title">Top Employers by Jobs Posted</h5></div>
+                <div class="card-body p-0">
+                  <table class="table table-compact mb-0">
+                    <thead><tr><th>#</th><th>Employer</th><th class="text-end">Jobs</th></tr></thead>
+                    <tbody id="rptTopEmployers"><tr><td colspan="3" class="text-center py-3 text-muted">Loading&hellip;</td></tr></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <!-- Top job titles -->
+            <div class="col-md-6">
+              <div class="card">
+                <div class="card-header"><h5 class="card-title">Most Applied-to Jobs</h5></div>
+                <div class="card-body p-0">
+                  <table class="table table-compact mb-0">
+                    <thead><tr><th>#</th><th>Job Title</th><th class="text-end">Applications</th></tr></thead>
+                    <tbody id="rptTopJobs"><tr><td colspan="3" class="text-center py-3 text-muted">Loading&hellip;</td></tr></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Settings pane -->
+        <div id="pane-settings" class="pane" style="display:none;">
+          <!-- Header -->
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+            <div>
+              <h5 class="mb-0" style="font-family:'Poppins',sans-serif;font-weight:600;">Platform Settings</h5>
+              <p class="text-muted mb-0" style="font-size:.8125rem;">Configure and manage Rwanda SkillsConnect platform behaviour</p>
+            </div>
+            <div id="settingsLastSaved" class="text-muted" style="font-size:.8125rem;"></div>
+          </div>
+
+          <div id="settingsAlert"></div>
+
+          <!-- Tab nav -->
+          <ul class="nav nav-tabs mb-3" id="settingsTabs">
+            <li class="nav-item"><button class="nav-link active" data-stab="general"><i class="fas fa-sliders-h me-1"></i>General</button></li>
+            <li class="nav-item"><button class="nav-link" data-stab="finance"><i class="fas fa-coins me-1"></i>Finance</button></li>
+            <li class="nav-item"><button class="nav-link" data-stab="access"><i class="fas fa-shield-alt me-1"></i>Access &amp; Security</button></li>
+            <li class="nav-item"><button class="nav-link" data-stab="notifications"><i class="fas fa-bell me-1"></i>Notifications</button></li>
+          </ul>
+
+          <form id="settingsForm">
+
+            <!-- ── General ── -->
+            <div class="settings-tab" id="stab-general">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <div class="card h-100">
+                    <div class="card-header"><h6 class="card-title mb-0"><i class="fas fa-globe me-2 text-primary"></i>Platform Identity</h6></div>
+                    <div class="card-body">
+                      <div class="mb-3">
+                        <label class="form-label fw-semibold">Platform Name</label>
+                        <input id="setPlatformName" class="form-control" value="Rwanda SkillsConnect"/>
+                        <div class="form-text">Displayed in the browser title and email templates.</div>
+                      </div>
+                      <div class="mb-3">
+                        <label class="form-label fw-semibold">Support Email</label>
+                        <div class="input-group">
+                          <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                          <input id="setSupportEmail" class="form-control" type="email" placeholder="support@rwandaskillsconnect.rw"/>
+                        </div>
+                        <div class="form-text">Shown to users on error pages and notification emails.</div>
+                      </div>
+                      <div class="mb-0">
+                        <label class="form-label fw-semibold">Support Phone</label>
+                        <div class="input-group">
+                          <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                          <input id="setSupportPhone" class="form-control" type="tel" placeholder="+250 7XX XXX XXX"/>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="card h-100">
+                    <div class="card-header"><h6 class="card-title mb-0"><i class="fas fa-tools me-2 text-warning"></i>Platform Status</h6></div>
+                    <div class="card-body">
+                      <div class="mb-3 p-3 rounded" style="background:#fff8e1;border:1px solid #ffe082;">
+                        <div class="d-flex align-items-center justify-content-between mb-1">
+                          <div>
+                            <div class="fw-semibold" style="font-size:.9rem;">Maintenance Mode</div>
+                            <div class="text-muted" style="font-size:.8rem;">Temporarily restricts access for all non-admin users.</div>
+                          </div>
+                          <div class="form-check form-switch mb-0 ms-3">
+                            <input class="form-check-input" type="checkbox" id="setMaintenance" role="switch" style="width:2.5rem;height:1.25rem;"/>
+                          </div>
+                        </div>
+                        <div id="maintenanceStatus" class="badge bg-success mt-1">Platform is Live</div>
+                      </div>
+                      <div class="mb-3">
+                        <label class="form-label fw-semibold">Maintenance Message</label>
+                        <textarea id="setMaintenanceMsg" class="form-control" rows="2" placeholder="We are currently performing scheduled maintenance. We'll be back shortly."></textarea>
+                        <div class="form-text">Shown to users when maintenance mode is active.</div>
+                      </div>
+                      <div class="mb-0">
+                        <label class="form-label fw-semibold">Platform Timezone</label>
+                        <select id="setTimezone" class="form-select">
+                          <option value="Africa/Kigali" selected>Africa/Kigali (CAT, UTC+2)</option>
+                          <option value="UTC">UTC</option>
+                          <option value="Africa/Nairobi">Africa/Nairobi (EAT, UTC+3)</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── Finance ── -->
+            <div class="settings-tab" id="stab-finance" style="display:none;">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <div class="card h-100">
+                    <div class="card-header"><h6 class="card-title mb-0"><i class="fas fa-percentage me-2 text-success"></i>Commission &amp; Fees</h6></div>
+                    <div class="card-body">
+                      <div class="mb-3">
+                        <label class="form-label fw-semibold">Platform Commission Rate (%)</label>
+                        <div class="input-group">
+                          <input id="setCommission" class="form-control" type="number" min="0" max="100" step="0.1" value="5"/>
+                          <span class="input-group-text">%</span>
+                        </div>
+                        <div class="form-text">Percentage deducted from each completed payment to the platform.</div>
+                      </div>
+                      <div class="mb-3">
+                        <label class="form-label fw-semibold">Withdrawal Fee (%)</label>
+                        <div class="input-group">
+                          <input id="setWithdrawalFee" class="form-control" type="number" min="0" max="20" step="0.1" value="1"/>
+                          <span class="input-group-text">%</span>
+                        </div>
+                        <div class="form-text">Minimum fee of RWF 10 applies per withdrawal.</div>
+                      </div>
+                      <div class="mb-0">
+                        <label class="form-label fw-semibold">Minimum Withdrawal Amount (RWF)</label>
+                        <div class="input-group">
+                          <span class="input-group-text">RWF</span>
+                          <input id="setMinWithdrawal" class="form-control" type="number" min="0" step="100" value="1000"/>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="card h-100">
+                    <div class="card-header"><h6 class="card-title mb-0"><i class="fas fa-briefcase me-2 text-primary"></i>Job &amp; Employer Limits</h6></div>
+                    <div class="card-body">
+                      <div class="mb-3">
+                        <label class="form-label fw-semibold">Max Active Job Postings per Employer</label>
+                        <input id="setMaxJobs" class="form-control" type="number" min="1" value="20"/>
+                        <div class="form-text">Employers cannot post more than this number of active jobs simultaneously.</div>
+                      </div>
+                      <div class="mb-3">
+                        <label class="form-label fw-semibold">Max Applications per Worker per Job</label>
+                        <input id="setMaxApps" class="form-control" type="number" min="1" value="1"/>
+                        <div class="form-text">Set to 1 to prevent duplicate applications.</div>
+                      </div>
+                      <div class="mb-0">
+                        <label class="form-label fw-semibold">Job Listing Expiry (days)</label>
+                        <input id="setJobExpiry" class="form-control" type="number" min="1" value="30"/>
+                        <div class="form-text">Jobs older than this will be automatically marked inactive.</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── Access & Security ── -->
+            <div class="settings-tab" id="stab-access" style="display:none;">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <div class="card h-100">
+                    <div class="card-header"><h6 class="card-title mb-0"><i class="fas fa-user-shield me-2 text-danger"></i>Registration Controls</h6></div>
+                    <div class="card-body">
+                      <div class="mb-3 d-flex align-items-center justify-content-between">
+                        <div>
+                          <div class="fw-semibold" style="font-size:.9rem;">Allow New Registrations</div>
+                          <div class="text-muted" style="font-size:.8rem;">Disable to prevent new users from signing up.</div>
+                        </div>
+                        <div class="form-check form-switch mb-0">
+                          <input class="form-check-input" type="checkbox" id="setAllowReg" role="switch" checked style="width:2.5rem;height:1.25rem;"/>
+                        </div>
+                      </div>
+                      <div class="mb-3 d-flex align-items-center justify-content-between">
+                        <div>
+                          <div class="fw-semibold" style="font-size:.9rem;">Require Email Verification</div>
+                          <div class="text-muted" style="font-size:.8rem;">Users must verify their email before accessing the platform.</div>
+                        </div>
+                        <div class="form-check form-switch mb-0">
+                          <input class="form-check-input" type="checkbox" id="setEmailVerify" role="switch" checked style="width:2.5rem;height:1.25rem;"/>
+                        </div>
+                      </div>
+                      <div class="mb-0 d-flex align-items-center justify-content-between">
+                        <div>
+                          <div class="fw-semibold" style="font-size:.9rem;">Allow Employer Self-Registration</div>
+                          <div class="text-muted" style="font-size:.8rem;">If disabled, employers must be manually approved by an admin.</div>
+                        </div>
+                        <div class="form-check form-switch mb-0">
+                          <input class="form-check-input" type="checkbox" id="setEmployerSelfReg" role="switch" checked style="width:2.5rem;height:1.25rem;"/>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="card h-100">
+                    <div class="card-header"><h6 class="card-title mb-0"><i class="fas fa-lock me-2 text-warning"></i>Session &amp; Security</h6></div>
+                    <div class="card-body">
+                      <div class="mb-3">
+                        <label class="form-label fw-semibold">Session Timeout (minutes)</label>
+                        <input id="setSessionTimeout" class="form-control" type="number" min="5" max="1440" value="60"/>
+                        <div class="form-text">Inactive sessions will be logged out after this period.</div>
+                      </div>
+                      <div class="mb-3">
+                        <label class="form-label fw-semibold">Max Failed Login Attempts</label>
+                        <input id="setMaxLoginAttempts" class="form-control" type="number" min="1" max="20" value="5"/>
+                        <div class="form-text">Account is temporarily locked after this many failed attempts.</div>
+                      </div>
+                      <div class="mb-0 d-flex align-items-center justify-content-between">
+                        <div>
+                          <div class="fw-semibold" style="font-size:.9rem;">Two-Factor Authentication (Admin)</div>
+                          <div class="text-muted" style="font-size:.8rem;">Require 2FA for all admin accounts.</div>
+                        </div>
+                        <div class="form-check form-switch mb-0">
+                          <input class="form-check-input" type="checkbox" id="setAdmin2FA" role="switch" style="width:2.5rem;height:1.25rem;"/>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── Notifications ── -->
+            <div class="settings-tab" id="stab-notifications" style="display:none;">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <div class="card h-100">
+                    <div class="card-header"><h6 class="card-title mb-0"><i class="fas fa-envelope-open-text me-2 text-info"></i>Email Notifications</h6></div>
+                    <div class="card-body">
+                      <div class="mb-3 d-flex align-items-center justify-content-between">
+                        <div>
+                          <div class="fw-semibold" style="font-size:.9rem;">New User Registration</div>
+                          <div class="text-muted" style="font-size:.8rem;">Notify admin when a new user registers.</div>
+                        </div>
+                        <div class="form-check form-switch mb-0">
+                          <input class="form-check-input" type="checkbox" id="notifyNewUser" role="switch" checked style="width:2.5rem;height:1.25rem;"/>
+                        </div>
+                      </div>
+                      <div class="mb-3 d-flex align-items-center justify-content-between">
+                        <div>
+                          <div class="fw-semibold" style="font-size:.9rem;">New Withdrawal Request</div>
+                          <div class="text-muted" style="font-size:.8rem;">Notify admin when a worker submits a withdrawal.</div>
+                        </div>
+                        <div class="form-check form-switch mb-0">
+                          <input class="form-check-input" type="checkbox" id="notifyWithdrawal" role="switch" checked style="width:2.5rem;height:1.25rem;"/>
+                        </div>
+                      </div>
+                      <div class="mb-0 d-flex align-items-center justify-content-between">
+                        <div>
+                          <div class="fw-semibold" style="font-size:.9rem;">Job Posted</div>
+                          <div class="text-muted" style="font-size:.8rem;">Notify admin when a new job is published.</div>
+                        </div>
+                        <div class="form-check form-switch mb-0">
+                          <input class="form-check-input" type="checkbox" id="notifyNewJob" role="switch" style="width:2.5rem;height:1.25rem;"/>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="card h-100">
+                    <div class="card-header"><h6 class="card-title mb-0"><i class="fas fa-paper-plane me-2 text-primary"></i>Notification Delivery</h6></div>
+                    <div class="card-body">
+                      <div class="mb-3">
+                        <label class="form-label fw-semibold">Admin Notification Email</label>
+                        <div class="input-group">
+                          <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                          <input id="setAdminNotifyEmail" class="form-control" type="email" placeholder="admin@rwandaskillsconnect.rw"/>
+                        </div>
+                        <div class="form-text">All admin alerts will be sent to this address.</div>
+                      </div>
+                      <div class="mb-3 d-flex align-items-center justify-content-between">
+                        <div>
+                          <div class="fw-semibold" style="font-size:.9rem;">In-App Notifications</div>
+                          <div class="text-muted" style="font-size:.8rem;">Show real-time alerts inside the dashboard.</div>
+                        </div>
+                        <div class="form-check form-switch mb-0">
+                          <input class="form-check-input" type="checkbox" id="setInAppNotify" role="switch" checked style="width:2.5rem;height:1.25rem;"/>
+                        </div>
+                      </div>
+                      <div class="mb-0 d-flex align-items-center justify-content-between">
+                        <div>
+                          <div class="fw-semibold" style="font-size:.9rem;">Daily Summary Digest</div>
+                          <div class="text-muted" style="font-size:.8rem;">Receive a daily email summary of platform activity.</div>
+                        </div>
+                        <div class="form-check form-switch mb-0">
+                          <input class="form-check-input" type="checkbox" id="setDailyDigest" role="switch" style="width:2.5rem;height:1.25rem;"/>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Save bar -->
+            <div class="d-flex align-items-center gap-3 mt-4 pt-3" style="border-top:1px solid #e2e8f0;">
+              <button type="submit" class="btn btn-primary px-4"><i class="fas fa-save me-2"></i>Save Settings</button>
+              <button type="button" class="btn btn-outline-secondary" id="resetSettingsBtn"><i class="fas fa-undo me-2"></i>Reset to Defaults</button>
+            </div>
+
+          </form>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="js/supabaseClient.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (!session) { window.location.href = 'login.html'; return; }
+
+  const user = session.user;
+  const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', user.id).single();
+
+  if (profile?.role === 'worker') { window.location.href = 'freelancer-dashboard.html'; return; }
+  if (profile?.role === 'employer') { window.location.href = 'employer-dashboard.html'; return; }
+
+  const name = profile?.full_name || user.email.split('@')[0];
+  document.getElementById('userName').textContent = name;
+  document.getElementById('userAvatar').textContent = name.charAt(0).toUpperCase();
+  // expose admin flag globally for other functions
+  window.__isAdmin = profile?.role === 'admin';
+
+  // Load platform stats
+  const [
+    { count: totalUsers },
+    { count: workerCount },
+    { count: employerCount },
+    { count: jobCount },
+    { count: appCount },
+    { count: acceptedCount }
+  ] = await Promise.all([
+    supabaseClient.from('profiles').select('*', { count: 'exact', head: true }),
+    supabaseClient.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'worker'),
+    supabaseClient.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'employer'),
+    supabaseClient.from('jobs').select('*', { count: 'exact', head: true }).eq('status', 'active'),
+    supabaseClient.from('job_applications').select('*', { count: 'exact', head: true }),
+    supabaseClient.from('job_applications').select('*', { count: 'exact', head: true }).eq('status', 'accepted')
+  ]);
+
+  document.getElementById('statTotalUsers').textContent = totalUsers || 0;
+  document.getElementById('statUserBreakdown').textContent = `${workerCount || 0} workers / ${employerCount || 0} employers`;
+  document.getElementById('statActiveJobs').textContent = jobCount || 0;
+  document.getElementById('statJobBreakdown').textContent = `${jobCount || 0} total`;
+  document.getElementById('qsApplications').textContent = appCount || 0;
+  document.getElementById('qsAccepted').textContent = acceptedCount || 0;
+
+  // Recent users
+  const { data: recentUsers } = await supabaseClient.from('profiles').select('*').order('created_at', { ascending: false }).limit(5);
+  if (recentUsers && recentUsers.length > 0) {
+    document.getElementById('recentUsersTable').innerHTML = recentUsers.map(u => `
+      <tr>
+        <td><div class="d-flex align-items-center gap-2"><div class="user-avatar-xs">${(u.full_name || u.email || '?').charAt(0).toUpperCase()}</div><div><strong style="font-size:.8125rem;">${u.full_name || 'N/A'}</strong><br><small class="text-muted">${u.email || ''}</small></div></div></td>
+        <td><span class="badge-sm bg-${u.role === 'worker' ? 'primary' : u.role === 'employer' ? 'success' : 'dark'} text-white">${u.role || 'user'}</span></td>
+        <td style="font-size:.75rem;">${new Date(u.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</td>
+        <td><span class="badge-sm bg-success text-white">Active</span></td>
+      </tr>`).join('');
+  }
+
+  // Revenue chart
+  const months = ['Jan','Feb','Mar','Apr','May','Jun'];
+  new Chart(document.getElementById('revenueChart'), {
+    type: 'line',
+    data: {
+      labels: months,
+      datasets: [{ label: 'Revenue', data: [0,0,0,0,0,0], backgroundColor: 'rgba(102,126,234,.08)', borderColor: '#667eea', borderWidth: 2, fill: true, tension: .3, pointBackgroundColor: '#667eea', pointBorderColor: '#fff', pointBorderWidth: 2, pointRadius: 3 }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: 'rgba(226,232,240,.5)' }, ticks: { font: { size: 10 }, callback: v => 'RWF ' + v.toLocaleString() } }, x: { grid: { display: false }, ticks: { font: { size: 10 } } } } }
+  });
+
+  // Logout
+  document.getElementById('logoutBtn').addEventListener('click', async (e) => {
+    e.preventDefault();
+    await supabaseClient.auth.signOut();
+    window.location.href = 'login.html';
+  });
+
+  // Sidebar
+  const sidebar = document.getElementById('sidebar');
+  document.getElementById('sidebarCollapse').addEventListener('click', () => sidebar.classList.toggle('collapsed'));
+  document.getElementById('mobileToggle').addEventListener('click', () => {
+    sidebar.classList.toggle('show');
+    document.getElementById('sidebarOverlay').classList.toggle('show');
+  });
+  document.getElementById('sidebarOverlay').addEventListener('click', () => {
+    sidebar.classList.remove('show');
+    document.getElementById('sidebarOverlay').classList.remove('show');
+  });
+
+  // Pane switching and dynamic content loading
+  const menuItems = document.querySelectorAll('.menu-item');
+  const actionShortcuts = document.querySelectorAll('.btn-action-compact[data-section]');
+
+  function setActiveMenu(section) {
+    menuItems.forEach(mi => {
+      if (mi.dataset.section === section) mi.classList.add('active');
+      else mi.classList.remove('active');
+    });
+  }
+
+  function hideAllPanes() {
+    document.querySelectorAll('.pane').forEach(p => p.style.display = 'none');
+  }
+
+  // == Users ==================================================
+  let allUsersCache = null; // shared cache for all-users RPC result
+  const USERS_PER_PAGE = 20;
+  const usersPageState = { all: 1, worker: 1, employer: 1 };
+
+  const roleBadge = r => {
+    const map = { worker: 'primary', employer: 'success', admin: 'dark' };
+    return `<span class="badge bg-${map[r]||'secondary'}">${r||'user'}</span>`;
+  };
+  const statusBadgeUser = s => {
+    const map = { active: 'success', inactive: 'secondary', suspended: 'danger' };
+    return `<span class="badge bg-${map[s]||'secondary'}">${s||'unknown'}</span>`;
+  };
+
+  function renderUsersTable(arr, role) {
+    const tbodyId   = role === 'worker' ? 'usersWorkersTable' : role === 'employer' ? 'usersEmployersTable' : 'usersTable';
+    const pgId      = role === 'worker' ? 'workersPagination'  : role === 'employer' ? 'employersPagination'  : 'usersPagination';
+    const searchId  = role === 'worker' ? 'workersSearch'      : role === 'employer' ? 'employersSearch'      : 'usersSearch';
+    const statusFId = role === 'worker' ? 'workersStatusFilter': role === 'employer' ? 'employersStatusFilter': 'usersStatusFilter';
+    const roleFId   = 'usersRoleFilter';
+    const pageKey   = role || 'all';
+
+    const search   = (document.getElementById(searchId)?.value   || '').toLowerCase();
+    const statusF  = document.getElementById(statusFId)?.value   || '';
+    const roleF    = role ? role : (document.getElementById(roleFId)?.value || '');
+
+    let filtered = arr.filter(u => {
+      const matchSearch = !search ||
+        (u.full_name||'').toLowerCase().includes(search) ||
+        (u.email||'').toLowerCase().includes(search);
+      const matchStatus = !statusF || u.status === statusF;
+      const matchRole   = !roleF   || u.role   === roleF;
+      return matchSearch && matchStatus && matchRole;
+    });
+
+    const total      = filtered.length;
+    const totalPages = Math.max(1, Math.ceil(total / USERS_PER_PAGE));
+    if (usersPageState[pageKey] > totalPages) usersPageState[pageKey] = totalPages;
+    const start = (usersPageState[pageKey] - 1) * USERS_PER_PAGE;
+    const page  = filtered.slice(start, start + USERS_PER_PAGE);
+
+    const tbody = document.getElementById(tbodyId);
+    if (!page.length) {
+      tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">No users found</td></tr>';
+    } else {
+      tbody.innerHTML = page.map(u => {
+        const initials = (u.full_name || u.email || '?').charAt(0).toUpperCase();
+        const extra = role === 'worker'
+          ? `<td style="font-size:.75rem;max-width:160px;">${u.skills ? u.skills.split(',').slice(0,3).map(s=>`<span class="badge bg-light text-dark border me-1">${s.trim()}</span>`).join('') : '&mdash;'}</td>`
+          : role === 'employer'
+          ? `<td style="font-size:.8rem;">${u.company_name || '&mdash;'}</td>`
+          : `<td>${roleBadge(u.role)}</td>`;
+        return `
+          <tr data-user-id="${u.id}">
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <div class="user-avatar-xs" style="flex-shrink:0;">${initials}</div>
+                <div><div style="font-weight:500;font-size:.8125rem;">${u.full_name || 'N/A'}</div></div>
+              </div>
+            </td>
+            <td style="font-size:.8rem;">${u.email || '&mdash;'}</td>
+            ${extra}
+            <td>${statusBadgeUser(u.status)}</td>
+            <td style="font-size:.8rem;white-space:nowrap;">${new Date(u.created_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}</td>
+            <td>
+              <div class="d-flex gap-1">
+                <button class="btn btn-sm btn-outline-secondary btn-worker-detail" data-user-id="${u.id}" title="View details"><i class="fas fa-chevron-down"></i></button>
+                <select class="form-select form-select-sm user-status" data-user-id="${u.id}" style="width:110px;" title="Change status">
+                  <option value="active"    ${u.status==='active'   ?'selected':''}>Active</option>
+                  <option value="inactive"  ${u.status==='inactive' ?'selected':''}>Inactive</option>
+                  <option value="suspended" ${u.status==='suspended'?'selected':''}>Suspended</option>
+                </select>
+              </div>
+            </td>
+          </tr>
+          <tr class="worker-detail-row" id="detail-${u.id}" style="display:none;">
+            <td colspan="9" style="background:#f8fafc;padding:12px 16px;">
+              <div class="d-flex flex-wrap gap-3" style="font-size:.8rem;">
+                ${u.phone       ? `<span><strong>Phone:</strong> ${u.phone}</span>` : ""}
+                ${u.location    ? `<span><strong>Location:</strong> ${u.location}</span>` : ""}
+                ${u.bio         ? `<span style="flex-basis:100%;"><strong>Bio:</strong> ${u.bio}</span>` : ""}
+                ${u.resume_url  ? `<span><strong>Resume:</strong> <a href="${u.resume_url}" target="_blank">View</a></span>` : ""}
+                ${u.website     ? `<span><strong>Website:</strong> <a href="${u.website}" target="_blank">${u.website}</a></span>` : ""}
+                ${u.address     ? `<span><strong>Address:</strong> ${u.address}</span>` : ""}
+                ${u.industry    ? `<span><strong>Industry:</strong> ${u.industry}</span>` : ""}
+                ${u.company_size? `<span><strong>Company size:</strong> ${u.company_size}</span>` : ""}
+                ${u.rating      ? `<span><strong>Rating:</strong> ${u.rating}</span>` : ""}
+                ${u.is_verified ? `<span><strong>Verified:</strong> <span class="badge bg-success">Yes</span></span>` : ""}
+                ${!u.phone && !u.location && !u.bio && !u.resume_url && !u.website && !u.address && !u.industry && !u.company_size && !u.rating && !u.is_verified ? `<span class="text-muted">No additional information provided.</span>` : ""}
+              </div>
+            </td>
+          </tr>`;
+      }).join('');
+    }
+
+    // Pagination
+    const pg = document.getElementById(pgId);
+    pg.innerHTML = `
+      <span class="text-muted">Showing ${total===0?0:start+1}&ndash;${Math.min(start+USERS_PER_PAGE,total)} of ${total} users</span>
+      <div class="d-flex gap-1">
+        <button class="btn btn-sm btn-outline-secondary" id="${pgId}Prev" ${usersPageState[pageKey]<=1?'disabled':''}>&larr; Prev</button>
+        <button class="btn btn-sm btn-outline-secondary" id="${pgId}Next" ${usersPageState[pageKey]>=totalPages?'disabled':''}>Next &rarr;</button>
+      </div>`;
+    document.getElementById(pgId+'Prev')?.addEventListener('click', () => { usersPageState[pageKey]--; renderUsersTable(arr, role); });
+    document.getElementById(pgId+'Next')?.addEventListener('click', () => { usersPageState[pageKey]++; renderUsersTable(arr, role); });
+  }
+
+  // Live search & filter wiring for all three user panes
+  ['usersSearch','usersRoleFilter','usersStatusFilter'].forEach(id =>
+    document.getElementById(id)?.addEventListener('input', () => { usersPageState.all = 1; if (allUsersCache) renderUsersTable(allUsersCache, null); })
+  );
+  ['workersSearch','workersStatusFilter','workersExpFilter'].forEach(id =>
+    document.getElementById(id)?.addEventListener('input', () => { usersPageState.worker = 1; renderWorkersTable(); })
+  );
+  ['employersSearch','employersStatusFilter'].forEach(id =>
+    document.getElementById(id)?.addEventListener('input', () => { usersPageState.employer = 1; if (allUsersCache) renderUsersTable(allUsersCache.filter(u=>u.role==='employer'), 'employer'); })
+  );
+  document.getElementById('refreshWorkers')?.addEventListener('click', () => { allUsersCache = null; workerAppCounts = null; loadUsers('worker'); });
+  document.getElementById('refreshEmployers')?.addEventListener('click', () => { allUsersCache = null; loadUsers('employer'); });
+  // == End Users ================================================
+
+  // == Workers dedicated render ==============================
+  let workerAppCounts = null; // { worker_id: count }
+
+  async function loadUsers(role) {
+    const tbodyId = role === 'worker' ? 'usersWorkersTable' : role === 'employer' ? 'usersEmployersTable' : 'usersTable';
+    const tbody = document.getElementById(tbodyId);
+    if (!tbody) return;
+    const cols = role === 'worker' ? 9 : 6;
+    tbody.innerHTML = `<tr><td colspan="${cols}" class="text-center py-4 text-muted">Loading&hellip;</td></tr>`;
+    const pageKey = role || 'all';
+    usersPageState[pageKey] = 1;
+
+    try {
+      if (window.__isAdmin && !allUsersCache) {
+        try {
+          const { data, error } = await supabaseClient.rpc('admin_get_profiles');
+          if (error) throw error;
+          allUsersCache = data || [];
+        } catch(e) {
+          console.warn('admin_get_profiles failed, falling back:', e?.message);
+        }
+      }
+      if (!allUsersCache) {
+        const { data, error } = await supabaseClient.from('profiles')
+          .select('id,full_name,role,status,skills,experience_level,availability,headline,company_name,phone,bio,location,resume_url,industry,company_size,website,address,rating,is_verified,created_at')
+          .order('created_at', { ascending: false });
+        if (error) throw error;
+        allUsersCache = data || [];
+      }
+
+      if (role === 'worker') {
+        // Fetch application counts if not cached
+        if (!workerAppCounts) {
+          const { data: apps } = await supabaseClient.from('job_applications').select('worker_id');
+          workerAppCounts = {};
+          (apps || []).forEach(a => { workerAppCounts[a.worker_id] = (workerAppCounts[a.worker_id] || 0) + 1; });
+        }
+        renderWorkersTable();
+      } else {
+        const arr = role ? allUsersCache.filter(u => u.role === role) : allUsersCache;
+        renderUsersTable(arr, role);
+      }
+    } catch (err) {
+      console.error('loadUsers error:', err);
+      tbody.innerHTML = `<tr><td colspan="${cols}" class="text-danger p-3">Error: ${err?.message||err}</td></tr>`;
+    }
+  }
+
+  function renderWorkersTable() {
+    const search  = (document.getElementById('workersSearch')?.value  || '').toLowerCase();
+    const statusF = document.getElementById('workersStatusFilter')?.value || '';
+    const expF    = document.getElementById('workersExpFilter')?.value    || '';
+
+    const workers = (allUsersCache || []).filter(u => u.role === 'worker');
+    let filtered = workers.filter(u => {
+      const matchSearch = !search ||
+        (u.full_name||'').toLowerCase().includes(search) ||
+        (u.email||'').toLowerCase().includes(search) ||
+        (u.skills||'').toLowerCase().includes(search);
+      const matchStatus = !statusF || u.status === statusF;
+      const matchExp    = !expF    || (u.experience_level||'').toLowerCase() === expF;
+      return matchSearch && matchStatus && matchExp;
+    });
+
+    const total      = filtered.length;
+    const totalPages = Math.max(1, Math.ceil(total / USERS_PER_PAGE));
+    if (usersPageState.worker > totalPages) usersPageState.worker = totalPages;
+    const start = (usersPageState.worker - 1) * USERS_PER_PAGE;
+    const page  = filtered.slice(start, start + USERS_PER_PAGE);
+
+    const expBadge = lvl => {
+      if (!lvl) return '<span class="text-muted">&mdash;</span>';
+      const map = { entry: 'info', intermediate: 'primary', senior: 'success', expert: 'warning' };
+      const key = lvl.toLowerCase();
+      return `<span class="badge bg-${map[key]||'secondary'}" style="font-size:.7rem;">${lvl}</span>`;
+    };
+    const availBadge = a => {
+      if (!a) return '<span class="text-muted">&mdash;</span>';
+      const map = { available: 'success', busy: 'warning', unavailable: 'secondary' };
+      const key = a.toLowerCase();
+      return `<span class="badge bg-${map[key]||'secondary'}" style="font-size:.7rem;">${a}</span>`;
+    };
+
+    const tbody = document.getElementById('usersWorkersTable');
+    if (!page.length) {
+      tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4 text-muted">No workers found</td></tr>';
+    } else {
+      tbody.innerHTML = page.map(u => {
+        const initials = (u.full_name || u.email || '?').charAt(0).toUpperCase();
+        const skillChips = u.skills
+          ? u.skills.split(',').slice(0,4).map(s =>
+              `<span class="badge bg-light text-dark border me-1" style="font-size:.7rem;">${s.trim()}</span>`
+            ).join('') + (u.skills.split(',').length > 4 ? `<span class="text-muted" style="font-size:.75rem;">+${u.skills.split(',').length-4}</span>` : '')
+          : '<span class="text-muted">&mdash;</span>';
+        const appCount = (workerAppCounts||{})[u.id] || 0;
+        return `
+          <tr data-user-id="${u.id}">
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <div class="user-avatar-xs" style="flex-shrink:0;">${initials}</div>
+                <div>
+                  <div style="font-weight:500;font-size:.8125rem;">${u.full_name || 'N/A'}</div>
+                  ${u.headline ? `<div style="font-size:.72rem;color:#94a3b8;">${u.headline}</div>` : ""}
+                </div>
+              </div>
+            </td>
+            <td style="font-size:.8rem;">${u.email || '&mdash;'}</td>
+            <td style="max-width:200px;">${skillChips}</td>
+            <td>${expBadge(u.experience_level)}</td>
+            <td>${availBadge(u.availability)}</td>
+            <td class="text-center">
+              <span class="badge bg-primary bg-opacity-10 text-primary" style="font-size:.75rem;">${appCount}</span>
+            </td>
+            <td>${statusBadgeUser(u.status)}</td>
+            <td style="font-size:.8rem;white-space:nowrap;">${new Date(u.created_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}</td>
+            <td>
+              <div class="d-flex gap-1">
+                <button class="btn btn-sm btn-outline-secondary btn-worker-detail" data-user-id="${u.id}" title="View details"><i class="fas fa-chevron-down"></i></button>
+                <select class="form-select form-select-sm user-status" data-user-id="${u.id}" style="width:110px;" title="Change status">
+                  <option value="active"    ${u.status==='active'   ?'selected':''}>Active</option>
+                  <option value="inactive"  ${u.status==='inactive' ?'selected':''}>Inactive</option>
+                  <option value="suspended" ${u.status==='suspended'?'selected':''}>Suspended</option>
+                </select>
+              </div>
+            </td>
+          </tr>
+          <tr class="worker-detail-row" id="detail-${u.id}" style="display:none;">
+            <td colspan="9" style="background:#f8fafc;padding:12px 16px;">
+              <div class="d-flex flex-wrap gap-3" style="font-size:.8rem;">
+                ${u.phone       ? `<span><strong>Phone:</strong> ${u.phone}</span>` : ""}
+                ${u.location    ? `<span><strong>Location:</strong> ${u.location}</span>` : ""}
+                ${u.bio         ? `<span style="flex-basis:100%;"><strong>Bio:</strong> ${u.bio}</span>` : ""}
+                ${u.resume_url  ? `<span><strong>Resume:</strong> <a href="${u.resume_url}" target="_blank">View</a></span>` : ""}
+                ${u.website     ? `<span><strong>Website:</strong> <a href="${u.website}" target="_blank">${u.website}</a></span>` : ""}
+                ${u.address     ? `<span><strong>Address:</strong> ${u.address}</span>` : ""}
+                ${u.industry    ? `<span><strong>Industry:</strong> ${u.industry}</span>` : ""}
+                ${u.company_size? `<span><strong>Company size:</strong> ${u.company_size}</span>` : ""}
+                ${u.rating      ? `<span><strong>Rating:</strong> ${u.rating}</span>` : ""}
+                ${u.is_verified ? `<span><strong>Verified:</strong> <span class="badge bg-success">Yes</span></span>` : ""}
+                ${!u.phone && !u.location && !u.bio && !u.resume_url && !u.website && !u.address && !u.industry && !u.company_size && !u.rating && !u.is_verified ? `<span class="text-muted">No additional information provided.</span>` : ""}
+              </div>
+            </td>
+          </tr>`;
+      }).join('');
+    }
+
+    const pg = document.getElementById('workersPagination');
+    pg.innerHTML = `
+      <span class="text-muted">Showing ${total===0?0:start+1}&ndash;${Math.min(start+USERS_PER_PAGE,total)} of ${total} workers</span>
+      <div class="d-flex gap-1">
+        <button class="btn btn-sm btn-outline-secondary" id="workersPaginationPrev" ${usersPageState.worker<=1?'disabled':''}>&larr; Prev</button>
+        <button class="btn btn-sm btn-outline-secondary" id="workersPaginationNext" ${usersPageState.worker>=totalPages?'disabled':''}>Next &rarr;</button>
+      </div>`;
+    document.getElementById('workersPaginationPrev')?.addEventListener('click', () => { usersPageState.worker--; renderWorkersTable(); });
+    document.getElementById('workersPaginationNext')?.addEventListener('click', () => { usersPageState.worker++; renderWorkersTable(); });
+
+    document.getElementById('usersWorkersTable')?.addEventListener('click', e => {
+      const btn = e.target.closest('.btn-worker-detail');
+      if (!btn) return;
+      const id = btn.dataset.userId;
+      const row = document.getElementById('detail-' + id);
+      if (!row) return;
+      const open = row.style.display !== 'none';
+      row.style.display = open ? 'none' : '';
+      btn.querySelector('i').className = open ? 'fas fa-chevron-down' : 'fas fa-chevron-up';
+    });
+  }
+  // == End Workers ===========================================
+  let allJobs = [];
+  let jobsPage = 1;
+  const JOBS_PER_PAGE = 20;
+
+  async function loadJobs() {
+    const tbody = document.getElementById('jobsTable');
+    tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted">Loading&hellip;</td></tr>';
+    try {
+      if (!window.supabaseClient) throw new Error('Supabase client not initialized');
+
+      // Fetch jobs with employer profile joined
+      const { data, error } = await supabaseClient
+        .from('jobs')
+        .select('id,title,employer_id,status,location,salary_range_min,salary_range_max,salary_currency,created_at,profiles:employer_id(full_name,company_name)')
+        .order('created_at', { ascending: false })
+        .limit(500);
+      if (error) throw error;
+
+      // Fetch application counts per job
+      const { data: appCounts } = await supabaseClient
+        .from('job_applications')
+        .select('job_id');
+      const countMap = {};
+      (appCounts || []).forEach(a => { countMap[a.job_id] = (countMap[a.job_id] || 0) + 1; });
+
+      allJobs = (data || []).map(j => ({
+        ...j,
+        employerName: j.profiles?.company_name || j.profiles?.full_name || j.employer_id,
+        appCount: countMap[j.id] || 0
+      }));
+
+      jobsPage = 1;
+      renderJobsTable();
+    } catch (err) {
+      console.error('loadJobs error:', err);
+      document.getElementById('jobsTable').innerHTML =
+        `<tr><td colspan="8" class="text-danger p-3">Error loading jobs: ${err?.message || err}</td></tr>`;
+    }
+  }
+
+  function renderJobsTable() {
+    const search = (document.getElementById('jobsSearch')?.value || '').toLowerCase();
+    const statusFilter = document.getElementById('jobsStatusFilter')?.value || '';
+
+    let filtered = allJobs.filter(j => {
+      const matchSearch = !search ||
+        (j.title || '').toLowerCase().includes(search) ||
+        (j.employerName || '').toLowerCase().includes(search);
+      const matchStatus = !statusFilter || j.status === statusFilter;
+      return matchSearch && matchStatus;
+    });
+
+    const total = filtered.length;
+    const totalPages = Math.max(1, Math.ceil(total / JOBS_PER_PAGE));
+    if (jobsPage > totalPages) jobsPage = totalPages;
+    const start = (jobsPage - 1) * JOBS_PER_PAGE;
+    const page = filtered.slice(start, start + JOBS_PER_PAGE);
+
+    const statusBadge = s => {
+      const map = { active: 'success', draft: 'warning', inactive: 'secondary', filled: 'primary' };
+      return `<span class="badge bg-${map[s] || 'secondary'}">${s || 'unknown'}</span>`;
+    };
+
+    const tbody = document.getElementById('jobsTable');
+    if (page.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted">No jobs found</td></tr>';
+    } else {
+      tbody.innerHTML = page.map(j => `
+        <tr>
+          <td style="max-width:220px;font-weight:500;">${j.title || 'Untitled'}</td>
+          <td style="max-width:160px;">${j.employerName}</td>
+          <td style="font-size:.8rem;">${j.location || '&mdash;'}</td>
+          <td style="font-size:.8rem;">${j.salary_range_min ? Number(j.salary_range_min).toLocaleString() + (j.salary_range_max ? '&ndash;' + Number(j.salary_range_max).toLocaleString() : '') : '&mdash;'}</td>
+          <td class="text-center">${j.appCount}</td>
+          <td>${statusBadge(j.status)}</td>
+          <td style="font-size:.8rem;white-space:nowrap;">${new Date(j.created_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}</td>
+          <td>
+            <select class="form-select form-select-sm job-status-select" data-job-id="${j.id}" style="width:110px;display:inline-block;">
+              <option value="active" ${j.status==='active'?'selected':''}>Active</option>
+              <option value="draft" ${j.status==='draft'?'selected':''}>Draft</option>
+              <option value="inactive" ${j.status==='inactive'?'selected':''}>Inactive</option>
+              <option value="filled" ${j.status==='filled'?'selected':''}>Filled</option>
+            </select>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // Pagination
+    const pg = document.getElementById('jobsPagination');
+    pg.innerHTML = `
+      <span class="text-muted">Showing ${total === 0 ? 0 : start + 1}&ndash;${Math.min(start + JOBS_PER_PAGE, total)} of ${total} jobs</span>
+      <div class="d-flex gap-1">
+        <button class="btn btn-sm btn-outline-secondary" id="jobsPrev" ${jobsPage <= 1 ? 'disabled' : ''}>&larr; Prev</button>
+        <button class="btn btn-sm btn-outline-secondary" id="jobsNext" ${jobsPage >= totalPages ? 'disabled' : ''}>Next &rarr;</button>
+      </div>`;
+    document.getElementById('jobsPrev')?.addEventListener('click', () => { jobsPage--; renderJobsTable(); });
+    document.getElementById('jobsNext')?.addEventListener('click', () => { jobsPage++; renderJobsTable(); });
+  }
+
+  // Jobs search & filter live update
+  document.getElementById('jobsSearch')?.addEventListener('input', () => { jobsPage = 1; renderJobsTable(); });
+  document.getElementById('jobsStatusFilter')?.addEventListener('change', () => { jobsPage = 1; renderJobsTable(); });
+
+  // Job status inline update
+  document.body.addEventListener('change', async (e) => {
+    const sel = e.target.closest('.job-status-select');
+    if (!sel) return;
+    const jobId = sel.dataset.jobId;
+    const newStatus = sel.value;
+    try {
+      const { error } = await supabaseClient.from('jobs').update({ status: newStatus }).eq('id', jobId);
+      if (error) throw error;
+      const job = allJobs.find(j => j.id === jobId);
+      if (job) job.status = newStatus;
+      sel.classList.add('border-success');
+      setTimeout(() => sel.classList.remove('border-success'), 800);
+      renderJobsTable();
+    } catch (err) {
+      alert('Error updating job status: ' + (err?.message || err));
+    }
+  });
+
+  // == Transactions ==========================================
+  let allTransactions = [];
+  let txPage = 1;
+  const TX_PER_PAGE = 25;
+
+  const txTypeBadge = t => {
+    const map = { payment_received: ['success','Payment Received'], deposit: ['primary','Deposit'], withdrawal: ['warning','Withdrawal'], refund: ['info','Refund'] };
+    const [color, label] = map[t] || ['secondary', t || 'Unknown'];
+    return `<span class="badge bg-${color}">${label}</span>`;
+  };
+  const txStatusBadge = s => {
+    const map = { completed: 'success', pending: 'warning', failed: 'danger' };
+    return `<span class="badge bg-${map[s]||'secondary'}">${s ? s.charAt(0).toUpperCase()+s.slice(1) : 'Unknown'}</span>`;
+  };
+
+  async function loadTransactions() {
+    const tbody = document.getElementById('transactionsTable');
+    tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">Loading&hellip;</td></tr>';
+    ['txKpiTotal','txKpiCompleted','txKpiPending','txKpiVolume'].forEach(id => { document.getElementById(id).textContent = '\u2014'; });
+    try {
+      const { data, error } = await supabaseClient
+        .from('ewallet_transactions')
+        .select('id,created_at,transaction_type,amount,fee,net_amount,status,reference_id,description,ewallets:ewallet_id(user_id,profiles:user_id(full_name))')
+        .order('created_at', { ascending: false })
+        .limit(1000);
+      if (error) throw error;
+      allTransactions = data || [];
+
+      // KPIs
+      const completed = allTransactions.filter(t => t.status === 'completed');
+      const pending   = allTransactions.filter(t => t.status === 'pending');
+      const volume    = completed.filter(t => t.transaction_type === 'payment_received').reduce((s,t) => s + Number(t.amount||0), 0);
+      document.getElementById('txKpiTotal').textContent     = allTransactions.length.toLocaleString();
+      document.getElementById('txKpiCompleted').textContent = completed.length.toLocaleString();
+      document.getElementById('txKpiPending').textContent   = pending.length.toLocaleString();
+      document.getElementById('txKpiVolume').textContent    = volume.toLocaleString();
+
+      txPage = 1;
+      renderTransactionsTable();
+    } catch (err) {
+      console.error('loadTransactions error:', err);
+      document.getElementById('transactionsTable').innerHTML =
+        `<tr><td colspan="7" class="text-danger p-3">Error loading transactions: ${err?.message || err}</td></tr>`;
+    }
+  }
+
+  function renderTransactionsTable() {
+    const search  = (document.getElementById('txSearch')?.value  || '').toLowerCase();
+    const typeF   = document.getElementById('txTypeFilter')?.value   || '';
+    const statusF = document.getElementById('txStatusFilter')?.value || '';
+
+    const filtered = allTransactions.filter(t => {
+      const name = (t.ewallets?.profiles?.full_name || '').toLowerCase();
+      const ref  = (t.reference_id || t.description || '').toLowerCase();
+      const matchSearch = !search || name.includes(search) || ref.includes(search);
+      const matchType   = !typeF   || t.transaction_type === typeF;
+      const matchStatus = !statusF || t.status === statusF;
+      return matchSearch && matchType && matchStatus;
+    });
+
+    const total      = filtered.length;
+    const totalPages = Math.max(1, Math.ceil(total / TX_PER_PAGE));
+    if (txPage > totalPages) txPage = totalPages;
+    const start = (txPage - 1) * TX_PER_PAGE;
+    const page  = filtered.slice(start, start + TX_PER_PAGE);
+
+    const tbody = document.getElementById('transactionsTable');
+    if (!page.length) {
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">No transactions found matching the selected filters.</td></tr>';
+    } else {
+      tbody.innerHTML = page.map(t => {
+        const name = t.ewallets?.profiles?.full_name || '<span class="text-muted">Unknown User</span>';
+        const date    = new Date(t.created_at);
+        const dateStr = date.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+        const timeStr = date.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
+        const ref  = t.reference_id
+          ? `<code style="font-size:.75rem;">${t.reference_id}</code>`
+          : t.description
+          ? `<span style="font-size:.75rem;color:#64748b;">${t.description}</span>`
+          : '<span class="text-muted">&mdash;</span>';
+        const amount = Number(t.amount||0).toLocaleString();
+        const fee    = t.fee ? Number(t.fee).toLocaleString() : '&mdash;';
+        return `<tr>
+          <td style="white-space:nowrap;"><div style="font-size:.8125rem;">${dateStr}</div><div style="font-size:.75rem;color:#94a3b8;">${timeStr}</div></td>
+          <td style="font-size:.8125rem;font-weight:500;">${name}</td>
+          <td>${txTypeBadge(t.transaction_type)}</td>
+          <td class="text-end" style="font-size:.8125rem;font-weight:600;">${amount}</td>
+          <td class="text-end" style="font-size:.8125rem;">${fee}</td>
+          <td>${ref}</td>
+          <td>${txStatusBadge(t.status)}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    const pg = document.getElementById('txPagination');
+    pg.innerHTML = `
+      <span class="text-muted">Showing ${total===0?0:start+1}&ndash;${Math.min(start+TX_PER_PAGE,total)} of ${total} transaction${total!==1?'s':''}</span>
+      <div class="d-flex gap-1">
+        <button class="btn btn-sm btn-outline-secondary" id="txPrev" ${txPage<=1?'disabled':''}>&larr; Prev</button>
+        <button class="btn btn-sm btn-outline-secondary" id="txNext" ${txPage>=totalPages?'disabled':''}>Next &rarr;</button>
+      </div>`;
+    document.getElementById('txPrev')?.addEventListener('click', () => { txPage--; renderTransactionsTable(); });
+    document.getElementById('txNext')?.addEventListener('click', () => { txPage++; renderTransactionsTable(); });
+  }
+
+  document.getElementById('txSearch')?.addEventListener('input',  () => { txPage = 1; renderTransactionsTable(); });
+  document.getElementById('txTypeFilter')?.addEventListener('change', () => { txPage = 1; renderTransactionsTable(); });
+  document.getElementById('txStatusFilter')?.addEventListener('change', () => { txPage = 1; renderTransactionsTable(); });
+  document.getElementById('refreshTransactions')?.addEventListener('click', () => loadTransactions());
+  // == End Transactions =======================================
+
+  // == Withdrawals ============================================
+  let allWithdrawals = [];
+  let wdPage = 1;
+  const WD_PER_PAGE = 25;
+
+  const wdStatusBadge = s => {
+    const map = { pending: 'warning', processing: 'info', completed: 'success', rejected: 'danger' };
+    return `<span class="badge bg-${map[s]||'secondary'}">${s ? s.charAt(0).toUpperCase()+s.slice(1) : 'Unknown'}</span>`;
+  };
+  const methodLabel = m => {
+    const map = { momo: 'MTN MoMo', airtel: 'Airtel Money', bank: 'Bank Transfer', cash: 'Cash' };
+    return map[(m||'').toLowerCase()] || (m || '&mdash;');
+  };
+
+  async function loadWithdrawals() {
+    const tbody = document.getElementById('withdrawalsTable');
+    tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted">Loading&hellip;</td></tr>';
+    ['wdKpiPending','wdKpiProcessing','wdKpiCompleted','wdKpiVolume'].forEach(id => { document.getElementById(id).textContent = '\u2014'; });
+    try {
+      const { data, error } = await supabaseClient
+        .from('ewallet_withdrawals')
+        .select('id,created_at,amount,fee,net_amount,withdrawal_method,withdrawal_details,status,admin_notes,ewallets:ewallet_id(user_id,profiles:user_id(full_name))')
+        .order('created_at', { ascending: false })
+        .limit(500);
+      if (error) throw error;
+      allWithdrawals = data || [];
+
+      // KPIs
+      document.getElementById('wdKpiPending').textContent    = allWithdrawals.filter(w => w.status === 'pending').length.toLocaleString();
+      document.getElementById('wdKpiProcessing').textContent = allWithdrawals.filter(w => w.status === 'processing').length.toLocaleString();
+      document.getElementById('wdKpiCompleted').textContent  = allWithdrawals.filter(w => w.status === 'completed').length.toLocaleString();
+      const volume = allWithdrawals.filter(w => w.status === 'completed').reduce((s,w) => s + Number(w.net_amount||0), 0);
+      document.getElementById('wdKpiVolume').textContent = volume.toLocaleString();
+
+      wdPage = 1;
+      renderWithdrawalsTable();
+    } catch (err) {
+      console.error('loadWithdrawals error:', err);
+      document.getElementById('withdrawalsTable').innerHTML =
+        `<tr><td colspan="8" class="text-danger p-3">Error loading withdrawals: ${err?.message || err}</td></tr>`;
+    }
+  }
+
+  function renderWithdrawalsTable() {
+    const search  = (document.getElementById('wdSearch')?.value || '').toLowerCase();
+    const statusF = document.getElementById('wdStatusFilter')?.value || '';
+
+    const filtered = allWithdrawals.filter(w => {
+      const name   = (w.ewallets?.profiles?.full_name || '').toLowerCase();
+      const method = (w.withdrawal_method || '').toLowerCase();
+      const matchSearch = !search || name.includes(search) || method.includes(search);
+      const matchStatus = !statusF || w.status === statusF;
+      return matchSearch && matchStatus;
+    });
+
+    const total      = filtered.length;
+    const totalPages = Math.max(1, Math.ceil(total / WD_PER_PAGE));
+    if (wdPage > totalPages) wdPage = totalPages;
+    const start = (wdPage - 1) * WD_PER_PAGE;
+    const page  = filtered.slice(start, start + WD_PER_PAGE);
+
+    const tbody = document.getElementById('withdrawalsTable');
+    if (!page.length) {
+      tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted">No withdrawal requests found matching the selected filters.</td></tr>';
+    } else {
+      tbody.innerHTML = page.map(w => {
+        const name    = w.ewallets?.profiles?.full_name || '<span class="text-muted">Unknown User</span>';
+        const date    = new Date(w.created_at);
+        const dateStr = date.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+        const timeStr = date.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
+        const amount  = Number(w.amount||0).toLocaleString();
+        const fee     = Number(w.fee||0).toLocaleString();
+        const net     = Number(w.net_amount||0).toLocaleString();
+        const canAct  = w.status === 'pending' || w.status === 'processing';
+        return `<tr>
+          <td style="white-space:nowrap;"><div style="font-size:.8125rem;">${dateStr}</div><div style="font-size:.75rem;color:#94a3b8;">${timeStr}</div></td>
+          <td style="font-size:.8125rem;font-weight:500;">${name}</td>
+          <td style="font-size:.8125rem;">${methodLabel(w.withdrawal_method)}</td>
+          <td class="text-end" style="font-size:.8125rem;">${amount}</td>
+          <td class="text-end" style="font-size:.8125rem;color:#64748b;">${fee}</td>
+          <td class="text-end" style="font-size:.8125rem;font-weight:600;">${net}</td>
+          <td>${wdStatusBadge(w.status)}</td>
+          <td>
+            ${canAct ? `
+            <div class="d-flex gap-1">
+              <button class="btn btn-sm btn-success btn-wd-approve" data-wd-id="${w.id}" title="Approve &amp; mark completed"><i class="fas fa-check"></i></button>
+              <button class="btn btn-sm btn-danger btn-wd-reject"  data-wd-id="${w.id}" title="Reject"><i class="fas fa-times"></i></button>
+            </div>` : '<span class="text-muted" style="font-size:.8rem;">No actions</span>'}
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    const pg = document.getElementById('wdPagination');
+    pg.innerHTML = `
+      <span class="text-muted">Showing ${total===0?0:start+1}&ndash;${Math.min(start+WD_PER_PAGE,total)} of ${total} request${total!==1?'s':''}</span>
+      <div class="d-flex gap-1">
+        <button class="btn btn-sm btn-outline-secondary" id="wdPrev" ${wdPage<=1?'disabled':''}>&larr; Prev</button>
+        <button class="btn btn-sm btn-outline-secondary" id="wdNext" ${wdPage>=totalPages?'disabled':''}>Next &rarr;</button>
+      </div>`;
+    document.getElementById('wdPrev')?.addEventListener('click', () => { wdPage--; renderWithdrawalsTable(); });
+    document.getElementById('wdNext')?.addEventListener('click', () => { wdPage++; renderWithdrawalsTable(); });
+  }
+
+  // Approve / Reject delegation
+  document.body.addEventListener('click', async e => {
+    const approveBtn = e.target.closest('.btn-wd-approve');
+    const rejectBtn  = e.target.closest('.btn-wd-reject');
+    if (!approveBtn && !rejectBtn) return;
+    const id     = (approveBtn || rejectBtn).dataset.wdId;
+    const status = approveBtn ? 'completed' : 'rejected';
+    const label  = approveBtn ? 'approve' : 'reject';
+    if (!confirm(`Are you sure you want to ${label} this withdrawal request?`)) return;
+    try {
+      const { error } = await supabaseClient.from('ewallet_withdrawals').update({ status }).eq('id', id);
+      if (error) throw error;
+      const w = allWithdrawals.find(x => x.id == id);
+      if (w) w.status = status;
+      // Refresh KPIs
+      document.getElementById('wdKpiPending').textContent    = allWithdrawals.filter(x => x.status === 'pending').length.toLocaleString();
+      document.getElementById('wdKpiProcessing').textContent = allWithdrawals.filter(x => x.status === 'processing').length.toLocaleString();
+      document.getElementById('wdKpiCompleted').textContent  = allWithdrawals.filter(x => x.status === 'completed').length.toLocaleString();
+      document.getElementById('wdKpiVolume').textContent     = allWithdrawals.filter(x => x.status === 'completed').reduce((s,x) => s + Number(x.net_amount||0), 0).toLocaleString();
+      renderWithdrawalsTable();
+    } catch (err) {
+      alert('Error updating withdrawal: ' + (err?.message || err));
+    }
+  });
+
+  document.getElementById('wdSearch')?.addEventListener('input',  () => { wdPage = 1; renderWithdrawalsTable(); });
+  document.getElementById('wdStatusFilter')?.addEventListener('change', () => { wdPage = 1; renderWithdrawalsTable(); });
+  document.getElementById('refreshWithdrawals')?.addEventListener('click', () => loadWithdrawals());
+  // == End Withdrawals ========================================
+
+  // == Settings =============================================
+  const SETTINGS_KEY = 'rsc_admin_settings';
+  const SETTINGS_DEFAULTS = {
+    setPlatformName: 'Rwanda SkillsConnect',
+    setSupportEmail: '',
+    setSupportPhone: '',
+    setMaintenance: false,
+    setMaintenanceMsg: "We are currently performing scheduled maintenance. We'll be back shortly.",
+    setTimezone: 'Africa/Kigali',
+    setCommission: '5',
+    setWithdrawalFee: '1',
+    setMinWithdrawal: '1000',
+    setMaxJobs: '20',
+    setMaxApps: '1',
+    setJobExpiry: '30',
+    setAllowReg: true,
+    setEmailVerify: true,
+    setEmployerSelfReg: true,
+    setSessionTimeout: '60',
+    setMaxLoginAttempts: '5',
+    setAdmin2FA: false,
+    notifyNewUser: true,
+    notifyWithdrawal: true,
+    notifyNewJob: false,
+    setAdminNotifyEmail: '',
+    setInAppNotify: true,
+    setDailyDigest: false
+  };
+
+  function applySettings(s) {
+    Object.entries(s).forEach(([id, val]) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (el.type === 'checkbox') el.checked = !!val;
+      else el.value = val;
+    });
+    updateMaintenanceBadge();
+  }
+
+  function collectSettings() {
+    const s = {};
+    Object.keys(SETTINGS_DEFAULTS).forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      s[id] = el.type === 'checkbox' ? el.checked : el.value;
+    });
+    return s;
+  }
+
+  function updateMaintenanceBadge() {
+    const on = document.getElementById('setMaintenance')?.checked;
+    const badge = document.getElementById('maintenanceStatus');
+    if (!badge) return;
+    badge.className = on ? 'badge bg-danger mt-1' : 'badge bg-success mt-1';
+    badge.textContent = on ? 'Maintenance Mode Active' : 'Platform is Live';
+  }
+
+  function loadSettings() {
+    const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || 'null');
+    applySettings(saved || SETTINGS_DEFAULTS);
+    if (saved?.savedAt) {
+      document.getElementById('settingsLastSaved').textContent =
+        'Last saved: ' + new Date(saved.savedAt).toLocaleString('en-GB', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+    }
+  }
+
+  document.getElementById('setMaintenance')?.addEventListener('change', updateMaintenanceBadge);
+
+  // Tab switching
+  document.querySelectorAll('#settingsTabs .nav-link').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#settingsTabs .nav-link').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.settings-tab').forEach(t => t.style.display = 'none');
+      btn.classList.add('active');
+      document.getElementById('stab-' + btn.dataset.stab).style.display = '';
+    });
+  });
+
+  document.getElementById('settingsForm')?.addEventListener('submit', e => {
+    e.preventDefault();
+    const s = collectSettings();
+    s.savedAt = new Date().toISOString();
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+    document.getElementById('settingsLastSaved').textContent =
+      'Last saved: ' + new Date(s.savedAt).toLocaleString('en-GB', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+    const alert = document.getElementById('settingsAlert');
+    alert.innerHTML = '<div class="alert alert-success alert-dismissible d-flex align-items-center gap-2 mb-3"><i class="fas fa-check-circle"></i><span>Settings saved successfully.</span><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
+    setTimeout(() => { alert.innerHTML = ''; }, 4000);
+  });
+
+  document.getElementById('resetSettingsBtn')?.addEventListener('click', () => {
+    if (!confirm('Reset all settings to their default values?')) return;
+    applySettings(SETTINGS_DEFAULTS);
+    localStorage.removeItem(SETTINGS_KEY);
+    document.getElementById('settingsLastSaved').textContent = '';
+    const alert = document.getElementById('settingsAlert');
+    alert.innerHTML = '<div class="alert alert-info alert-dismissible d-flex align-items-center gap-2 mb-3"><i class="fas fa-info-circle"></i><span>Settings have been reset to defaults.</span><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
+    setTimeout(() => { alert.innerHTML = ''; }, 4000);
+  });
+
+  // Load settings when section is opened
+  // (also called from showSection below)
+  // == End Settings ==========================================
+
+  // Skills management
+  async function loadSkills() {
+    const tbody = document.getElementById('skillsTableBody');
+    const info = document.getElementById('skillsInfo');
+    tbody.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-muted">Loading&hellip;</td></tr>';
+    info.textContent = '';
+    try {
+      // Try to load platform-level skills from skills_master if present
+      let masterExists = true;
+      let masterData = null;
+      try {
+        const { data, error } = await supabaseClient.from('skills_master').select('*').order('name');
+        if (error) throw error;
+        masterData = data || [];
+      } catch (e) {
+        masterExists = false;
+        console.warn('skills_master table not available, falling back to profiles aggregation');
+      }
+
+      if (masterExists && masterData && masterData.length > 0) {
+        tbody.innerHTML = masterData.map(s => `
+          <tr data-skill-id="${s.id}">
+            <td>${s.name}</td>
+            <td>&mdash;</td>
+            <td><button class="btn btn-sm btn-danger btn-delete-skill" data-skill-id="${s.id}">Delete</button></td>
+          </tr>
+        `).join('');
+        info.innerHTML = '<div class="text-muted">Skills are sourced from the centralized platform catalog. Changes made here are reflected across all job postings and worker profiles.</div>';
+        return;
+      }
+
+      // Fallback: aggregate skills from profiles.skills
+      const { data: profiles, error: profErr } = await supabaseClient.from('profiles').select('skills');
+      if (profErr) throw profErr;
+      const counts = {};
+      (profiles || []).forEach(p => {
+        if (!p.skills) return;
+        p.skills.split(',').map(s => s.trim()).filter(Boolean).forEach(skill => {
+          const key = skill.toLowerCase();
+          counts[key] = counts[key] ? counts[key] + 1 : 1;
+        });
+      });
+      const rows = Object.keys(counts).sort((a,b)=>counts[b]-counts[a]).map(k => ({ name: k, count: counts[k] }));
+      if (rows.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-muted">No skills found</td></tr>';
+        info.innerHTML = '<div class="text-muted">No aggregated skills found in user profiles.</div>';
+        return;
+      }
+      tbody.innerHTML = rows.map(r => `
+        <tr>
+          <td>${r.name}</td>
+          <td>${r.count}</td>
+          <td><button class="btn btn-sm btn-outline-secondary btn-copy-skill" data-skill="${r.name}">Copy</button></td>
+        </tr>
+      `).join('');
+      info.innerHTML = '<div class="text-muted">Skills shown here are aggregated from worker profiles. This view reflects the most commonly listed skills across the platform. To enable a fully editable, persistent skill catalog, apply <code>sql/admin-skills-master.sql</code> in your Supabase project.</div>';
+    } catch (err) {
+      console.error('loadSkills error', err);
+      const msg = err?.message || String(err);
+      tbody.innerHTML = `<tr><td colspan="3" class="text-danger">Error loading skills: ${msg}</td></tr>`;
+    }
+  }
+
+  // Add skill handler: prefer inserting into skills_master if available, otherwise save to localStorage
+  async function addSkill(name) {
+    const n = (name || '').trim();
+    if (!n) return alert('Enter a skill name');
+    try {
+      // Try insert into skills_master
+      try {
+        const { data, error } = await supabaseClient.from('skills_master').insert({ name: n }).select();
+        if (error) throw error;
+        loadSkills();
+        return;
+      } catch (e) {
+        console.warn('skills_master insert failed, storing locally:', e?.message || e);
+      }
+      // Fallback: store locally in localStorage suggestedSkills
+      const key = 'suggestedSkills';
+      const cur = JSON.parse(localStorage.getItem(key) || '[]');
+      if (!cur.includes(n.toLowerCase())) cur.push(n.toLowerCase());
+      localStorage.setItem(key, JSON.stringify(cur));
+      alert('Skill saved locally. To persist across users, apply `sql/admin-skills-master.sql` in Supabase.');
+      loadSkills();
+    } catch (err) {
+      console.error('addSkill error', err);
+      alert('Error adding skill: ' + (err?.message || String(err)));
+    }
+  }
+
+  // Delete skill from skills_master
+  async function deleteSkillById(id) {
+    if (!confirm('Delete this skill? This cannot be undone.')) return;
+    try {
+      const { error } = await supabaseClient.from('skills_master').delete().eq('id', id);
+      if (error) throw error;
+      loadSkills();
+    } catch (err) {
+      console.error('deleteSkill error', err);
+      alert('Error deleting skill: ' + (err?.message || String(err)));
+    }
+  }
+
+  function showSection(section) {
+    hideAllPanes();
+    const pane = document.getElementById('pane-' + section);
+    if (pane) pane.style.display = '';
+    setActiveMenu(section);
+    // Update title
+    const menu = Array.from(menuItems).find(m => m.dataset.section === section);
+    if (menu) {
+      const title = menu.querySelector('.menu-text')?.textContent || menu.textContent || section;
+      document.querySelector('.page-title').textContent = title;
+    }
+    // Load data for some sections
+    if (section === 'users-all') loadUsers();
+    if (section === 'users-workers') loadUsers('worker');
+    if (section === 'users-employers') loadUsers('employer');
+    if (section === 'jobs') loadJobs();
+    if (section === 'skills') loadSkills();
+    if (section === 'transactions') loadTransactions();
+    if (section === 'withdrawals') loadWithdrawals();
+    if (section === 'settings') loadSettings();
+    if (section === 'analytics') loadAnalytics();
+    if (section === 'reports') loadReports();
+  }
+
+  menuItems.forEach(mi => mi.addEventListener('click', (e) => {
+    e.preventDefault();
+    const s = mi.dataset.section;
+    if (!s) return;
+    showSection(s);
+    // close mobile sidebar
+    sidebar.classList.remove('show');
+    document.getElementById('sidebarOverlay').classList.remove('show');
+  }));
+
+  actionShortcuts.forEach(a => a.addEventListener('click', (e) => { e.preventDefault(); showSection(a.dataset.section); }));
+
+  // Wire any other data-section elements (e.g., footer settings)
+  document.querySelectorAll('[data-section]').forEach(el => {
+    if (el.classList.contains('menu-item') || el.classList.contains('btn-action-compact')) return;
+    el.addEventListener('click', (e) => { e.preventDefault(); showSection(el.dataset.section); });
+  });
+
+  document.getElementById('refreshUsers')?.addEventListener('click', () => { allUsersCache = null; loadUsers(); });
+  document.getElementById('refreshJobs')?.addEventListener('click', () => loadJobs());
+
+  const refreshSkillsBtn = document.getElementById('refreshSkills');
+  if (refreshSkillsBtn) refreshSkillsBtn.addEventListener('click', () => loadSkills());
+
+  // Delegated status change for user rows
+  document.body.addEventListener('change', async (e) => {
+    const t = e.target;
+    if (!t.classList?.contains('user-status')) return;
+    try {
+      const id = t.dataset.userId;
+      const status = t.value;
+      const { error } = await supabaseClient.rpc('admin_set_user_status', { p_target_id: id, p_status: status });
+      if (error) throw error;
+      // update cache
+      if (allUsersCache) { const u = allUsersCache.find(x => x.id === id); if (u) u.status = status; }
+      t.closest('tr').querySelector('.badge')?.replaceWith((() => { const s = document.createElement('span'); s.innerHTML = statusBadgeUser(status); return s.firstChild; })());
+      t.classList.add('border-success'); setTimeout(() => t.classList.remove('border-success'), 800);
+    } catch (err) {
+      alert('Error updating status: ' + (err?.message || err));
+    }
+  });
+
+  document.body.addEventListener('click', async (e) => {
+    const btn = e.target.closest('.btn-edit-user');
+    if (!btn) return;
+    const id = btn.dataset.userId;
+    openUserEditModal(id);
+  });
+
+  // Skills form handlers
+  const skillForm = document.getElementById('skillForm');
+  if (skillForm) {
+    skillForm.addEventListener('submit', (ev) => {
+      ev.preventDefault();
+      const name = document.getElementById('newSkillName').value;
+      addSkill(name);
+      document.getElementById('newSkillName').value = '';
+    });
+  }
+
+  document.body.addEventListener('click', (e) => {
+    const b = e.target.closest('.btn-delete-skill');
+    if (b) { const id = b.dataset.skillId; deleteSkillById(id); }
+    const c = e.target.closest('.btn-copy-skill');
+    if (c) { const s = c.dataset.skill; navigator.clipboard?.writeText(s).then(()=>alert('Copied skill: '+s)); }
+    const cl = e.target.closest('#clearLocalSkills');
+    if (cl) { localStorage.removeItem('suggestedSkills'); alert('Cleared local suggested skills'); loadSkills(); }
+  });
+
+  // == Analytics ============================================
+  let aCharts = {};
+
+  function buildMonthLabels(n) {
+    const labels = [], keys = [];
+    for (let i = n - 1; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(1);
+      d.setMonth(d.getMonth() - i);
+      labels.push(d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }));
+      keys.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+    }
+    return { labels, keys };
+  }
+
+  function bucketByMonth(rows, dateField, keys) {
+    const map = Object.fromEntries(keys.map(k => [k, 0]));
+    (rows || []).forEach(r => {
+      const k = (r[dateField] || '').slice(0, 7);
+      if (k in map) map[k]++;
+    });
+    return keys.map(k => map[k]);
+  }
+
+  function bucketTxByMonth(rows, keys) {
+    const map = Object.fromEntries(keys.map(k => [k, 0]));
+    (rows || []).forEach(r => {
+      const k = (r.created_at || '').slice(0, 7);
+      if (k in map) map[k] += Number(r.amount) || 0;
+    });
+    return keys.map(k => map[k]);
+  }
+
+  function makeOrUpdate(id, config) {
+    if (aCharts[id]) { aCharts[id].destroy(); }
+    aCharts[id] = new Chart(document.getElementById(id), config);
+  }
+
+  function lineConfig(labels, data, label, color) {
+    return {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label,
+          data,
+          backgroundColor: color + '33',
+          borderColor: color,
+          borderWidth: 2,
+          borderRadius: 4,
+          hoverBackgroundColor: color + '88'
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, grid: { color: 'rgba(226,232,240,.5)' }, ticks: { font: { size: 10 }, precision: 0 } },
+          x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+        }
+      }
+    };
+  }
+
+  async function loadAnalytics(months) {
+    const n = months || 6;
+    const { labels, keys } = buildMonthLabels(n);
+    const since = new Date(); since.setMonth(since.getMonth() - n); since.setDate(1);
+    const sinceIso = since.toISOString();
+    const since30 = new Date(Date.now() - 30 * 864e5).toISOString();
+
+    const [
+      { data: users },
+      { data: jobs },
+      { data: apps },
+      { data: txs },
+      { data: jobStatuses },
+      { data: users30 },
+      { data: jobs30 },
+      { data: apps30 },
+      { data: txs30 }
+    ] = await Promise.all([
+      supabaseClient.from('profiles').select('created_at').gte('created_at', sinceIso),
+      supabaseClient.from('jobs').select('created_at').gte('created_at', sinceIso),
+      supabaseClient.from('job_applications').select('applied_at').gte('applied_at', sinceIso),
+      supabaseClient.from('ewallet_transactions').select('created_at,amount').eq('transaction_type', 'payment_received').gte('created_at', sinceIso),
+      supabaseClient.from('jobs').select('status'),
+      supabaseClient.from('profiles').select('id', { count: 'exact', head: true }).gte('created_at', since30),
+      supabaseClient.from('jobs').select('id', { count: 'exact', head: true }).gte('created_at', since30),
+      supabaseClient.from('job_applications').select('id', { count: 'exact', head: true }).gte('applied_at', since30),
+      supabaseClient.from('ewallet_transactions').select('amount').eq('transaction_type', 'payment_received').gte('created_at', since30)
+    ]);
+
+    // KPIs
+    document.getElementById('aKpiNewUsers').textContent = users30?.length ?? 0;
+    document.getElementById('aKpiNewJobs').textContent = jobs30?.length ?? 0;
+    document.getElementById('aKpiApplications').textContent = apps30?.length ?? 0;
+    const rev30 = (txs30 || []).reduce((s, r) => s + (Number(r.amount) || 0), 0);
+    document.getElementById('aKpiRevenue').textContent = rev30.toLocaleString();
+
+    // User registrations chart
+    makeOrUpdate('analyticsUsersChart', lineConfig(labels, bucketByMonth(users, 'created_at', keys), 'Registrations', '#667eea'));
+
+    // Job postings chart
+    makeOrUpdate('analyticsJobsChart', lineConfig(labels, bucketByMonth(jobs, 'created_at', keys), 'Job Postings', '#00C896'));
+
+    // Transaction volume chart
+    const txData = bucketTxByMonth(txs, keys);
+    makeOrUpdate('analyticsTxChart', {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Revenue (RWF)',
+          data: txData,
+          backgroundColor: 'rgba(255,107,107,.08)',
+          borderColor: '#FF6B6B',
+          borderWidth: 2,
+          fill: true,
+          tension: .35,
+          pointBackgroundColor: '#FF6B6B',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          pointRadius: 4
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, grid: { color: 'rgba(226,232,240,.5)' }, ticks: { font: { size: 10 }, callback: v => 'RWF ' + v.toLocaleString() } },
+          x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+        }
+      }
+    });
+
+    // Job status donut
+    const statusCounts = { active: 0, draft: 0, inactive: 0, filled: 0 };
+    (jobStatuses || []).forEach(j => { if (j.status in statusCounts) statusCounts[j.status]++; });
+    makeOrUpdate('analyticsJobStatusChart', {
+      type: 'doughnut',
+      data: {
+        labels: ['Active', 'Draft', 'Inactive', 'Filled'],
+        datasets: [{ data: [statusCounts.active, statusCounts.draft, statusCounts.inactive, statusCounts.filled], backgroundColor: ['#00C896', '#f59e0b', '#94a3b8', '#667eea'], borderWidth: 2, borderColor: '#fff' }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: true,
+        plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 12 } } },
+        cutout: '65%'
+      }
+    });
+  }
+
+  // Range selector listeners
+  document.getElementById('aUsersRange')?.addEventListener('change', async (e) => {
+    const n = parseInt(e.target.value);
+    const { labels, keys } = buildMonthLabels(n);
+    const since = new Date(); since.setMonth(since.getMonth() - n); since.setDate(1);
+    const { data } = await supabaseClient.from('profiles').select('created_at').gte('created_at', since.toISOString());
+    makeOrUpdate('analyticsUsersChart', lineConfig(labels, bucketByMonth(data, 'created_at', keys), 'Registrations', '#667eea'));
+  });
+  document.getElementById('aJobsRange')?.addEventListener('change', async (e) => {
+    const n = parseInt(e.target.value);
+    const { labels, keys } = buildMonthLabels(n);
+    const since = new Date(); since.setMonth(since.getMonth() - n); since.setDate(1);
+    const { data } = await supabaseClient.from('jobs').select('created_at').gte('created_at', since.toISOString());
+    makeOrUpdate('analyticsJobsChart', lineConfig(labels, bucketByMonth(data, 'created_at', keys), 'Job Postings', '#00C896'));
+  });
+  document.getElementById('aTxRange')?.addEventListener('change', async (e) => {
+    const n = parseInt(e.target.value);
+    const { labels, keys } = buildMonthLabels(n);
+    const since = new Date(); since.setMonth(since.getMonth() - n); since.setDate(1);
+    const { data } = await supabaseClient.from('ewallet_transactions').select('created_at,amount').eq('transaction_type', 'payment_received').gte('created_at', since.toISOString());
+    const txData = bucketTxByMonth(data, keys);
+    if (aCharts['analyticsTxChart']) { aCharts['analyticsTxChart'].data.labels = labels; aCharts['analyticsTxChart'].data.datasets[0].data = txData; aCharts['analyticsTxChart'].update(); }
+  });
+
+  // == End Analytics =========================================
+
+  // == Reports ===============================================
+  function rptRows(rows) {
+    return rows.map(([label, val]) =>
+      `<tr><td>${label}</td><td class="text-end fw-semibold">${val}</td></tr>`
+    ).join('');
+  }
+
+  function kpiCard(icon, color, title, value, sub) {
+    return `<div class="col-6 col-md-3"><div class="stat-card-compact">
+      <div class="stat-icon-sm bg-${color}"><i class="${icon}"></i></div>
+      <div class="stat-content-compact"><h3>${value}</h3><p>${title}</p><small>${sub}</small></div>
+    </div></div>`;
+  }
+
+  async function loadReports() {
+    const days = parseInt(document.getElementById('reportPeriod')?.value ?? '30');
+    const since = days > 0
+      ? new Date(Date.now() - days * 864e5).toISOString()
+      : new Date(0).toISOString();
+    const label = days === 0 ? 'all time' : `last ${days} days`;
+
+    // Set all tables to loading
+    ['rptUsersBody','rptJobsBody','rptAppsBody','rptFinanceBody','rptTopEmployers','rptTopJobs']
+      .forEach(id => { document.getElementById(id).innerHTML = '<tr><td colspan="3" class="text-center py-3 text-muted">Loading&hellip;</td></tr>'; });
+    document.getElementById('reportKpis').innerHTML = '';
+
+    try {
+      const [
+        { count: totalUsers },
+        { count: workers },
+        { count: employers },
+        { count: newUsers },
+        { count: totalJobs },
+        { data: jobsByStatus },
+        { count: newJobs },
+        { count: totalApps },
+        { count: newApps },
+        { count: accepted },
+        { count: pending },
+        { count: rejected },
+        { data: txData },
+        { data: jobsForRanking },
+        { data: appsForRanking }
+      ] = await Promise.all([
+        supabaseClient.from('profiles').select('*',{count:'exact',head:true}),
+        supabaseClient.from('profiles').select('*',{count:'exact',head:true}).eq('role','worker'),
+        supabaseClient.from('profiles').select('*',{count:'exact',head:true}).eq('role','employer'),
+        supabaseClient.from('profiles').select('*',{count:'exact',head:true}).gte('created_at',since),
+        supabaseClient.from('jobs').select('*',{count:'exact',head:true}),
+        supabaseClient.from('jobs').select('status'),
+        supabaseClient.from('jobs').select('*',{count:'exact',head:true}).gte('created_at',since),
+        supabaseClient.from('job_applications').select('*',{count:'exact',head:true}),
+        supabaseClient.from('job_applications').select('*',{count:'exact',head:true}).gte('applied_at',since),
+        supabaseClient.from('job_applications').select('*',{count:'exact',head:true}).eq('status','accepted'),
+        supabaseClient.from('job_applications').select('*',{count:'exact',head:true}).eq('status','pending'),
+        supabaseClient.from('job_applications').select('*',{count:'exact',head:true}).eq('status','rejected'),
+        supabaseClient.from('ewallet_transactions').select('transaction_type,amount,status').gte('created_at',since),
+        supabaseClient.from('jobs').select('id,title,employer_id,profiles:employer_id(full_name,company_name)').gte('created_at',since),
+        supabaseClient.from('job_applications').select('job_id,jobs:job_id(title)').gte('applied_at',since)
+      ]);
+
+      // Finance aggregates
+      const revenue = (txData||[]).filter(t=>t.transaction_type==='payment_received'&&t.status==='completed').reduce((s,t)=>s+Number(t.amount),0);
+      const deposits = (txData||[]).filter(t=>t.transaction_type==='deposit'&&t.status==='completed').reduce((s,t)=>s+Number(t.amount),0);
+      const withdrawals = (txData||[]).filter(t=>t.transaction_type==='withdrawal'&&t.status==='completed').reduce((s,t)=>s+Number(t.amount),0);
+      const txCount = (txData||[]).length;
+
+      // Job status counts
+      const jStatus = {active:0,draft:0,inactive:0,filled:0};
+      (jobsByStatus||[]).forEach(j=>{ if(j.status in jStatus) jStatus[j.status]++; });
+
+      // Top employers
+      const empMap = {};
+      (jobsForRanking||[]).forEach(j=>{
+        const name = j.profiles?.company_name || j.profiles?.full_name || j.employer_id;
+        empMap[name] = (empMap[name]||0)+1;
+      });
+      const topEmp = Object.entries(empMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
+
+      // Top jobs by applications
+      const jobAppMap = {};
+      (appsForRanking||[]).forEach(a=>{
+        const title = a.jobs?.title || a.job_id;
+        jobAppMap[title] = (jobAppMap[title]||0)+1;
+      });
+      const topJobs = Object.entries(jobAppMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
+
+      // Acceptance rate
+      const acceptRate = totalApps > 0 ? ((accepted/totalApps)*100).toFixed(1)+'%' : '&mdash;';
+
+      // KPI cards
+      document.getElementById('reportKpis').innerHTML =
+        kpiCard('fas fa-users','primary','Total Users', totalUsers||0, `${newUsers||0} new (${label})`) +
+        kpiCard('fas fa-briefcase','success','Total Jobs', totalJobs||0, `${newJobs||0} new (${label})`) +
+        kpiCard('fas fa-file-alt','warning','Applications', totalApps||0, `${newApps||0} new (${label})`) +
+        kpiCard('fas fa-money-bill-wave','info','Revenue (RWF)', (revenue).toLocaleString(), label);
+
+      // Users table
+      document.getElementById('rptUsersBody').innerHTML = rptRows([
+        ['Total users', totalUsers||0],
+        ['Workers', workers||0],
+        ['Employers', employers||0],
+        [`New registrations (${label})`, newUsers||0],
+        ['Admins', (totalUsers||0)-(workers||0)-(employers||0)]
+      ]);
+
+      // Jobs table
+      document.getElementById('rptJobsBody').innerHTML = rptRows([
+        ['Total jobs', totalJobs||0],
+        [`New jobs (${label})`, newJobs||0],
+        ['Active', jStatus.active],
+        ['Draft', jStatus.draft],
+        ['Inactive', jStatus.inactive],
+        ['Filled', jStatus.filled]
+      ]);
+
+      // Applications table
+      document.getElementById('rptAppsBody').innerHTML = rptRows([
+        ['Total applications', totalApps||0],
+        [`New applications (${label})`, newApps||0],
+        ['Accepted', accepted||0],
+        ['Pending', pending||0],
+        ['Rejected', rejected||0],
+        ['Acceptance rate', acceptRate]
+      ]);
+
+      // Finance table
+      document.getElementById('rptFinanceBody').innerHTML = rptRows([
+        [`Revenue (${label})`, 'RWF '+revenue.toLocaleString()],
+        [`Deposits (${label})`, 'RWF '+deposits.toLocaleString()],
+        [`Withdrawals (${label})`, 'RWF '+withdrawals.toLocaleString()],
+        [`Transactions (${label})`, txCount]
+      ]);
+
+      // Top employers
+      document.getElementById('rptTopEmployers').innerHTML = topEmp.length
+        ? topEmp.map(([name,cnt],i)=>`<tr><td class="text-muted">${i+1}</td><td>${name}</td><td class="text-end fw-semibold">${cnt}</td></tr>`).join('')
+        : '<tr><td colspan="3" class="text-center py-3 text-muted">No data</td></tr>';
+
+      // Top jobs
+      document.getElementById('rptTopJobs').innerHTML = topJobs.length
+        ? topJobs.map(([title,cnt],i)=>`<tr><td class="text-muted">${i+1}</td><td>${title}</td><td class="text-end fw-semibold">${cnt}</td></tr>`).join('')
+        : '<tr><td colspan="3" class="text-center py-3 text-muted">No data</td></tr>';
+
+      // Export CSV
+      document.getElementById('exportReportBtn').onclick = () => {
+        const rows = [
+          ['Category','Metric','Value'],
+          ['Users','Total users',totalUsers||0],
+          ['Users','Workers',workers||0],
+          ['Users','Employers',employers||0],
+          ['Users',`New (${label})`,newUsers||0],
+          ['Jobs','Total jobs',totalJobs||0],
+          ['Jobs',`New (${label})`,newJobs||0],
+          ['Jobs','Active',jStatus.active],
+          ['Jobs','Draft',jStatus.draft],
+          ['Jobs','Inactive',jStatus.inactive],
+          ['Jobs','Filled',jStatus.filled],
+          ['Applications','Total',totalApps||0],
+          ['Applications',`New (${label})`,newApps||0],
+          ['Applications','Accepted',accepted||0],
+          ['Applications','Pending',pending||0],
+          ['Applications','Rejected',rejected||0],
+          ['Applications','Acceptance rate',acceptRate],
+          ['Finance',`Revenue (${label})`,revenue],
+          ['Finance',`Deposits (${label})`,deposits],
+          ['Finance',`Withdrawals (${label})`,withdrawals],
+          ['Finance',`Transactions (${label})`,txCount]
+        ];
+        const csv = rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+        const a = document.createElement('a');
+        a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+        a.download = `rsc-report-${new Date().toISOString().slice(0,10)}.csv`;
+        a.click();
+      };
+
+    } catch(err) {
+      console.error('loadReports error', err);
+      ['rptUsersBody','rptJobsBody','rptAppsBody','rptFinanceBody','rptTopEmployers','rptTopJobs']
+        .forEach(id => { document.getElementById(id).innerHTML = `<tr><td colspan="3" class="text-danger p-3">Error: ${err?.message||err}</td></tr>`; });
+    }
+  }
+
+  document.getElementById('reportPeriod')?.addEventListener('change', () => loadReports());
+  document.getElementById('refreshReportBtn')?.addEventListener('click', () => loadReports());
+  // == End Reports ============================================
+  showSection('overview');
+
+  // User edit modal helper functions
+  function createUserModalIfMissing() {
+    if (document.getElementById('userEditModal')) return;
+    const modalHtml = `
+      <div class="modal fade" id="userEditModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Edit User</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <div id="userEditAlert"></div>
+              <form id="userEditForm">
+                <input type="hidden" id="editUserId">
+                <div class="row g-2">
+                  <div class="col-md-6"><label class="form-label">Full name</label><input id="editFullName" class="form-control"/></div>
+                  <div class="col-md-6"><label class="form-label">Email</label><input id="editEmail" class="form-control" disabled/></div>
+                </div>
+                <div class="row g-2 mt-2">
+                  <div class="col-md-4"><label class="form-label">Role</label><select id="editRole" class="form-select"><option value="worker">Worker</option><option value="employer">Employer</option><option value="admin">Admin</option></select></div>
+                  <div class="col-md-4"><label class="form-label">Status</label><select id="editStatus" class="form-select"><option value="active">Active</option><option value="inactive">Inactive</option><option value="suspended">Suspended</option></select></div>
+                  <div class="col-md-4"><label class="form-label">Phone</label><input id="editPhone" class="form-control"/></div>
+                </div>
+                <div class="row g-2 mt-2">
+                  <div class="col-12"><label class="form-label">Company</label><input id="editCompany" class="form-control"/></div>
+                </div>
+                <div class="row g-2 mt-2">
+                  <div class="col-12"><label class="form-label">Bio</label><textarea id="editBio" class="form-control" rows="3"></textarea></div>
+                </div>
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-primary" id="saveUserChanges">Save changes</button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    document.getElementById('saveUserChanges').addEventListener('click', saveUserChanges);
+  }
+
+  async function openUserEditModal(userId) {
+    createUserModalIfMissing();
+    const modalEl = document.getElementById('userEditModal');
+    const bsModal = new bootstrap.Modal(modalEl);
+    document.getElementById('userEditAlert').innerHTML = '';
+    document.getElementById('editUserId').value = userId;
+    // fetch profile and auth email (if admin)
+    try {
+      const { data: profileData, error: profErr } = await supabaseClient.from('profiles').select('*').eq('id', userId).single();
+      if (profErr) throw profErr;
+      document.getElementById('editFullName').value = profileData.full_name || '';
+      document.getElementById('editPhone').value = profileData.phone || '';
+      document.getElementById('editCompany').value = profileData.company_name || '';
+      document.getElementById('editBio').value = profileData.bio || '';
+      document.getElementById('editRole').value = profileData.role || 'worker';
+      document.getElementById('editStatus').value = profileData.status || 'active';
+      // Try to fetch email via admin RPC if we are admin
+      let email = '';
+      if (window.__isAdmin) {
+        try {
+          const { data: rpcData } = await supabaseClient.rpc('admin_get_profiles');
+          if (rpcData && Array.isArray(rpcData)) {
+            const found = rpcData.find(u => u.id === userId);
+            if (found) email = found.email || '';
+          }
+        } catch (e) {
+          console.warn('rpc admin_get_profiles failed in modal:', e?.message || e);
+        }
+      }
+      document.getElementById('editEmail').value = email || '(not available)';
+      bsModal.show();
+    } catch (err) {
+      console.error('openUserEditModal error', err);
+      alert('Error loading user: ' + (err?.message || String(err)));
+    }
+  }
+
+  async function saveUserChanges() {
+    const id = document.getElementById('editUserId').value;
+    const payload = {
+      full_name: document.getElementById('editFullName').value.trim(),
+      phone: document.getElementById('editPhone').value.trim(),
+      company_name: document.getElementById('editCompany').value.trim(),
+      bio: document.getElementById('editBio').value.trim()
+    };
+    const newRole = document.getElementById('editRole').value;
+    const newStatus = document.getElementById('editStatus').value;
+    try {
+      // Update profile fields
+      const { data, error } = await supabaseClient.from('profiles').update(payload).eq('id', id);
+      if (error) throw error;
+      // Update role/status via RPC to ensure admin-only enforcement
+      if (window.__isAdmin) {
+        const { error: e1 } = await supabaseClient.rpc('admin_update_user_role', { p_target_id: id, p_role: newRole });
+        if (e1) throw e1;
+        const { error: e2 } = await supabaseClient.rpc('admin_set_user_status', { p_target_id: id, p_status: newStatus });
+        if (e2) throw e2;
+      }
+      // Close modal and refresh user list
+      const modalEl = document.getElementById('userEditModal');
+      bootstrap.Modal.getInstance(modalEl).hide();
+      loadUsers();
+      alert('User updated successfully');
+    } catch (err) {
+      console.error('saveUserChanges error', err);
+      const msg = err?.message || String(err);
+      document.getElementById('userEditAlert').innerHTML = `<div class="alert alert-danger">${msg}</div>`;
+    }
+  }
+});
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase Connection Test</title>
+    <link rel="stylesheet" href="assets/css/tailwind.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-50 min-h-screen p-8">
+    <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-8">
+        <h1 class="text-3xl font-bold text-center mb-8">Supabase Connection Test</h1>
+        
+        <div id="results" class="space-y-4">
+            <div class="p-4 bg-blue-50 rounded-lg">
+                <h3 class="font-semibold text-blue-800">Testing Supabase Connection...</h3>
+                <div id="connectionStatus" class="mt-2 text-sm text-blue-600">Initializing...</div>
+            </div>
+        </div>
+        
+        <div class="mt-8 text-center">
+            <button id="testBtn" onclick="runTests()" 
+                    class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700">
+                Run Tests
+            </button>
+        </div>
+    </div>
+
+    <script src="js/supabaseClient.js"></script>
+    <script>
+        async function runTests() {
+            const results = document.getElementById('results');
+            const testBtn = document.getElementById('testBtn');
+            
+            testBtn.disabled = true;
+            testBtn.textContent = 'Testing...';
+            
+            results.innerHTML = '';
+            
+            // Test 1: Supabase Client Initialization
+            addResult('Testing Supabase Client Initialization...', 'info');
+            
+            try {
+                if (window.supabaseClient) {
+                    addResult('✅ Supabase client initialized successfully', 'success');
+                    addResult(`📍 URL: ${window.supabaseClient.supabaseUrl}`, 'info');
+                    addResult(`🔑 Key: ${window.supabaseClient.supabaseKey.substring(0, 20)}...`, 'info');
+                } else {
+                    addResult('❌ Supabase client not found', 'error');
+                    return;
+                }
+            } catch (error) {
+                addResult(`❌ Client initialization error: ${error.message}`, 'error');
+                return;
+            }
+            
+            // Test 2: Auth Service
+            addResult('Testing Auth Service...', 'info');
+            
+            try {
+                const { data, error } = await window.supabaseClient.auth.getSession();
+                
+                if (error) {
+                    addResult(`⚠️ Auth service error: ${error.message}`, 'warning');
+                } else {
+                    addResult('✅ Auth service is working', 'success');
+                    
+                    if (data.session) {
+                        addResult(`👤 Current user: ${data.session.user.email}`, 'info');
+                    } else {
+                        addResult('👤 No active session', 'info');
+                    }
+                }
+            } catch (error) {
+                addResult(`❌ Auth test failed: ${error.message}`, 'error');
+            }
+            
+            // Test 3: Database Connection (if profiles table exists)
+            addResult('Testing Database Connection...', 'info');
+            
+            try {
+                const { data, error } = await window.supabaseClient
+                    .from('profiles')
+                    .select('count')
+                    .limit(1);
+                
+                if (error) {
+                    if (error.message.includes('relation "profiles" does not exist')) {
+                        addResult('⚠️ Profiles table not found - run the SQL schema first', 'warning');
+                        addResult('📝 Execute the SQL in supabase-schema.sql in your Supabase dashboard', 'info');
+                    } else {
+                        addResult(`⚠️ Database error: ${error.message}`, 'warning');
+                    }
+                } else {
+                    addResult('✅ Database connection successful', 'success');
+                    addResult('✅ Profiles table exists', 'success');
+                }
+            } catch (error) {
+                addResult(`❌ Database test failed: ${error.message}`, 'error');
+            }
+            
+            // Test 4: Configuration Check
+            addResult('Checking Configuration...', 'info');
+            
+            const config = {
+                url: 'https://hbaslkqfuudplimgbsem.supabase.co',
+                key: 'sb_publishable_oVyjdCmepAWSNwzauCBkDQ_7uZx0VqW'
+            };
+            
+            if (window.supabaseClient.supabaseUrl === config.url) {
+                addResult('✅ Supabase URL matches configuration', 'success');
+            } else {
+                addResult('❌ Supabase URL mismatch', 'error');
+            }
+            
+            if (window.supabaseClient.supabaseKey === config.key) {
+                addResult('✅ Supabase key matches configuration', 'success');
+            } else {
+                addResult('❌ Supabase key mismatch', 'error');
+            }
+            
+            addResult('🎉 Test completed!', 'success');
+            
+            testBtn.disabled = false;
+            testBtn.textContent = 'Run Tests Again';
+        }
+        
+        function addResult(message, type) {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `p-3 rounded-lg ${getTypeClass(type)}`;
+            div.textContent = message;
+            results.appendChild(div);
+        }
+        
+        function getTypeClass(type) {
+            switch (type) {
+                case 'success': return 'bg-green-50 text-green-800 border border-green-200';
+                case 'error': return 'bg-red-50 text-red-800 border border-red-200';
+                case 'warning': return 'bg-yellow-50 text-yellow-800 border border-yellow-200';
+                case 'info': return 'bg-blue-50 text-blue-800 border border-blue-200';
+                default: return 'bg-gray-50 text-gray-800 border border-gray-200';
+            }
+        }
+        
+        // Auto-run tests on page load
+        window.addEventListener('load', () => {
+            setTimeout(runTests, 500);
+        });
+    </script>
+</body>
+</html>

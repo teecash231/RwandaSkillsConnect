@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Find Workers — Rwanda SkillsConnect</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #f5f7fa; }
+    .sidebar { width: 260px; background: #fff; border-right: 1px solid #E2E8F0; position: fixed; top: 0; left: 0; height: 100vh; z-index: 1000; display: flex; flex-direction: column; }
+    .main-content { margin-left: 260px; min-height: 100vh; }
+    .menu-item { display: flex; align-items: center; gap: 12px; padding: 11px 20px; color: #64748B; text-decoration: none; font-size: 14px; font-weight: 500; transition: all .2s; }
+    .menu-item:hover, .menu-item.active { background: #E8F2FF; color: #0056B3; }
+    .menu-item.active { border-left: 3px solid #0056B3; }
+    .worker-card { background: #fff; border-radius: 10px; border: 1px solid #E2E8F0; padding: 20px; transition: box-shadow .2s, transform .2s; }
+    .worker-card:hover { box-shadow: 0 6px 24px rgba(0,86,179,.12); transform: translateY(-2px); }
+    .avatar { width: 52px; height: 52px; border-radius: 50%; background: linear-gradient(135deg,#0056B3,#00C896); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 20px; flex-shrink: 0; }
+    .skill-tag { display: inline-block; background: #f1f5f9; color: #475569; padding: 2px 8px; border-radius: 12px; font-size: 11px; margin: 2px; }
+    .exp-badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; background: #f0fdf4; color: #166534; }
+    @media(max-width:992px) { .sidebar { transform: translateX(-100%); } .main-content { margin-left: 0; } }
+  </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="p-4 border-bottom">
+    <div class="d-flex align-items-center gap-2">
+      <div style="width:36px;height:36px;background:linear-gradient(135deg,#0056B3,#00C896);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;"><i class="fas fa-hands-helping"></i></div>
+      <div><div class="fw-bold" style="font-size:15px;">SkillsConnect</div><div class="text-muted" style="font-size:11px;">Rwanda</div></div>
+    </div>
+  </div>
+  <nav class="flex-grow-1 py-3">
+    <div class="px-4 pb-2" style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;font-weight:600;">Dashboard</div>
+    <a href="employer-dashboard.html" class="menu-item"><i class="fas fa-tachometer-alt"></i>Overview</a>
+    <a href="profile.html" class="menu-item"><i class="fas fa-building"></i>Company Profile</a>
+    <div class="px-4 pb-2 pt-3" style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;font-weight:600;">Recruitment</div>
+    <a href="post-job.html" class="menu-item"><i class="fas fa-plus"></i>Post Job</a>
+    <a href="jobs.html" class="menu-item"><i class="fas fa-list"></i>Manage Jobs</a>
+    <a href="find-workers.html" class="menu-item active"><i class="fas fa-search"></i>Find Workers</a>
+    <a href="job-applications.html" class="menu-item"><i class="fas fa-users"></i>Applicants</a>
+    <div class="px-4 pb-2 pt-3" style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;font-weight:600;">Payments</div>
+    <a href="employer-payments.html" class="menu-item"><i class="fas fa-credit-card"></i>Payments</a>
+    <a href="wallet.html" class="menu-item"><i class="fas fa-wallet"></i>E-Wallet</a>
+    <div class="px-4 pb-2 pt-3" style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;font-weight:600;">Communication</div>
+    <a href="messages.html" class="menu-item"><i class="fas fa-comments"></i>Messages</a>
+    <a href="notifications.html" class="menu-item"><i class="fas fa-bell"></i>Notifications</a>
+  </nav>
+  <div class="border-top py-2">
+    <a href="client-settings.html" class="menu-item"><i class="fas fa-cog"></i>Settings</a>
+    <a href="#" class="menu-item" id="logoutBtn"><i class="fas fa-sign-out-alt"></i>Logout</a>
+  </div>
+</aside>
+
+<main class="main-content">
+  <header class="bg-white border-bottom px-4 py-3 sticky-top">
+    <h5 class="mb-0 fw-bold">Find Workers</h5>
+    <small class="text-muted">Browse skilled workers available for hire</small>
+  </header>
+
+  <div class="p-4">
+    <!-- Search & Filters -->
+    <div class="bg-white rounded-3 border p-3 mb-4">
+      <div class="row g-2">
+        <div class="col-md-5">
+          <div class="input-group">
+            <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+            <input type="text" class="form-control border-start-0" id="searchInput" placeholder="Search by name or skills...">
+          </div>
+        </div>
+        <div class="col-md-3">
+          <input type="text" class="form-control" id="locationFilter" placeholder="Filter by location...">
+        </div>
+        <div class="col-md-3">
+          <select class="form-select" id="expFilter">
+            <option value="">All Experience Levels</option>
+            <option value="entry">Entry (0–2 yrs)</option>
+            <option value="intermediate">Intermediate (2–5 yrs)</option>
+            <option value="expert">Expert (5+ yrs)</option>
+          </select>
+        </div>
+        <div class="col-md-1">
+          <button class="btn btn-primary w-100" id="searchBtn"><i class="fas fa-search"></i></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <span class="text-muted small" id="resultCount">Loading...</span>
+    </div>
+
+    <div id="workersGrid">
+      <div class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+    </div>
+  </div>
+</main>
+
+<!-- Worker Detail Modal -->
+<div class="modal fade" id="workerModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header border-0">
+        <h5 class="modal-title fw-bold" id="modalName"></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-footer border-0">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+        <button class="btn btn-primary" id="modalMsgBtn"><i class="fas fa-comment me-2"></i>Send Message</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/supabaseClient.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+let currentUser = null;
+let selectedWorkerId = null;
+const workerModal = new bootstrap.Modal(document.getElementById('workerModal'));
+
+function expLabel(e) {
+  return { entry: 'Entry Level', intermediate: 'Intermediate', expert: 'Expert' }[e] || e || '';
+}
+
+function renderWorkers(workers) {
+  const grid = document.getElementById('workersGrid');
+  document.getElementById('resultCount').textContent = `${workers.length} worker${workers.length !== 1 ? 's' : ''} found`;
+
+  if (!workers.length) {
+    grid.innerHTML = `<div class="text-center py-5 text-muted">
+      <i class="fas fa-users fa-3x mb-3 d-block opacity-25"></i>
+      <p>No workers match your search.</p></div>`;
+    return;
+  }
+
+  grid.innerHTML = `<div class="row g-3">${workers.map(w => {
+    const init = (w.full_name || 'W').charAt(0).toUpperCase();
+    const skills = w.skills ? w.skills.split(',').slice(0, 4) : [];
+    return `
+    <div class="col-md-6 col-lg-4">
+      <div class="worker-card h-100 d-flex flex-column">
+        <div class="d-flex gap-3 align-items-start mb-3">
+          <div class="avatar">${w.profile_image
+            ? `<img src="${w.profile_image}" style="width:52px;height:52px;border-radius:50%;object-fit:cover;">`
+            : init}</div>
+          <div class="flex-grow-1 min-w-0">
+            <h6 class="fw-bold mb-0 text-truncate">${w.full_name || 'Worker'}</h6>
+            ${w.headline ? `<div class="text-muted small text-truncate">${w.headline}</div>` : ''}
+            ${w.location ? `<div class="text-muted small"><i class="fas fa-map-marker-alt me-1"></i>${w.location}</div>` : ''}
+          </div>
+        </div>
+        ${w.experience_level ? `<div class="mb-2"><span class="exp-badge">${expLabel(w.experience_level)}</span></div>` : ''}
+        <div class="mb-3">${skills.map(s => `<span class="skill-tag">${s.trim()}</span>`).join('')}</div>
+        ${w.bio ? `<p class="text-muted small mb-3" style="overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${w.bio}</p>` : ''}
+        <div class="mt-auto d-flex gap-2">
+          <button class="btn btn-sm btn-outline-primary flex-grow-1" onclick="showWorker('${w.id}')">
+            <i class="fas fa-eye me-1"></i>View Profile
+          </button>
+          <button class="btn btn-sm btn-primary" onclick="messageWorker('${w.id}')">
+            <i class="fas fa-comment"></i>
+          </button>
+        </div>
+      </div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+async function loadWorkers() {
+  const search   = document.getElementById('searchInput').value.trim();
+  const location = document.getElementById('locationFilter').value.trim();
+  const exp      = document.getElementById('expFilter').value;
+
+  let query = supabaseClient
+    .from('profiles')
+    .select('id, full_name, headline, bio, skills, experience_level, location, profile_image, resume_url, availability, rating')
+    .eq('role', 'worker')
+    .eq('status', 'active')
+    .order('created_at', { ascending: false });
+
+  if (search)   query = query.or(`full_name.ilike.%${search}%,skills.ilike.%${search}%`);
+  if (location) query = query.ilike('location', `%${location}%`);
+  if (exp)      query = query.eq('experience_level', exp);
+
+  const { data, error } = await query;
+  if (error) {
+    document.getElementById('workersGrid').innerHTML = `<div class="alert alert-danger">${error.message}</div>`;
+    return;
+  }
+  renderWorkers(data || []);
+}
+
+function showWorker(workerId) {
+  const cards = document.querySelectorAll('.worker-card');
+  // Re-query for full detail
+  supabaseClient.from('profiles').select('*').eq('id', workerId).single().then(({ data: w }) => {
+    if (!w) return;
+    selectedWorkerId = w.id;
+    const init = (w.full_name || 'W').charAt(0).toUpperCase();
+    const skills = w.skills ? w.skills.split(',') : [];
+
+    document.getElementById('modalName').textContent = w.full_name || 'Worker';
+    document.getElementById('modalBody').innerHTML = `
+      <div class="d-flex gap-3 align-items-center mb-4">
+        <div class="avatar" style="width:64px;height:64px;font-size:24px;">${w.profile_image
+          ? `<img src="${w.profile_image}" style="width:64px;height:64px;border-radius:50%;object-fit:cover;">`
+          : init}</div>
+        <div>
+          <h5 class="fw-bold mb-0">${w.full_name || 'Worker'}</h5>
+          ${w.headline ? `<div class="text-muted">${w.headline}</div>` : ''}
+          ${w.experience_level ? `<span class="exp-badge mt-1 d-inline-block">${expLabel(w.experience_level)}</span>` : ''}
+        </div>
+      </div>
+      <div class="row g-3 mb-3">
+        ${w.location    ? `<div class="col-sm-6"><i class="fas fa-map-marker-alt me-2 text-muted"></i>${w.location}</div>` : ''}
+        ${w.phone       ? `<div class="col-sm-6"><i class="fas fa-phone me-2 text-muted"></i>${w.phone}</div>` : ''}
+        ${w.availability? `<div class="col-sm-6"><i class="fas fa-clock me-2 text-muted"></i>${w.availability}</div>` : ''}
+        ${w.rating > 0  ? `<div class="col-sm-6"><i class="fas fa-star me-2 text-warning"></i>${parseFloat(w.rating).toFixed(1)} rating</div>` : ''}
+      </div>
+      ${w.bio ? `<h6 class="fw-semibold">About</h6><p class="text-muted">${w.bio}</p>` : ''}
+      ${skills.length ? `<h6 class="fw-semibold">Skills</h6><div class="mb-3">${skills.map(s => `<span class="skill-tag">${s.trim()}</span>`).join('')}</div>` : ''}
+      ${w.resume_url ? `<a href="${w.resume_url}" target="_blank" class="btn btn-outline-secondary btn-sm"><i class="fas fa-file-pdf me-2"></i>Download Resume</a>` : ''}
+    `;
+    workerModal.show();
+  });
+}
+
+function messageWorker(workerId) {
+  window.location.href = `messages.html?with=${workerId}`;
+}
+
+document.getElementById('modalMsgBtn').addEventListener('click', () => {
+  if (selectedWorkerId) messageWorker(selectedWorkerId);
+});
+
+document.getElementById('searchBtn').addEventListener('click', loadWorkers);
+document.getElementById('searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') loadWorkers(); });
+document.getElementById('locationFilter').addEventListener('keydown', e => { if (e.key === 'Enter') loadWorkers(); });
+
+document.getElementById('logoutBtn').addEventListener('click', async (e) => {
+  e.preventDefault();
+  await supabaseClient.auth.signOut();
+  window.location.href = 'login.html';
+});
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (!session) { window.location.href = 'login.html'; return; }
+
+  const { data: profile } = await supabaseClient.from('profiles').select('role').eq('id', session.user.id).single();
+  if (profile?.role !== 'employer') { window.location.href = 'freelancer-dashboard.html'; return; }
+
+  currentUser = session.user;
+  loadWorkers();
+});
+
+window.showWorker    = showWorker;
+window.messageWorker = messageWorker;
+</script>
+</body>
+</html>

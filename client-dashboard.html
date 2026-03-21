@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Client Dashboard - Rwanda SkillsConnect</title>  <!-- Tailwind CSS Production -->
+  <link rel="stylesheet" href="assets/css/tailwind.css" />
+  
+  <!-- Font Awesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="assets/css/style.css" />
+  
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .card-hover { transition: all 0.3s ease; }
+    .card-hover:hover { transform: translateY(-5px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+    .pulse-animation { animation: pulse 2s infinite; }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+    .nav-link { position: relative; transition: all 0.3s ease; }
+    .nav-link::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 0; height: 2px; background: #3b82f6; transition: width 0.3s ease; }
+    .nav-link:hover::after { width: 100%; }
+    .stats-counter { font-variant-numeric: tabular-nums; }
+    .modal-backdrop { backdrop-filter: blur(4px); }
+  </style>
+</head>
+<body class="bg-gray-50">
+
+  <!-- Navbar -->
+  <header class="bg-white shadow-sm border-b sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center space-x-4">
+          <a href="index.html" class="text-2xl font-bold text-indigo-600 hover:text-indigo-700 transition-colors">Rwanda SkillsConnect</a>
+          <span class="px-3 py-1 bg-indigo-100 text-indigo-800 text-sm font-medium rounded-full">Client Dashboard</span>
+        </div>
+        
+        <!-- Navigation Links -->
+        <nav class="hidden md:flex items-center space-x-6">
+          <a href="client-dashboard.html" class="nav-link text-indigo-600 font-medium">Dashboard</a>
+          <a href="post-job.html" class="nav-link text-gray-600 hover:text-indigo-600">Post Job</a>
+          <a href="browse.html" class="nav-link text-gray-600 hover:text-indigo-600">Find Talent</a>
+          <a href="map.html" class="nav-link text-gray-600 hover:text-indigo-600">Talent Map</a>
+          <a href="client-messages.html" class="nav-link text-gray-600 hover:text-indigo-600">Messages</a>
+          <a href="client-profile.html" class="nav-link text-gray-600 hover:text-indigo-600">Profile</a>
+          <a href="client-settings.html" class="nav-link text-gray-600 hover:text-indigo-600">Settings</a>
+          <a href="client-menu.html" class="nav-link text-gray-600 hover:text-indigo-600">Menu</a>
+        </nav>
+        
+        <div class="flex items-center space-x-4">
+          <!-- Notifications -->
+          <div class="relative">
+            <button id="notificationBtn" class="flex items-center space-x-2 text-gray-700 hover:text-indigo-600 p-2 rounded-lg hover:bg-gray-100 transition-colors">
+              <i class="fas fa-bell text-lg"></i>
+              <span id="notificationCount" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center pulse-animation">3</span>
+            </button>
+            
+            <!-- Notification Dropdown -->
+            <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border z-50">
+              <div class="p-4 border-b">
+                <h3 class="font-semibold text-gray-800">Notifications</h3>
+              </div>
+              <div class="max-h-64 overflow-y-auto">
+                <div class="p-3 hover:bg-gray-50 border-b cursor-pointer">
+                  <p class="text-sm font-medium text-gray-800">New application received</p>
+                  <p class="text-xs text-gray-600">John Doe applied for Web Developer position</p>
+                  <p class="text-xs text-gray-500 mt-1">2 hours ago</p>
+                </div>
+                <div class="p-3 hover:bg-gray-50 border-b cursor-pointer">
+                  <p class="text-sm font-medium text-gray-800">Project completed</p>
+                  <p class="text-xs text-gray-600">Mobile App Design project was completed</p>
+                  <p class="text-xs text-gray-500 mt-1">1 day ago</p>
+                </div>
+                <div class="p-3 hover:bg-gray-50 cursor-pointer">
+                  <p class="text-sm font-medium text-gray-800">Payment processed</p>
+                  <p class="text-xs text-gray-600">Payment of RWF 500,000 has been processed</p>
+                  <p class="text-xs text-gray-500 mt-1">3 days ago</p>
+                </div>
+              </div>
+              <div class="p-3 border-t text-center">
+                <button class="text-sm text-indigo-600 hover:text-indigo-700 font-medium">View All Notifications</button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- User Menu -->
+          <div class="relative">
+            <button id="userMenuBtn" class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 transition-colors">
+              <div class="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center">
+                <span class="text-white font-semibold text-sm" id="userInitial">U</span>
+              </div>
+              <span class="text-gray-700 font-medium" id="userName">User</span>
+              <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
+            </button>
+            
+            <!-- User Dropdown -->
+            <div id="userDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border z-50">
+              <div class="p-3 border-b">
+                <p class="font-medium text-gray-800" id="dropdownUserName">User</p>
+                <p class="text-sm text-gray-600" id="dropdownUserEmail">user@example.com</p>
+              </div>
+              <div class="py-2">
+                <a href="client-profile.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                  <i class="fas fa-user mr-2"></i>Profile Settings
+                </a>
+                <a href="client-messages.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                  <i class="fas fa-envelope mr-2"></i>Messages
+                </a>
+                <a href="client-settings.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                  <i class="fas fa-cog mr-2"></i>Account Settings
+                </a>
+                <a href="client-menu.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                  <i class="fas fa-th-large mr-2"></i>All Features
+                </a>
+                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                  <i class="fas fa-question-circle mr-2"></i>Help & Support
+                </a>
+                <hr class="my-2">
+                <button id="logoutBtn" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                  <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Mobile Menu Button -->
+          <button id="mobileMenuBtn" class="md:hidden p-2 rounded-lg hover:bg-gray-100">
+            <i class="fas fa-bars text-gray-600"></i>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Mobile Navigation -->
+      <div id="mobileMenu" class="hidden md:hidden mt-4 pb-4 border-t">
+        <nav class="flex flex-col space-y-2 mt-4">
+          <a href="client-dashboard.html" class="px-3 py-2 text-indigo-600 font-medium rounded-lg bg-indigo-50">Dashboard</a>
+          <a href="post-job.html" class="px-3 py-2 text-gray-600 hover:text-indigo-600 hover:bg-gray-100 rounded-lg transition-colors">Post Job</a>
+          <a href="browse.html" class="px-3 py-2 text-gray-600 hover:text-indigo-600 hover:bg-gray-100 rounded-lg transition-colors">Find Talent</a>
+          <a href="map.html" class="px-3 py-2 text-gray-600 hover:text-indigo-600 hover:bg-gray-100 rounded-lg transition-colors">Talent Map</a>
+          <a href="client-messages.html" class="px-3 py-2 text-gray-600 hover:text-indigo-600 hover:bg-gray-100 rounded-lg transition-colors">Messages</a>
+          <a href="client-profile.html" class="px-3 py-2 text-gray-600 hover:text-indigo-600 hover:bg-gray-100 rounded-lg transition-colors">Profile</a>
+          <a href="client-settings.html" class="px-3 py-2 text-gray-600 hover:text-indigo-600 hover:bg-gray-100 rounded-lg transition-colors">Settings</a>
+          <a href="client-menu.html" class="px-3 py-2 text-gray-600 hover:text-indigo-600 hover:bg-gray-100 rounded-lg transition-colors">Menu</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-6 py-8">
+    <!-- Welcome Section -->
+    <div class="gradient-bg rounded-2xl p-8 mb-8 text-white relative overflow-hidden">
+      <div class="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full -mr-16 -mt-16"></div>
+      <div class="absolute bottom-0 left-0 w-24 h-24 bg-white opacity-10 rounded-full -ml-12 -mb-12"></div>
+      <div class="relative z-10">
+        <div class="flex justify-between items-center">
+          <div>
+            <h2 class="text-3xl font-bold mb-2">Welcome back, <span id="userNameWelcome">User</span>!</h2>
+            <p class="text-indigo-100 text-lg mb-4">Ready to find the perfect talent for your next project?</p>
+            <div class="flex items-center space-x-6 text-indigo-100">
+              <div class="flex items-center space-x-2">
+                <i class="fas fa-calendar-alt"></i>
+                <span id="currentDate"></span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <i class="fas fa-clock"></i>
+                <span id="currentTime"></span>
+              </div>
+            </div>
+          </div>
+          <div class="hidden md:block">
+            <i class="fas fa-handshake text-6xl text-white opacity-20"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div class="bg-white rounded-xl p-6 shadow-sm border card-hover cursor-pointer" onclick="showJobsModal()">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-gray-500 text-sm font-medium">Active Jobs</p>
+            <p class="text-3xl font-bold text-gray-900 mt-1 stats-counter" id="activeJobsCount">0</p>
+            <p class="text-green-600 text-sm mt-1">
+              <i class="fas fa-arrow-up mr-1"></i><span id="jobsWeeklyChange">+0</span> this week
+            </p>
+          </div>
+          <div class="bg-blue-100 p-4 rounded-xl">
+            <i class="fas fa-briefcase text-blue-600 text-2xl"></i>
+          </div>
+        </div>
+      </div>
+      
+      <div class="bg-white rounded-xl p-6 shadow-sm border card-hover cursor-pointer" onclick="showApplicationsModal()">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-gray-500 text-sm font-medium">Applications</p>
+            <p class="text-3xl font-bold text-gray-900 mt-1 stats-counter" id="applicationsCount">0</p>
+            <p class="text-green-600 text-sm mt-1">
+              <i class="fas fa-arrow-up mr-1"></i><span id="applicationsChange">+0</span> today
+            </p>
+          </div>
+          <div class="bg-green-100 p-4 rounded-xl">
+            <i class="fas fa-users text-green-600 text-2xl"></i>
+          </div>
+        </div>
+      </div>
+      
+      <div class="bg-white rounded-xl p-6 shadow-sm border card-hover cursor-pointer" onclick="showHiredModal()">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-gray-500 text-sm font-medium">Hired</p>
+            <p class="text-3xl font-bold text-gray-900 mt-1 stats-counter" id="hiredCount">0</p>
+            <p class="text-blue-600 text-sm mt-1">
+              <i class="fas fa-arrow-right mr-1"></i><span id="inProgressCount">0</span> in progress
+            </p>
+          </div>
+          <div class="bg-purple-100 p-4 rounded-xl">
+            <i class="fas fa-user-check text-purple-600 text-2xl"></i>
+          </div>
+        </div>
+      </div>
+      
+      <div class="bg-white rounded-xl p-6 shadow-sm border card-hover cursor-pointer" onclick="showSpendingModal()">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-gray-500 text-sm font-medium">Total Spent</p>
+            <p class="text-3xl font-bold text-gray-900 mt-1 stats-counter" id="totalSpent">RWF 0</p>
+            <p class="text-gray-600 text-sm mt-1">
+              <i class="fas fa-chart-line mr-1"></i>This month
+            </p>
+          </div>
+          <div class="bg-orange-100 p-4 rounded-xl">
+            <i class="fas fa-dollar-sign text-orange-600 text-2xl"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+      <!-- Post Job Card -->
+      <div class="bg-white rounded-xl p-6 shadow-sm border card-hover relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-16 h-16 bg-indigo-50 rounded-full -mr-8 -mt-8"></div>
+        <div class="relative z-10 text-center">
+          <div class="bg-indigo-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+            <i class="fas fa-plus text-indigo-600 text-xl"></i>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">Post Job</h3>
+          <p class="text-gray-600 text-sm mb-2">Create a job posting to find talent</p>
+          <p class="text-xs text-blue-600 mb-4" id="jobSlotsIndicator">Loading...</p>
+          <a href="post-job.html" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors text-sm">
+            <i class="fas fa-briefcase mr-2"></i>
+            Post Now
+          </a>
+        </div>
+      </div>
+
+      <!-- Browse Talent Card -->
+      <div class="bg-white rounded-xl p-6 shadow-sm border card-hover relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-16 h-16 bg-green-50 rounded-full -mr-8 -mt-8"></div>
+        <div class="relative z-10 text-center">
+          <div class="bg-green-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+            <i class="fas fa-search text-green-600 text-xl"></i>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">Find Talent</h3>
+          <p class="text-gray-600 text-sm mb-4">Browse skilled professionals</p>
+          <a href="browse.html" class="inline-flex items-center px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors text-sm">
+            <i class="fas fa-users mr-2"></i>
+            Browse
+          </a>
+        </div>
+      </div>
+
+      <!-- Messages Card -->
+      <div class="bg-white rounded-xl p-6 shadow-sm border card-hover relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-16 h-16 bg-blue-50 rounded-full -mr-8 -mt-8"></div>
+        <div class="relative z-10 text-center">
+          <div class="bg-blue-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+            <i class="fas fa-envelope text-blue-600 text-xl"></i>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">Messages</h3>
+          <p class="text-gray-600 text-sm mb-4">Chat with freelancers</p>
+          <a href="client-messages.html" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors text-sm">
+            <i class="fas fa-comment mr-2"></i>
+            Chat
+          </a>
+        </div>
+      </div>
+
+      <!-- Talent Map Card -->
+      <div class="bg-white rounded-xl p-6 shadow-sm border card-hover relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-16 h-16 bg-purple-50 rounded-full -mr-8 -mt-8"></div>
+        <div class="relative z-10 text-center">
+          <div class="bg-purple-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+            <i class="fas fa-map-marked-alt text-purple-600 text-xl"></i>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">Talent Map</h3>
+          <p class="text-gray-600 text-sm mb-4">View talent locations</p>
+          <a href="map.html" class="inline-flex items-center px-4 py-2 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-colors text-sm">
+            <i class="fas fa-map mr-2"></i>
+            View Map
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Activity & Profile Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Recent Activity -->
+      <div class="lg:col-span-2 bg-white rounded-xl p-6 shadow-sm border">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="text-xl font-semibold text-gray-900">Recent Activity</h3>
+          <button class="text-indigo-600 hover:text-indigo-700 font-medium text-sm">View All</button>
+        </div>
+        
+        <div class="space-y-4">
+          <div class="flex items-start space-x-4 p-4 bg-blue-50 rounded-lg border-l-4 border-blue-400">
+            <div class="bg-blue-100 p-2 rounded-full">
+              <i class="fas fa-user-plus text-blue-600"></i>
+            </div>
+            <div class="flex-1">
+              <p class="text-gray-900 font-medium">New application received</p>
+              <p class="text-gray-600 text-sm">John Doe applied for "Web Developer" position</p>
+              <p class="text-gray-500 text-xs mt-1">2 hours ago</p>
+            </div>
+            <button class="text-blue-600 hover:text-blue-700 text-sm font-medium">View</button>
+          </div>
+          
+          <div class="flex items-start space-x-4 p-4 bg-green-50 rounded-lg border-l-4 border-green-400">
+            <div class="bg-green-100 p-2 rounded-full">
+              <i class="fas fa-check-circle text-green-600"></i>
+            </div>
+            <div class="flex-1">
+              <p class="text-gray-900 font-medium">Project completed</p>
+              <p class="text-gray-600 text-sm">"Mobile App Design" project was completed by Sarah M.</p>
+              <p class="text-gray-500 text-xs mt-1">1 day ago</p>
+            </div>
+            <button class="text-green-600 hover:text-green-700 text-sm font-medium">Review</button>
+          </div>
+          
+          <div class="flex items-start space-x-4 p-4 bg-purple-50 rounded-lg border-l-4 border-purple-400">
+            <div class="bg-purple-100 p-2 rounded-full">
+              <i class="fas fa-star text-purple-600"></i>
+            </div>
+            <div class="flex-1">
+              <p class="text-gray-900 font-medium">New review received</p>
+              <p class="text-gray-600 text-sm">5-star review from Michael K. for "Logo Design" project</p>
+              <p class="text-gray-500 text-xs mt-1">3 days ago</p>
+            </div>
+            <button class="text-purple-600 hover:text-purple-700 text-sm font-medium">View</button>
+          </div>
+          
+          <div class="flex items-start space-x-4 p-4 bg-orange-50 rounded-lg border-l-4 border-orange-400">
+            <div class="bg-orange-100 p-2 rounded-full">
+              <i class="fas fa-message text-orange-600"></i>
+            </div>
+            <div class="flex-1">
+              <p class="text-gray-900 font-medium">New message</p>
+              <p class="text-gray-600 text-sm">Alice Johnson sent you a message about "UI/UX Design" project</p>
+              <p class="text-gray-500 text-xs mt-1">5 days ago</p>
+            </div>
+            <button class="text-orange-600 hover:text-orange-700 text-sm font-medium">Reply</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Profile Quick Access -->
+      <div class="bg-white rounded-xl p-6 shadow-sm border">
+        <h3 class="text-xl font-semibold text-gray-900 mb-6">Your Profile</h3>
+        
+        <div class="text-center mb-6">
+          <div class="w-20 h-20 mx-auto mb-4 relative">
+            <img id="profilePhoto" src="" alt="Profile" class="w-20 h-20 rounded-full object-cover border-2 border-gray-200 hidden">
+            <div id="profileInitialDiv" class="w-20 h-20 bg-indigo-500 rounded-full flex items-center justify-center">
+              <span class="text-white font-bold text-2xl" id="profileInitial">U</span>
+            </div>
+          </div>
+          <h4 class="text-lg font-semibold text-gray-900" id="profileName">User Name</h4>
+          <p class="text-gray-600" id="profileEmail">user@example.com</p>
+          <div class="flex items-center justify-center mt-2">
+            <div class="flex text-yellow-400">
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+            </div>
+            <span class="text-gray-600 text-sm ml-2">(4.9)</span>
+          </div>
+        </div>
+        
+        <div class="space-y-4 mb-6">
+          <div class="flex justify-between items-center">
+            <span class="text-gray-600">Profile Completion</span>
+            <span class="text-indigo-600 font-semibold">85%</span>
+          </div>
+          <div class="w-full bg-gray-200 rounded-full h-2">
+            <div class="bg-indigo-600 h-2 rounded-full transition-all duration-500" style="width: 85%"></div>
+          </div>
+          
+          <div class="grid grid-cols-2 gap-4 text-center">
+            <div class="bg-gray-50 p-3 rounded-lg">
+              <p class="text-2xl font-bold text-gray-900">12</p>
+              <p class="text-gray-600 text-sm">Jobs Posted</p>
+            </div>
+            <div class="bg-gray-50 p-3 rounded-lg">
+              <p class="text-2xl font-bold text-gray-900">8</p>
+              <p class="text-gray-600 text-sm">Completed</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="space-y-3">
+          <a href="client-profile.html" class="w-full inline-flex items-center justify-center px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors">
+            <i class="fas fa-edit mr-2"></i>
+            Edit Profile
+          </a>
+          <button onclick="showJobsModal()" class="w-full inline-flex items-center justify-center px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors">
+            <i class="fas fa-briefcase mr-2"></i>
+            Manage Jobs
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modals -->
+  <!-- Jobs Modal -->
+  <div id="jobsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 modal-backdrop flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
+      <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+        <h2 class="text-xl font-bold text-gray-800">My Posted Jobs</h2>
+        <button onclick="closeModal('jobsModal')" class="text-gray-400 hover:text-gray-600">
+          <i class="fas fa-times text-xl"></i>
+        </button>
+      </div>
+      <div class="p-6 overflow-y-auto max-h-[70vh]">
+        <div id="jobsModalContent">
+          <!-- Jobs will be loaded here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Applications Modal -->
+  <div id="applicationsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 modal-backdrop flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
+      <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+        <h2 class="text-xl font-bold text-gray-800">Job Applications</h2>
+        <button onclick="closeModal('applicationsModal')" class="text-gray-400 hover:text-gray-600">
+          <i class="fas fa-times text-xl"></i>
+        </button>
+      </div>
+      <div class="p-6 overflow-y-auto max-h-[70vh]">
+        <div id="applicationsModalContent">
+          <!-- Applications will be loaded here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hired Modal -->
+  <div id="hiredModal" class="hidden fixed inset-0 bg-black bg-opacity-50 modal-backdrop flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
+      <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+        <h2 class="text-xl font-bold text-gray-800">Hired Freelancers</h2>
+        <button onclick="closeModal('hiredModal')" class="text-gray-400 hover:text-gray-600">
+          <i class="fas fa-times text-xl"></i>
+        </button>
+      </div>
+      <div class="p-6 overflow-y-auto max-h-[70vh]">
+        <div id="hiredModalContent">
+          <!-- Hired freelancers will be loaded here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Spending Modal -->
+  <div id="spendingModal" class="hidden fixed inset-0 bg-black bg-opacity-50 modal-backdrop flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-hidden">
+      <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+        <h2 class="text-xl font-bold text-gray-800">Spending Overview</h2>
+        <button onclick="closeModal('spendingModal')" class="text-gray-400 hover:text-gray-600">
+          <i class="fas fa-times text-xl"></i>
+        </button>
+      </div>
+      <div class="p-6 overflow-y-auto max-h-[70vh]">
+        <div id="spendingModalContent">
+          <!-- Spending details will be loaded here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/dashboard-auth.js" data-roles="employer"></script>
+  <script src="js/employer-data.js"></script>
+  <script>
+    // Global variables
+    let clientData = {
+      jobs: [],
+      applications: [],
+      hired: [],
+      spending: 0
+    };
+
+    // Modal functions
+    function showModal(modalId) {
+      document.getElementById(modalId).classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.add('hidden');
+      document.body.style.overflow = 'auto';
+    }
+
+    function showJobsModal() {
+      loadJobsModal();
+      showModal('jobsModal');
+    }
+
+    function showApplicationsModal() {
+      loadApplicationsModal();
+      showModal('applicationsModal');
+    }
+
+    function showHiredModal() {
+      loadHiredModal();
+      showModal('hiredModal');
+    }
+
+    function showSpendingModal() {
+      loadSpendingModal();
+      showModal('spendingModal');
+    }
+
+    function loadJobsModal() {
+      const container = document.getElementById('jobsModalContent');
+      const session = JSON.parse(localStorage.getItem('userSession') || 'null');
+      if (!session) return;
+
+      const jobs = JSON.parse(localStorage.getItem('jobs') || '[]')
+        .filter(job => job.clientId === session.id);
+
+      if (jobs.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-12">
+            <i class="fas fa-briefcase text-gray-300 text-6xl mb-4"></i>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">No jobs posted yet</h3>
+            <p class="text-gray-500 mb-4">Start by posting your first job to find talented freelancers.</p>
+            <a href="post-job.html" class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+              Post Your First Job
+            </a>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = jobs.map(job => `
+        <div class="border rounded-lg p-6 mb-4 hover:shadow-md transition-shadow">
+          <div class="flex justify-between items-start mb-4">
+            <div>
+              <h3 class="text-lg font-semibold text-gray-800 mb-2">${job.title}</h3>
+              <p class="text-gray-600 mb-2">${job.description}</p>
+              <div class="flex items-center text-sm text-gray-500 space-x-4">
+                <span><i class="fas fa-map-marker-alt mr-1"></i>${job.location}</span>
+                <span><i class="fas fa-calendar mr-1"></i>Posted ${new Date(job.createdAt).toLocaleDateString()}</span>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="text-green-600 font-bold text-lg">RWF ${parseInt(job.salary || job.maxBudget || 0).toLocaleString()}</span>
+              <p class="text-sm text-gray-500 mt-1">${getJobApplicationsCount(job.id)} applications</p>
+            </div>
+          </div>
+          <div class="flex justify-between items-center pt-4 border-t">
+            <div class="flex space-x-2">
+              ${job.skills ? job.skills.split(',').map(skill => 
+                `<span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">${skill.trim()}</span>`
+              ).join('') : ''}
+            </div>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-2">
+                ${job.status === 'pending_admin_approval' ? `
+                  <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">
+                    <i class="fas fa-clock mr-1"></i>Pending Admin Approval
+                  </span>
+                ` : job.status === 'active' ? `
+                  <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                    <i class="fas fa-check-circle mr-1"></i>Active
+                  </span>
+                ` : job.status === 'rejected' ? `
+                  <span class="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">
+                    <i class="fas fa-times-circle mr-1"></i>Rejected
+                  </span>
+                ` : ''}
+              </div>
+              <div class="flex space-x-2">
+                ${job.status !== 'rejected' ? `
+                  <button onclick="editJob('${job.id}')" class="text-blue-500 hover:text-blue-600 text-sm font-medium">
+                    <i class="fas fa-edit mr-1"></i>Edit
+                  </button>
+                ` : ''}
+                ${job.status === 'active' ? `
+                  <button onclick="viewJobApplications('${job.id}')" class="text-green-500 hover:text-green-600 text-sm font-medium">
+                    <i class="fas fa-users mr-1"></i>View Applications (${getJobApplicationsCount(job.id)})
+                  </button>
+                ` : ''}
+                <button onclick="deleteJob('${job.id}')" class="text-red-500 hover:text-red-600 text-sm font-medium">
+                  <i class="fas fa-trash mr-1"></i>Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function loadApplicationsModal() {
+      const container = document.getElementById('applicationsModalContent');
+      const session = JSON.parse(localStorage.getItem('userSession') || 'null');
+      if (!session) return;
+
+      const jobs = JSON.parse(localStorage.getItem('jobs') || '[]')
+        .filter(job => job.clientId === session.id);
+      const applications = JSON.parse(localStorage.getItem('appliedJobs') || '[]')
+        .filter(app => jobs.some(job => job.id === app.jobId));
+
+      if (applications.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-12">
+            <i class="fas fa-users text-gray-300 text-6xl mb-4"></i>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">No applications yet</h3>
+            <p class="text-gray-500">Applications will appear here when freelancers apply to your jobs.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = applications.map(app => {
+        const job = jobs.find(j => j.id === app.jobId);
+        return `
+          <div class="border rounded-lg p-6 mb-4 hover:shadow-md transition-shadow">
+            <div class="flex justify-between items-start mb-4">
+              <div>
+                <h3 class="text-lg font-semibold text-gray-800 mb-1">${app.freelancerName}</h3>
+                <p class="text-gray-600 mb-2">Applied for: ${job ? job.title : 'Unknown Job'}</p>
+                <div class="flex items-center text-sm text-gray-500">
+                  <span><i class="fas fa-calendar mr-1"></i>Applied ${new Date(app.appliedAt).toLocaleDateString()}</span>
+                </div>
+              </div>
+              <div class="text-right">
+                <span class="inline-flex items-center px-3 py-1 text-sm font-medium rounded-full ${
+                  app.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                  app.status === 'accepted' ? 'bg-green-100 text-green-800' :
+                  app.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                  'bg-gray-100 text-gray-800'
+                }">
+                  ${app.status.charAt(0).toUpperCase() + app.status.slice(1)}
+                </span>
+              </div>
+            </div>
+            <div class="flex justify-end space-x-2 pt-4 border-t">
+              <button onclick="viewFreelancerProfile('${app.freelancerId}')" class="text-blue-500 hover:text-blue-600 text-sm font-medium">
+                <i class="fas fa-user mr-1"></i>View Profile
+              </button>
+              ${app.status === 'pending' ? `
+                <button onclick="acceptApplication('${app.id}')" class="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors">
+                  <i class="fas fa-check mr-1"></i>Accept & Start Project
+                </button>
+                <button onclick="rejectApplication('${app.id}')" class="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition-colors">
+                  <i class="fas fa-times mr-1"></i>Decline
+                </button>
+              ` : app.status === 'accepted' ? `
+                <span class="px-3 py-1 bg-green-100 text-green-800 text-sm rounded font-medium">
+                  <i class="fas fa-handshake mr-1"></i>Project Started
+                </span>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function loadHiredModal() {
+      const container = document.getElementById('hiredModalContent');
+      const session = JSON.parse(localStorage.getItem('userSession') || 'null');
+      if (!session) return;
+
+      const jobs = JSON.parse(localStorage.getItem('jobs') || '[]')
+        .filter(job => job.clientId === session.id);
+      const hired = JSON.parse(localStorage.getItem('appliedJobs') || '[]')
+        .filter(app => jobs.some(job => job.id === app.jobId) && app.status === 'accepted');
+
+      if (hired.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-12">
+            <i class="fas fa-user-check text-gray-300 text-6xl mb-4"></i>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">No hired freelancers yet</h3>
+            <p class="text-gray-500">Hired freelancers will appear here when you accept applications.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = hired.map(hire => {
+        const job = jobs.find(j => j.id === hire.jobId);
+        return `
+          <div class="border rounded-lg p-6 mb-4 hover:shadow-md transition-shadow">
+            <div class="flex justify-between items-start mb-4">
+              <div>
+                <h3 class="text-lg font-semibold text-gray-800 mb-1">${hire.freelancerName}</h3>
+                <p class="text-gray-600 mb-2">Working on: ${job ? job.title : 'Unknown Job'}</p>
+                <div class="flex items-center text-sm text-gray-500">
+                  <span><i class="fas fa-calendar mr-1"></i>Hired ${new Date(hire.appliedAt).toLocaleDateString()}</span>
+                </div>
+              </div>
+              <div class="text-right">
+                <span class="text-green-600 font-bold text-lg">${job ? 'RWF ' + parseInt(job.salary || job.maxBudget || 0).toLocaleString() : 'N/A'}</span>
+                <p class="text-sm text-gray-500 mt-1">Project Budget</p>
+              </div>
+            </div>
+            <div class="flex justify-end space-x-2 pt-4 border-t">
+              <button onclick="contactFreelancer('${hire.freelancerId}')" class="text-blue-500 hover:text-blue-600 text-sm font-medium">
+                <i class="fas fa-message mr-1"></i>Message
+              </button>
+              <button onclick="viewProject('${hire.id}')" class="text-green-500 hover:text-green-600 text-sm font-medium">
+                <i class="fas fa-project-diagram mr-1"></i>View Project
+              </button>
+              <button onclick="markJobComplete('${hire.jobId}')" class="text-blue-500 hover:text-blue-600 text-sm font-medium">
+                <i class="fas fa-check-circle mr-1"></i>Mark Complete
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function loadSpendingModal() {
+      const container = document.getElementById('spendingModalContent');
+      const session = JSON.parse(localStorage.getItem('userSession') || 'null');
+      if (!session) return;
+
+      const jobs = JSON.parse(localStorage.getItem('jobs') || '[]')
+        .filter(job => job.clientId === session.id);
+      const hired = JSON.parse(localStorage.getItem('appliedJobs') || '[]')
+        .filter(app => jobs.some(job => job.id === app.jobId) && app.status === 'accepted');
+
+      const totalSpent = hired.reduce((sum, hire) => {
+        const job = jobs.find(j => j.id === hire.jobId);
+        return sum + (job ? parseInt(job.salary) || 0 : 0);
+      }, 0);
+
+      const monthlySpending = [
+        { month: 'Jan', amount: Math.floor(totalSpent * 0.1) },
+        { month: 'Feb', amount: Math.floor(totalSpent * 0.15) },
+        { month: 'Mar', amount: Math.floor(totalSpent * 0.2) },
+        { month: 'Apr', amount: Math.floor(totalSpent * 0.25) },
+        { month: 'May', amount: Math.floor(totalSpent * 0.3) }
+      ];
+
+      container.innerHTML = `
+        <div class="space-y-6">
+          <div class="grid grid-cols-2 gap-4">
+            <div class="bg-blue-50 p-4 rounded-lg">
+              <h3 class="text-sm font-medium text-blue-800 mb-1">Total Spent</h3>
+              <p class="text-2xl font-bold text-blue-900">RWF ${totalSpent.toLocaleString()}</p>
+            </div>
+            <div class="bg-green-50 p-4 rounded-lg">
+              <h3 class="text-sm font-medium text-green-800 mb-1">Active Projects</h3>
+              <p class="text-2xl font-bold text-green-900">${hired.length}</p>
+            </div>
+          </div>
+          
+          <div>
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Monthly Spending</h3>
+            <div class="space-y-3">
+              ${monthlySpending.map(item => `
+                <div class="flex items-center justify-between">
+                  <span class="text-gray-600">${item.month}</span>
+                  <div class="flex items-center space-x-3 flex-1 mx-4">
+                    <div class="flex-1 bg-gray-200 rounded-full h-2">
+                      <div class="bg-blue-500 h-2 rounded-full" style="width: ${(item.amount / totalSpent) * 100}%"></div>
+                    </div>
+                    <span class="text-gray-800 font-medium">RWF ${item.amount.toLocaleString()}</span>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+          
+          <div>
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Recent Transactions</h3>
+            <div class="space-y-3">
+              ${hired.slice(0, 5).map(hire => {
+                const job = jobs.find(j => j.id === hire.jobId);
+                return `
+                  <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                      <p class="font-medium text-gray-800">${job ? job.title : 'Unknown Job'}</p>
+                      <p class="text-sm text-gray-600">${hire.freelancerName}</p>
+                    </div>
+                    <span class="text-green-600 font-bold">RWF ${job ? parseInt(job.salary || job.maxBudget || 0).toLocaleString() : '0'}</span>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Helper functions
+    function getJobApplicationsCount(jobId) {
+      const applications = JSON.parse(localStorage.getItem('appliedJobs') || '[]');
+      return applications.filter(app => app.jobId === jobId).length;
+    }
+
+    function editJob(jobId) {
+      localStorage.setItem('editJobId', jobId);
+      window.location.href = 'post-job.html';
+    }
+
+    function viewJobApplications(jobId) {
+      closeModal('jobsModal');
+      setTimeout(() => showApplicationsModal(), 300);
+    }
+
+    function deleteJob(jobId) {
+      if (confirm('Are you sure you want to delete this job? This action cannot be undone.')) {
+        let jobs = JSON.parse(localStorage.getItem('jobs') || '[]');
+        jobs = jobs.filter(job => job.id !== jobId);
+        localStorage.setItem('jobs', JSON.stringify(jobs));
+        
+        // Also remove related applications
+        let applications = JSON.parse(localStorage.getItem('appliedJobs') || '[]');
+        applications = applications.filter(app => app.jobId !== jobId);
+        localStorage.setItem('appliedJobs', JSON.stringify(applications));
+        
+        showNotification('Job deleted successfully', 'success');
+        loadJobsModal();
+        updateClientStats();
+        updateJobSlotsIndicator();
+      }
+    }
+
+    function acceptApplication(applicationId) {
+      if (confirm('Accept this application and start the project? The freelancer will be notified and can begin work.')) {
+        let applications = JSON.parse(localStorage.getItem('appliedJobs') || '[]');
+        const appIndex = applications.findIndex(app => app.id === applicationId);
+        if (appIndex !== -1) {
+          applications[appIndex].status = 'accepted';
+          applications[appIndex].acceptedAt = new Date().toISOString();
+          
+          // Reject all other applications for this job
+          const jobId = applications[appIndex].jobId;
+          applications.forEach((app, index) => {
+            if (app.jobId === jobId && app.id !== applicationId && app.status === 'pending') {
+              applications[index].status = 'rejected';
+              applications[index].rejectedAt = new Date().toISOString();
+            }
+          });
+          
+          localStorage.setItem('appliedJobs', JSON.stringify(applications));
+          showNotification('Application accepted! Project started successfully.', 'success');
+          loadApplicationsModal();
+          updateClientStats();
+          updateJobSlotsIndicator();
+        }
+      }
+    }
+
+    function rejectApplication(applicationId) {
+      if (confirm('Are you sure you want to decline this application? The freelancer will be notified.')) {
+        let applications = JSON.parse(localStorage.getItem('appliedJobs') || '[]');
+        const appIndex = applications.findIndex(app => app.id === applicationId);
+        if (appIndex !== -1) {
+          applications[appIndex].status = 'rejected';
+          applications[appIndex].rejectedAt = new Date().toISOString();
+          localStorage.setItem('appliedJobs', JSON.stringify(applications));
+          showNotification('Application declined', 'info');
+          loadApplicationsModal();
+          updateClientStats();
+          updateJobSlotsIndicator();
+        }
+      }
+    }
+
+    function viewProject(hireId) {
+      showNotification('Project management feature coming soon!', 'info');
+    }
+
+    function markJobComplete(jobId) {
+      const session = JSON.parse(localStorage.getItem('userSession') || 'null');
+      if (!session) return;
+      
+      if (confirm('Mark this job as completed? This will free up a job slot and allow you to post new jobs.')) {
+        if (markJobAsCompleted(jobId, session.id)) {
+          const stats = getClientJobStats(session.id);
+          showNotification(`Job marked as completed! You now have ${stats.remainingSlots} available job slots.`, 'success');
+          
+          // Refresh modals and stats
+          loadHiredModal();
+          updateClientStats();
+          updateJobSlotsIndicator();
+        } else {
+          showNotification('Failed to mark job as completed. Please try again.', 'error');
+        }
+      }
+    }
+
+    function updateClientStats() {
+      const session = JSON.parse(localStorage.getItem('userSession') || 'null');
+      if (!session) return;
+
+      const jobs = JSON.parse(localStorage.getItem('jobs') || '[]')
+        .filter(job => job.clientId === session.id);
+      const activeJobs = jobs.filter(job => job.status === 'active' || job.status === 'pending_admin_approval');
+      const applications = JSON.parse(localStorage.getItem('appliedJobs') || '[]')
+        .filter(app => activeJobs.some(job => job.id === app.jobId));
+      const hired = applications.filter(app => app.status === 'accepted');
+      const totalSpent = hired.reduce((sum, hire) => {
+        const job = jobs.find(j => j.id === hire.jobId);
+        return sum + (job ? parseInt(job.salary) || 0 : 0);
+      }, 0);
+
+      // Animate counters
+      animateCounter('activeJobsCount', activeJobs.length);
+      animateCounter('applicationsCount', applications.length);
+      animateCounter('hiredCount', hired.length);
+      
+      // Update other stats
+      document.getElementById('totalSpent').textContent = `RWF ${totalSpent.toLocaleString()}`;
+      document.getElementById('jobsWeeklyChange').textContent = `+${Math.floor(activeJobs.length * 0.2)}`;
+      document.getElementById('applicationsChange').textContent = `+${Math.floor(applications.length * 0.3)}`;
+      document.getElementById('inProgressCount').textContent = Math.floor(hired.length * 0.7);
+    }
+
+    function animateCounter(elementId, targetValue) {
+      const element = document.getElementById(elementId);
+      if (!element) return;
+      
+      let currentValue = 0;
+      const increment = targetValue / 30;
+      const timer = setInterval(() => {
+        currentValue += increment;
+        if (currentValue >= targetValue) {
+          currentValue = targetValue;
+          clearInterval(timer);
+        }
+        element.textContent = Math.floor(currentValue);
+      }, 50);
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const session = JSON.parse(localStorage.getItem('userSession') || 'null');
+      if (!session) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      const userName = session.name || session.fullName || "User";
+      const userEmail = session.email || "user@example.com";
+      
+      // Update user name in multiple places
+      document.getElementById("userName").innerText = userName;
+      document.getElementById("userNameWelcome").innerText = userName;
+      document.getElementById("profileName").innerText = userName;
+      document.getElementById("profileEmail").innerText = userEmail;
+      document.getElementById("dropdownUserName").innerText = userName;
+      document.getElementById("dropdownUserEmail").innerText = userEmail;
+      
+      // Handle profile photo
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      const user = users.find(u => u.id === session.id) || session;
+      
+      if (user.profilePhoto) {
+        const profilePhoto = document.getElementById('profilePhoto');
+        const profileInitialDiv = document.getElementById('profileInitialDiv');
+        if (profilePhoto && profileInitialDiv) {
+          profilePhoto.src = user.profilePhoto;
+          profilePhoto.classList.remove('hidden');
+          profileInitialDiv.style.display = 'none';
+        }
+        
+        // Update header photo
+        const userInitialEl = document.getElementById('userInitial');
+        if (userInitialEl && userInitialEl.parentElement) {
+          userInitialEl.parentElement.innerHTML = `<img src="${user.profilePhoto}" class="w-8 h-8 rounded-full object-cover">`;
+        }
+      } else {
+        // Update user initials
+        const initial = userName.charAt(0).toUpperCase();
+        document.getElementById("userInitial").innerText = initial;
+        document.getElementById("profileInitial").innerText = initial;
+      }
+
+      // Update date and time
+      function updateDateTime() {
+        const now = new Date();
+        const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const timeOptions = { hour: '2-digit', minute: '2-digit' };
+        
+        document.getElementById("currentDate").innerText = now.toLocaleDateString('en-US', dateOptions);
+        document.getElementById("currentTime").innerText = now.toLocaleTimeString('en-US', timeOptions);
+      }
+      
+      updateDateTime();
+      setInterval(updateDateTime, 60000); // Update every minute
+
+      // Navigation dropdowns
+      const notificationBtn = document.getElementById('notificationBtn');
+      const notificationDropdown = document.getElementById('notificationDropdown');
+      const userMenuBtn = document.getElementById('userMenuBtn');
+      const userDropdown = document.getElementById('userDropdown');
+      const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+      const mobileMenu = document.getElementById('mobileMenu');
+
+      // Notification dropdown
+      if (notificationBtn && notificationDropdown) {
+        notificationBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          notificationDropdown.classList.toggle('hidden');
+          userDropdown.classList.add('hidden');
+        });
+      }
+
+      // User menu dropdown
+      if (userMenuBtn && userDropdown) {
+        userMenuBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          userDropdown.classList.toggle('hidden');
+          notificationDropdown.classList.add('hidden');
+        });
+      }
+
+      // Mobile menu
+      if (mobileMenuBtn && mobileMenu) {
+        mobileMenuBtn.addEventListener('click', () => {
+          mobileMenu.classList.toggle('hidden');
+        });
+      }
+
+      // Close dropdowns when clicking outside
+      document.addEventListener('click', () => {
+        notificationDropdown?.classList.add('hidden');
+        userDropdown?.classList.add('hidden');
+      });
+
+      // Logout functionality
+      document.getElementById("logoutBtn").addEventListener("click", () => {
+        if (confirm("Are you sure you want to logout?")) {
+          if (window.signOut) {
+            window.signOut();
+          } else {
+            localStorage.clear();
+            window.location.href = "login.html";
+          }
+        }
+      });
+      
+      // Add entrance animation to cards
+      const cards = document.querySelectorAll('.card-hover');
+      cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px)';
+        card.style.transition = 'all 0.6s ease';
+        
+        setTimeout(() => {
+          card.style.opacity = '1';
+          card.style.transform = 'translateY(0)';
+        }, index * 150);
+      });
+      
+      // Animate progress bar
+      setTimeout(() => {
+        const progressBar = document.querySelector('.bg-indigo-600');
+        if (progressBar) {
+          progressBar.style.width = '0%';
+          setTimeout(() => {
+            progressBar.style.width = '85%';
+          }, 500);
+        }
+      }, 1000);
+
+      // Load client stats
+      updateClientStats();
+      
+      // Update job slots indicator
+      updateJobSlotsIndicator();
+      
+      // Check for job status notifications
+      checkJobStatusNotifications();
+
+      // Close modals when clicking outside
+      document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('modal-backdrop')) {
+          const modals = ['jobsModal', 'applicationsModal', 'hiredModal', 'spendingModal'];
+          modals.forEach(modalId => {
+            document.getElementById(modalId).classList.add('hidden');
+          });
+          document.body.style.overflow = 'auto';
+        }
+      });
+    });
+
+    // Make functions globally available
+    window.showJobsModal = showJobsModal;
+    window.showApplicationsModal = showApplicationsModal;
+    window.showHiredModal = showHiredModal;
+    window.showSpendingModal = showSpendingModal;
+    window.closeModal = closeModal;
+    window.editJob = editJob;
+    window.viewJobApplications = viewJobApplications;
+    window.deleteJob = deleteJob;
+    window.acceptApplication = acceptApplication;
+    window.rejectApplication = rejectApplication;
+    window.viewProject = viewProject;
+    window.markJobComplete = markJobComplete;
+    window.viewFreelancerProfile = viewFreelancerProfile;
+    window.contactFreelancer = contactFreelancer;
+    
+    // Check for job status notifications
+    function checkJobStatusNotifications() {
+      const session = JSON.parse(localStorage.getItem('userSession') || 'null');
+      if (!session) return;
+      
+      const jobs = JSON.parse(localStorage.getItem('jobs') || '[]')
+        .filter(job => job.clientId === session.id);
+      
+      const lastCheck = localStorage.getItem('lastJobStatusCheck_' + session.id);
+      const currentTime = new Date().toISOString();
+      
+      jobs.forEach(job => {
+        if (job.approvedAt && (!lastCheck || job.approvedAt > lastCheck)) {
+          showNotification(`Your job "${job.title}" has been approved and is now visible to freelancers!`, 'success', 5000);
+        }
+        if (job.rejectedAt && (!lastCheck || job.rejectedAt > lastCheck)) {
+          const reason = job.rejectionReason ? ` Reason: ${job.rejectionReason}` : '';
+          showNotification(`Your job "${job.title}" was not approved.${reason}`, 'error', 7000);
+        }
+      });
+      
+      localStorage.setItem('lastJobStatusCheck_' + session.id, currentTime);
+    }
+    
+    window.checkJobStatusNotifications = checkJobStatusNotifications;
+    
+    // Update job slots indicator
+    function updateJobSlotsIndicator() {
+      const session = JSON.parse(localStorage.getItem('userSession') || 'null');
+      if (!session) return;
+      
+      const stats = getClientJobStats(session.id);
+      const indicator = document.getElementById('jobSlotsIndicator');
+      
+      if (indicator) {
+        if (stats.remainingSlots > 0) {
+          indicator.textContent = `${stats.remainingSlots} of 5 job slots available`;
+          indicator.className = 'text-xs text-green-600 mb-4';
+        } else {
+          indicator.textContent = `All 5 job slots used. Complete jobs to post more.`;
+          indicator.className = 'text-xs text-red-600 mb-4';
+        }
+      }
+    }
+    
+    window.updateJobSlotsIndicator = updateJobSlotsIndicator;
+  </script>
+</body>
+</html>

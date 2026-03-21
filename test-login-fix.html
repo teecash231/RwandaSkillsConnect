@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Login Fix - Rwanda SkillsConnect</title>
+    <link rel="stylesheet" href="assets/css/tailwind.css">
+</head>
+<body class="bg-gray-50 min-h-screen p-8">
+    <div class="max-w-2xl mx-auto">
+        <div class="bg-white rounded-lg shadow-md p-8">
+            <h1 class="text-2xl font-bold text-center mb-6">🔧 Test Login Fix</h1>
+            
+            <div class="space-y-6">
+                <!-- Create Test User -->
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <h2 class="text-lg font-semibold mb-3">1. Create Test User</h2>
+                    <button onclick="createTestUser()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                        Create Test User with Password
+                    </button>
+                </div>
+                
+                <!-- Test Login -->
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <h2 class="text-lg font-semibold mb-3">2. Test Login</h2>
+                    <div class="space-y-2">
+                        <input type="email" id="testEmail" placeholder="Email" class="w-full p-2 border rounded">
+                        <input type="password" id="testPassword" placeholder="Password" class="w-full p-2 border rounded">
+                        <button onclick="testLogin()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                            Test Login
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Check Users -->
+                <div class="bg-yellow-50 p-4 rounded-lg">
+                    <h2 class="text-lg font-semibold mb-3">3. Check Users in System</h2>
+                    <button onclick="checkUsers()" class="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700">
+                        Show All Users
+                    </button>
+                    <div id="usersList" class="mt-3"></div>
+                </div>
+                
+                <!-- Results -->
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h2 class="text-lg font-semibold mb-3">Test Results</h2>
+                    <div id="results" class="space-y-2 text-sm"></div>
+                </div>
+            </div>
+            
+            <div class="mt-6 text-center">
+                <a href="signup.html?role=freelancer" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mr-2">
+                    Test Real Signup
+                </a>
+                <a href="login.html" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                    Go to Login
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/supabaseClient.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="local-auth.js"></script>
+    <script>
+        let testUserEmail = '';
+        let testUserPassword = '';
+        
+        function createTestUser() {
+            testUserEmail = `testuser${Date.now()}@example.com`;
+            testUserPassword = 'password123';
+            
+            const testUser = {
+                id: 'test_' + Date.now(),
+                fullName: 'Test User',
+                email: testUserEmail,
+                password: testUserPassword,
+                role: 'freelancer',
+                verified: true,
+                createdAt: new Date().toISOString(),
+                lastLogin: null,
+                profileComplete: false
+            };
+            
+            // Add to localStorage
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            users.push(testUser);
+            localStorage.setItem('users', JSON.stringify(users));
+            
+            // Fill form
+            document.getElementById('testEmail').value = testUserEmail;
+            document.getElementById('testPassword').value = testUserPassword;
+            
+            addResult(`✅ Test user created: ${testUserEmail}`, 'success');
+            addResult(`🔑 Password: ${testUserPassword}`, 'info');
+            addResult('📝 Form filled with test credentials', 'info');
+        }
+        
+        async function testLogin() {
+            const email = document.getElementById('testEmail').value;
+            const password = document.getElementById('testPassword').value;
+            
+            if (!email || !password) {
+                addResult('❌ Please enter email and password', 'error');
+                return;
+            }
+            
+            addResult(`🔐 Testing login for: ${email}`, 'info');
+            
+            try {
+                const result = await enhancedLogin(email, password);
+                
+                if (result.success) {
+                    addResult('✅ Login successful!', 'success');
+                    addResult(`👤 User: ${result.user.email}`, 'success');
+                    addResult(`🎭 Role: ${result.user.user_metadata?.role || 'unknown'}`, 'success');
+                } else {
+                    addResult(`❌ Login failed: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                addResult(`❌ Login error: ${error.message}`, 'error');
+            }
+        }
+        
+        function checkUsers() {
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const usersList = document.getElementById('usersList');
+            
+            if (users.length === 0) {
+                usersList.innerHTML = '<p class="text-gray-500">No users in system</p>';
+                return;
+            }
+            
+            usersList.innerHTML = `
+                <div class="space-y-2">
+                    ${users.map(user => `
+                        <div class="bg-white p-3 rounded border text-sm">
+                            <div class="font-medium">${user.fullName}</div>
+                            <div class="text-gray-600">${user.email}</div>
+                            <div class="text-xs text-gray-500">
+                                Role: ${user.role} | 
+                                Password: ${user.password ? '✅ Set' : '❌ Missing'} | 
+                                Verified: ${user.verified ? '✅' : '❌'}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            addResult(`📊 Found ${users.length} users in system`, 'info');
+            
+            const usersWithPasswords = users.filter(u => u.password);
+            addResult(`🔑 ${usersWithPasswords.length} users have passwords`, usersWithPasswords.length === users.length ? 'success' : 'warning');
+        }
+        
+        function addResult(message, type = 'info') {
+            const results = document.getElementById('results');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            const colors = {
+                'info': 'text-blue-600',
+                'success': 'text-green-600',
+                'warning': 'text-yellow-600',
+                'error': 'text-red-600'
+            };
+            
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `${colors[type]} text-sm`;
+            resultDiv.innerHTML = `[${timestamp}] ${message}`;
+            
+            results.appendChild(resultDiv);
+            results.scrollTop = results.scrollHeight;
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            addResult('🧪 Test page loaded. Ready to test login fix.', 'info');
+            checkUsers();
+        });
+    </script>
+</body>
+</html>

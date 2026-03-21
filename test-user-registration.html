@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test User Registration Flow - Rwanda SkillsConnect</title>
+    <link rel="stylesheet" href="assets/css/tailwind.css">
+</head>
+<body class="bg-gray-50 min-h-screen p-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white rounded-lg shadow-md p-8">
+            <h1 class="text-3xl font-bold text-center mb-8">🧪 Test User Registration Flow</h1>
+            
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- Test Registration -->
+                <div class="bg-blue-50 p-6 rounded-lg">
+                    <h2 class="text-xl font-semibold mb-4">📝 Test Registration Process</h2>
+                    <div class="space-y-4">
+                        <button onclick="testRegistrationFlow()" class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700">
+                            Test Complete Registration Flow
+                        </button>
+                        <button onclick="simulateOTPVerification()" class="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700">
+                            Simulate OTP Verification
+                        </button>
+                        <button onclick="checkAdminSystem()" class="w-full bg-purple-600 text-white py-3 px-4 rounded-lg hover:bg-purple-700">
+                            Check Admin User Management
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Current Users -->
+                <div class="bg-green-50 p-6 rounded-lg">
+                    <h2 class="text-xl font-semibold mb-4">👥 Current Users in Admin System</h2>
+                    <div id="usersList" class="space-y-2">
+                        <!-- Users will be populated here -->
+                    </div>
+                    <button onclick="refreshUsersList()" class="mt-4 w-full bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-700">
+                        Refresh List
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Test Results -->
+            <div class="mt-8 bg-gray-50 p-6 rounded-lg">
+                <h2 class="text-xl font-semibold mb-4">📊 Test Results</h2>
+                <div id="testResults" class="space-y-2 text-sm">
+                    <p class="text-gray-600">Click the test buttons above to see results...</p>
+                </div>
+            </div>
+            
+            <!-- Admin Notifications -->
+            <div class="mt-8 bg-yellow-50 p-6 rounded-lg">
+                <h2 class="text-xl font-semibold mb-4">🔔 Admin Notifications</h2>
+                <div id="adminNotifications" class="space-y-2">
+                    <!-- Notifications will be populated here -->
+                </div>
+                <button onclick="clearNotifications()" class="mt-4 bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700">
+                    Clear Notifications
+                </button>
+            </div>
+            
+            <!-- Navigation -->
+            <div class="mt-8 text-center space-x-4">
+                <a href="admin-dashboard.html" class="bg-red-600 text-white py-2 px-6 rounded-lg hover:bg-red-700">
+                    Go to Admin Dashboard
+                </a>
+                <a href="signup.html?role=freelancer" class="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700">
+                    Test Real Signup
+                </a>
+                <a href="login.html" class="bg-green-600 text-white py-2 px-6 rounded-lg hover:bg-green-700">
+                    Go to Login
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Test registration flow
+        function testRegistrationFlow() {
+            addTestResult('🚀 Testing registration flow...', 'info');
+            
+            // Simulate user data
+            const testUser = {
+                id: 'test_user_' + Date.now(),
+                fullName: 'Test User ' + Math.floor(Math.random() * 1000),
+                email: `testuser${Math.floor(Math.random() * 1000)}@example.com`,
+                role: Math.random() > 0.5 ? 'freelancer' : 'client',
+                verified: true,
+                createdAt: new Date().toISOString(),
+                lastLogin: null,
+                profileComplete: false
+            };
+            
+            // Add to admin system
+            addUserToAdminSystem(testUser);
+            
+            addTestResult(`✅ Test user created: ${testUser.fullName} (${testUser.role})`, 'success');
+            addTestResult(`📧 Email: ${testUser.email}`, 'info');
+            
+            refreshUsersList();
+        }
+        
+        // Simulate OTP verification
+        function simulateOTPVerification() {
+            addTestResult('🔐 Simulating OTP verification...', 'info');
+            
+            // Simulate the OTP verification process
+            const pendingData = {
+                first_name: 'John',
+                last_name: 'Doe',
+                email: `john.doe.${Date.now()}@example.com`,
+                role: 'freelancer'
+            };
+            
+            // Simulate successful verification
+            setTimeout(() => {
+                const newUser = {
+                    id: 'verified_user_' + Date.now(),
+                    fullName: `${pendingData.first_name} ${pendingData.last_name}`,
+                    email: pendingData.email,
+                    role: pendingData.role,
+                    verified: true,
+                    createdAt: new Date().toISOString(),
+                    lastLogin: null,
+                    profileComplete: false
+                };
+                
+                addUserToAdminSystem(newUser);
+                
+                addTestResult('✅ OTP verification simulated successfully', 'success');
+                addTestResult(`👤 User added: ${newUser.fullName}`, 'success');
+                addTestResult('🔄 User should now appear in admin dashboard', 'info');
+                
+                refreshUsersList();
+            }, 1000);
+        }
+        
+        // Check admin system
+        function checkAdminSystem() {
+            addTestResult('🔍 Checking admin system...', 'info');
+            
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const notifications = JSON.parse(localStorage.getItem('adminNotifications') || '[]');
+            
+            addTestResult(`📊 Total users in system: ${users.length}`, 'info');
+            addTestResult(`🔔 Total notifications: ${notifications.length}`, 'info');
+            
+            const roles = users.reduce((acc, user) => {
+                acc[user.role] = (acc[user.role] || 0) + 1;
+                return acc;
+            }, {});
+            
+            Object.entries(roles).forEach(([role, count]) => {
+                addTestResult(`👥 ${role}s: ${count}`, 'info');
+            });
+            
+            const recentUsers = users.filter(u => {
+                const created = new Date(u.createdAt);
+                const now = new Date();
+                return (now - created) < 24 * 60 * 60 * 1000; // Last 24 hours
+            });
+            
+            addTestResult(`🆕 Users registered in last 24h: ${recentUsers.length}`, 'info');
+            
+            refreshUsersList();
+            refreshNotifications();
+        }
+        
+        // Add user to admin system (same as in auth.js)
+        function addUserToAdminSystem(userData) {
+            try {
+                const users = JSON.parse(localStorage.getItem('users') || '[]');
+                
+                // Check if user already exists
+                const existingUserIndex = users.findIndex(u => u.email === userData.email);
+                
+                if (existingUserIndex === -1) {
+                    users.push(userData);
+                    localStorage.setItem('users', JSON.stringify(users));
+                    
+                    // Add admin notification
+                    const adminNotifications = JSON.parse(localStorage.getItem('adminNotifications') || '[]');
+                    adminNotifications.push({
+                        id: 'new_user_' + Date.now(),
+                        type: 'success',
+                        title: 'New User Registration',
+                        message: `${userData.fullName} (${userData.role}) has successfully registered`,
+                        userId: userData.id,
+                        createdAt: new Date().toISOString(),
+                        read: false
+                    });
+                    localStorage.setItem('adminNotifications', JSON.stringify(adminNotifications));
+                    
+                    return true;
+                } else {
+                    addTestResult('⚠️ User already exists in system', 'warning');
+                    return false;
+                }
+            } catch (error) {
+                addTestResult('❌ Error adding user to admin system: ' + error.message, 'error');
+                return false;
+            }
+        }
+        
+        // Refresh users list
+        function refreshUsersList() {
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const usersList = document.getElementById('usersList');
+            
+            if (users.length === 0) {
+                usersList.innerHTML = '<p class="text-gray-500 italic">No users in system</p>';
+                return;
+            }
+            
+            usersList.innerHTML = users.map(user => `
+                <div class="bg-white p-3 rounded border">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <div class="font-medium">${user.fullName}</div>
+                            <div class="text-sm text-gray-600">${user.email}</div>
+                            <div class="text-xs text-gray-500">
+                                ${user.role} • ${user.verified ? '✅ Verified' : '⏳ Pending'}
+                            </div>
+                        </div>
+                        <div class="text-xs text-gray-400">
+                            ${new Date(user.createdAt).toLocaleDateString()}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Refresh notifications
+        function refreshNotifications() {
+            const notifications = JSON.parse(localStorage.getItem('adminNotifications') || '[]');
+            const notificationsList = document.getElementById('adminNotifications');
+            
+            if (notifications.length === 0) {
+                notificationsList.innerHTML = '<p class="text-gray-500 italic">No notifications</p>';
+                return;
+            }
+            
+            notificationsList.innerHTML = notifications.slice(-5).reverse().map(notification => `
+                <div class="bg-white p-3 rounded border ${notification.read ? 'opacity-60' : ''}">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <div class="font-medium text-sm">${notification.title}</div>
+                            <div class="text-sm text-gray-600">${notification.message}</div>
+                        </div>
+                        <div class="text-xs text-gray-400">
+                            ${new Date(notification.createdAt).toLocaleTimeString()}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Clear notifications
+        function clearNotifications() {
+            if (confirm('Clear all admin notifications?')) {
+                localStorage.setItem('adminNotifications', '[]');
+                addTestResult('🗑️ All notifications cleared', 'info');
+                refreshNotifications();
+            }
+        }
+        
+        // Add test result
+        function addTestResult(message, type = 'info') {
+            const testResults = document.getElementById('testResults');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            const colors = {
+                'info': 'text-blue-600',
+                'success': 'text-green-600',
+                'warning': 'text-yellow-600',
+                'error': 'text-red-600'
+            };
+            
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `${colors[type]} text-sm`;
+            resultDiv.innerHTML = `[${timestamp}] ${message}`;
+            
+            testResults.appendChild(resultDiv);
+            testResults.scrollTop = testResults.scrollHeight;
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            refreshUsersList();
+            refreshNotifications();
+            addTestResult('🎯 Test page loaded. Ready to test user registration flow.', 'info');
+        });
+    </script>
+</body>
+</html>
