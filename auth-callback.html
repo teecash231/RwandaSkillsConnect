@@ -68,11 +68,11 @@
                 setTimeout(() => {
                     const role = pendingData.role || data.user.user_metadata?.role || 'user';
                     switch(role) {
-                        case 'freelancer':
+                        case 'worker':
                             window.location.href = 'freelancer-dashboard.html';
                             break;
-                        case 'client':
-                            window.location.href = 'client-dashboard.html';
+                        case 'employer':
+                            window.location.href = 'employer-dashboard.html';
                             break;
                         case 'admin':
                             window.location.href = 'admin-dashboard.html';
