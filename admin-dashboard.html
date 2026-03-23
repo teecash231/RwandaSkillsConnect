@@ -1154,6 +1154,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                   <option value="inactive"  ${u.status==='inactive' ?'selected':''}>Inactive</option>
                   <option value="suspended" ${u.status==='suspended'?'selected':''}>Suspended</option>
                 </select>
+                <button class="btn btn-sm btn-danger btn-delete-user" data-user-id="${u.id}" data-user-name="${u.full_name||u.email||'this user'}" title="Delete user"><i class="fas fa-trash"></i></button>
               </div>
             </td>
           </tr>
@@ -1326,6 +1327,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                   <option value="inactive"  ${u.status==='inactive' ?'selected':''}>Inactive</option>
                   <option value="suspended" ${u.status==='suspended'?'selected':''}>Suspended</option>
                 </select>
+                <button class="btn btn-sm btn-danger btn-delete-user" data-user-id="${u.id}" data-user-name="${u.full_name||u.email||'this user'}" title="Delete user"><i class="fas fa-trash"></i></button>
               </div>
             </td>
           </tr>
@@ -2017,6 +2019,35 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!btn) return;
     const id = btn.dataset.userId;
     openUserEditModal(id);
+  });
+
+  // Delete user handler
+  document.body.addEventListener('click', async (e) => {
+    const btn = e.target.closest('.btn-delete-user');
+    if (!btn) return;
+    const userId = btn.dataset.userId;
+    const userName = btn.dataset.userName;
+    if (!confirm(`Delete "${userName}"?\n\nThis permanently removes the user and all their data. This cannot be undone.`)) return;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    try {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/delete-user`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+        body: JSON.stringify({ userId })
+      });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || 'Delete failed');
+      // Remove from cache and re-render
+      if (allUsersCache) allUsersCache = allUsersCache.filter(u => u.id !== userId);
+      btn.closest('tr')?.nextElementSibling?.remove(); // remove detail row
+      btn.closest('tr')?.remove();
+    } catch (err) {
+      alert('Failed to delete user: ' + (err?.message || err));
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-trash"></i>';
+    }
   });
 
   // Skills form handlers
