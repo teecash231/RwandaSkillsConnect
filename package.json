@@ -4,7 +4,7 @@
   "description": "Rwanda SkillsConnect - Freelance Platform",
   "scripts": {
     "build-css": "tailwindcss -i ./src/input.css -o ./assets/css/tailwind.css --watch",
-    "build": "tailwindcss -i ./src/input.css -o ./assets/css/tailwind.css --minify"
+    "build": "echo 'No build needed'"
   },
   "devDependencies": {
     "tailwindcss": "^3.4.18"
