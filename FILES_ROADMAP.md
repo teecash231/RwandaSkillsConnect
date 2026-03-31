@@ -142,9 +142,9 @@ updateApplicationStatus(appId, status)
 | File | Status | Description |
 |------|--------|-------------|
 | `my-applications.html` | ✅ (created Phase 4) | Worker view |
-| `job-applications.html` | ⏳ | Employer view of applicants per job |
-| `applicant-profile.html` | ⏳ | Employer views worker profile |
-| `js/applications.js` | ⏳ | ApplicationService module |
+| `job-applications.html` | ✅ | Employer view of applicants per job |
+| `applicant-profile.html` | ✅ | Employer views worker profile |
+| `js/applications.js` | ✅ | ApplicationService module |
 
 **Tasks:**
 - Employer reviews applicants per job
@@ -159,9 +159,9 @@ updateApplicationStatus(appId, status)
 
 | File | Status | Description |
 |------|--------|-------------|
-| `client-messages.html` | ⏳ | Employer chat UI |
-| `freelancer-messages.html` | ⏳ | Worker chat UI |
-| `js/chat.js` | ⏳ | ChatService + Supabase Realtime subscription |
+| `client-messages.html` | ✅ | Employer chat UI (redirects to messages.html) |
+| `freelancer-messages.html` | ✅ | Worker chat UI (redirects to messages.html) |
+| `js/chat.js` | ✅ | ChatService + Supabase Realtime subscription |
 
 **Tasks:**
 - Create/find conversation between two users
@@ -176,8 +176,8 @@ updateApplicationStatus(appId, status)
 
 | File | Status | Description |
 |------|--------|-------------|
-| `js/notifications.js` | ⏳ | NotificationService module |
-| `notifications.html` | ⏳ | Notifications list page |
+| `js/notifications.js` | ✅ | NotificationService module |
+| `notifications.html` | ✅ | Notifications list page |
 
 **Triggers (DB-level or JS-level):**
 - New application → notify employer
@@ -195,11 +195,6 @@ updateApplicationStatus(appId, status)
 | `js/ewallet.js` | ✅ | EwalletService module (deposit, withdraw, sendPayment, getTransactions) |
 | `wallet.html` | ✅ | Standalone wallet dashboard (balance + history + deposit modal) |
 | `withdraw.html` | ✅ | Standalone withdrawal request form (MoMo / Bank / Cash) |
-| `app/Views/worker/ewallet/withdrawals.php` | ✅ | Worker withdrawal history view |
-| `app/Views/worker/ewallet/deposit.php` | ✅ | Worker deposit form view |
-| `app/Views/employer/ewallet/transactions.php` | ✅ | Employer transaction history view |
-| `app/Views/employer/ewallet/withdrawals.php` | ✅ | Employer withdrawal history view |
-| `app/Controllers/WorkerController.php` | ✅ | Added ewalletWithdrawals() + ewalletDeposit() methods |
 
 **Rules enforced:**
 - `balance >= 0` (DB CHECK constraint)
@@ -260,7 +255,7 @@ updateApplicationStatus(appId, status)
 |------|--------|-------------|
 | `vercel.json` | ✅ | Static routing + security headers |
 | `js/config.js` | ✅ | Supabase credentials (move to env vars) |
-| `.env.example` | ⏳ | Template for environment variables |
+| `.env.example` | ✅ | Template for environment variables |
 | `.gitignore` | ✅ | Excludes vendor/, .env |
 
 **Steps:**
@@ -283,7 +278,7 @@ updateApplicationStatus(appId, status)
 | Consolidate duplicate CSS | `assets/css/style.css` |
 | Remove unused JS files | `assets/js/sample-data*.js`, `assets/js/enhanced-sample-data.js` |
 | Add loading skeletons | All dashboard pages |
-| PWA manifest | `manifest.json` |
+| PWA manifest | `manifest.json` | ✅ |
 | Final documentation | `PROJECT_COMPLETION_GUIDE.md` |
 
 ---

@@ -200,6 +200,7 @@
   <script src="js/supabaseClient.js"></script>
   <script src="js/auth-utils.js"></script>
   <script src="js/ewallet.js"></script>
+  <script>window.SUPABASE_FUNCTIONS_URL = window.CONFIG.SUPABASE_URL + '/functions/v1';</script>
   <script>
   (async () => {
     const { data: { user } } = await window.supabaseClient.auth.getUser();
@@ -307,8 +308,34 @@
       spinner.classList.remove('d-none');
       document.getElementById('submitBtn').disabled = true;
       try {
-        await EwalletService.requestWithdrawal(wallet.id, amount, method, details, wallet.available_balance);
-        alertEl.innerHTML = `<div class="alert alert-success"><i class="fas fa-check-circle me-2"></i>Withdrawal request of RWF ${amount.toLocaleString()} submitted! Processing within 24–48 hours.</div>`;
+        if (method !== 'mobile_money') {
+          // Non-MoMo: use existing manual withdrawal flow
+          await EwalletService.requestWithdrawal(wallet.id, amount, method, details, wallet.available_balance);
+          alertEl.innerHTML = `<div class="alert alert-success"><i class="fas fa-check-circle me-2"></i>Withdrawal request of RWF ${amount.toLocaleString()} submitted! Processing within 24–48 hours.</div>`;
+          document.getElementById('withdrawForm').reset();
+          document.getElementById('balanceInfo').textContent = `RWF ${(wallet.available_balance - amount).toLocaleString()}`;
+          window.scrollTo(0, 0);
+          return;
+        }
+
+        // Mobile Money: use Flutterwave payout
+        const { data: { session } } = await window.supabaseClient.auth.getSession();
+        const res = await fetch(`${window.SUPABASE_FUNCTIONS_URL}/flw-withdraw`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            amount,
+            phone: details.account_number,
+            network: details.network,
+            account_name: details.account_name,
+          }),
+        });
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.error || 'Withdrawal failed');
+        alertEl.innerHTML = `<div class="alert alert-success"><i class="fas fa-check-circle me-2"></i>RWF ${amount.toLocaleString()} sent to ${details.network} ${details.account_number}. Ref: ${result.reference}</div>`;
         document.getElementById('withdrawForm').reset();
         document.getElementById('balanceInfo').textContent = `RWF ${(wallet.available_balance - amount).toLocaleString()}`;
         window.scrollTo(0, 0);

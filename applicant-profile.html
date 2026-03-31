@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Applicant Profile — Rwanda SkillsConnect</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #f5f7fa; }
+    .sidebar { width: 260px; background: #fff; border-right: 1px solid #E2E8F0; position: fixed; top: 0; left: 0; height: 100vh; z-index: 1000; display: flex; flex-direction: column; }
+    .main-content { margin-left: 260px; min-height: 100vh; }
+    .menu-item { display: flex; align-items: center; gap: 12px; padding: 11px 20px; color: #64748B; text-decoration: none; font-size: 14px; font-weight: 500; transition: all .2s; }
+    .menu-item:hover, .menu-item.active { background: #E8F2FF; color: #0056B3; }
+    .menu-item.active { border-left: 3px solid #0056B3; }
+    .avatar { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg,#0056B3,#00C896); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 28px; flex-shrink: 0; overflow: hidden; }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .skill-tag { display: inline-block; background: #E8F2FF; color: #0056B3; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; margin: 3px; }
+    .status-badge { padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .status-pending     { background: #fff3cd; color: #856404; }
+    .status-reviewing   { background: #cce5ff; color: #004085; }
+    .status-shortlisted { background: #d1ecf1; color: #0c5460; }
+    .status-accepted    { background: #d4edda; color: #155724; }
+    .status-rejected    { background: #f8d7da; color: #721c24; }
+    .info-row { display: flex; align-items: center; gap: 8px; color: #64748B; font-size: 14px; margin-bottom: 8px; }
+    .info-row i { width: 16px; color: #0056B3; }
+    #toast { position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 280px; }
+    @media(max-width:992px) { .sidebar { transform: translateX(-100%); } .main-content { margin-left: 0; } }
+  </style>
+</head>
+<body>
+
+<div id="toast" class="toast align-items-center border-0" role="alert">
+  <div class="d-flex">
+    <div class="toast-body fw-medium" id="toastMsg"></div>
+    <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>
+  </div>
+</div>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="p-4 border-bottom">
+    <div class="d-flex align-items-center gap-2">
+      <div style="width:36px;height:36px;background:linear-gradient(135deg,#0056B3,#00C896);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;"><i class="fas fa-hands-helping"></i></div>
+      <div><div class="fw-bold" style="font-size:15px;">SkillsConnect</div><div class="text-muted" style="font-size:11px;">Rwanda</div></div>
+    </div>
+  </div>
+  <nav class="flex-grow-1 py-3">
+    <div class="px-4 pb-2" style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;font-weight:600;">Dashboard</div>
+    <a href="employer-dashboard.html" class="menu-item"><i class="fas fa-tachometer-alt"></i>Overview</a>
+    <a href="profile.html" class="menu-item"><i class="fas fa-building"></i>Company Profile</a>
+    <div class="px-4 pb-2 pt-3" style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;font-weight:600;">Recruitment</div>
+    <a href="post-job.html" class="menu-item"><i class="fas fa-plus"></i>Post Job</a>
+    <a href="jobs.html" class="menu-item"><i class="fas fa-list"></i>Manage Jobs</a>
+    <a href="find-workers.html" class="menu-item"><i class="fas fa-search"></i>Find Workers</a>
+    <a href="job-applications.html" class="menu-item active"><i class="fas fa-users"></i>Applicants</a>
+    <div class="px-4 pb-2 pt-3" style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;font-weight:600;">Communication</div>
+    <a href="messages.html" class="menu-item"><i class="fas fa-comments"></i>Messages</a>
+    <a href="notifications.html" class="menu-item"><i class="fas fa-bell"></i>Notifications</a>
+  </nav>
+  <div class="border-top py-2">
+    <a href="client-settings.html" class="menu-item"><i class="fas fa-cog"></i>Settings</a>
+    <a href="#" class="menu-item" id="logoutBtn"><i class="fas fa-sign-out-alt"></i>Logout</a>
+  </div>
+</aside>
+
+<main class="main-content">
+  <header class="bg-white border-bottom px-4 py-3 sticky-top">
+    <div class="d-flex align-items-center gap-3">
+      <a href="javascript:history.back()" class="text-muted text-decoration-none"><i class="fas fa-arrow-left"></i></a>
+      <div>
+        <h5 class="mb-0 fw-bold">Applicant Profile</h5>
+        <small class="text-muted" id="pageSubtitle">Loading…</small>
+      </div>
+    </div>
+  </header>
+
+  <div class="p-4" id="profileContent">
+    <div class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+  </div>
+</main>
+
+<script src="js/supabaseClient.js"></script>
+<script src="js/applications.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const toastEl = new bootstrap.Toast(document.getElementById('toast'), { delay: 3000 });
+let currentApp = null;
+let currentUser = null;
+
+function notify(msg, type = 'success') {
+  const el = document.getElementById('toast');
+  el.className = `toast align-items-center border-0 text-bg-${type}`;
+  document.getElementById('toastMsg').textContent = msg;
+  toastEl.show();
+}
+
+function expLabel(e) {
+  return { entry: 'Entry Level', intermediate: 'Intermediate', expert: 'Expert' }[e] || e || 'Not specified';
+}
+
+function renderProfile(app) {
+  const w = app.profiles || {};
+  const job = app.jobs || {};
+  const employer = job.profiles || {};
+  const initials = (w.full_name || 'A').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+  const skills = w.skills ? w.skills.split(',') : [];
+
+  document.getElementById('pageSubtitle').textContent =
+    job.title ? `Applied for: ${job.title}` : 'Application details';
+
+  document.getElementById('profileContent').innerHTML = `
+    <div class="row g-4" style="max-width:960px;">
+
+      <!-- Left: Worker card -->
+      <div class="col-lg-4">
+        <div class="bg-white rounded-3 border p-4 text-center mb-3">
+          <div class="avatar mx-auto mb-3">
+            ${w.profile_image
+              ? `<img src="${w.profile_image}" alt="${w.full_name}">`
+              : initials}
+          </div>
+          <h5 class="fw-bold mb-1">${w.full_name || 'Unknown'}</h5>
+          ${w.headline ? `<p class="text-muted mb-2" style="font-size:13px;">${w.headline}</p>` : ''}
+          <span class="status-badge status-${app.status || 'pending'} d-inline-block mb-3">${app.status || 'pending'}</span>
+          <div class="d-grid gap-2">
+            <button class="btn btn-primary btn-sm" id="msgBtn">
+              <i class="fas fa-comment me-2"></i>Send Message
+            </button>
+            ${w.resume_url
+              ? `<a href="${w.resume_url}" target="_blank" class="btn btn-outline-secondary btn-sm">
+                   <i class="fas fa-file-pdf me-2"></i>Download Resume
+                 </a>`
+              : ''}
+          </div>
+        </div>
+
+        <!-- Application Status -->
+        <div class="bg-white rounded-3 border p-4">
+          <h6 class="fw-semibold mb-3">Update Status</h6>
+          <div class="d-grid gap-2">
+            <button class="btn btn-outline-primary btn-sm" onclick="setStatus('reviewing')">
+              <i class="fas fa-eye me-2"></i>Mark Reviewing
+            </button>
+            <button class="btn btn-outline-info btn-sm" onclick="setStatus('shortlisted')">
+              <i class="fas fa-star me-2"></i>Shortlist
+            </button>
+            <button class="btn btn-success btn-sm" onclick="setStatus('accepted')">
+              <i class="fas fa-check me-2"></i>Accept
+            </button>
+            <button class="btn btn-danger btn-sm" onclick="setStatus('rejected')">
+              <i class="fas fa-times me-2"></i>Reject
+            </button>
+          </div>
+          <hr>
+          <div class="text-muted" style="font-size:12px;">
+            <div><i class="fas fa-calendar me-2"></i>Applied: ${new Date(app.applied_at).toLocaleDateString('en-US',{weekday:'short',year:'numeric',month:'short',day:'numeric'})}</div>
+            ${app.reviewed_at ? `<div class="mt-1"><i class="fas fa-clock me-2"></i>Reviewed: ${new Date(app.reviewed_at).toLocaleDateString()}</div>` : ''}
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Details -->
+      <div class="col-lg-8">
+
+        <!-- Personal Info -->
+        <div class="bg-white rounded-3 border p-4 mb-3">
+          <h6 class="fw-semibold mb-3"><i class="fas fa-user me-2 text-primary"></i>Personal Information</h6>
+          <div class="row g-2">
+            ${w.phone    ? `<div class="col-sm-6"><div class="info-row"><i class="fas fa-phone"></i>${w.phone}</div></div>` : ''}
+            ${w.location ? `<div class="col-sm-6"><div class="info-row"><i class="fas fa-map-marker-alt"></i>${w.location}</div></div>` : ''}
+            <div class="col-sm-6"><div class="info-row"><i class="fas fa-layer-group"></i>${expLabel(w.experience_level)}</div></div>
+            ${w.availability ? `<div class="col-sm-6"><div class="info-row"><i class="fas fa-clock"></i>${w.availability}</div></div>` : ''}
+            ${w.rating > 0 ? `<div class="col-sm-6"><div class="info-row"><i class="fas fa-star text-warning"></i>${parseFloat(w.rating).toFixed(1)} rating</div></div>` : ''}
+          </div>
+          ${w.bio ? `<hr><p class="text-muted mb-0" style="font-size:14px;">${w.bio}</p>` : ''}
+        </div>
+
+        <!-- Skills -->
+        ${skills.length ? `
+        <div class="bg-white rounded-3 border p-4 mb-3">
+          <h6 class="fw-semibold mb-3"><i class="fas fa-tools me-2 text-primary"></i>Skills</h6>
+          <div>${skills.map(s => `<span class="skill-tag">${s.trim()}</span>`).join('')}</div>
+        </div>` : ''}
+
+        <!-- Cover Letter -->
+        ${app.cover_letter ? `
+        <div class="bg-white rounded-3 border p-4 mb-3">
+          <h6 class="fw-semibold mb-3"><i class="fas fa-envelope me-2 text-primary"></i>Cover Letter</h6>
+          <p class="text-muted mb-0" style="white-space:pre-wrap;font-size:14px;line-height:1.7;">${app.cover_letter}</p>
+        </div>` : ''}
+
+        <!-- Job Applied For -->
+        ${job.title ? `
+        <div class="bg-white rounded-3 border p-4">
+          <h6 class="fw-semibold mb-3"><i class="fas fa-briefcase me-2 text-primary"></i>Job Applied For</h6>
+          <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+            <div>
+              <h6 class="fw-bold mb-1">${job.title}</h6>
+              <div class="text-muted small">
+                ${job.location ? `<span><i class="fas fa-map-marker-alt me-1"></i>${job.location}</span>` : ''}
+                ${job.job_type ? `<span class="ms-3"><i class="fas fa-briefcase me-1"></i>${job.job_type.replace('_',' ')}</span>` : ''}
+              </div>
+              ${job.salary_range_min ? `<div class="text-success small fw-medium mt-1">RWF ${parseInt(job.salary_range_min).toLocaleString()}${job.salary_range_max ? ' – ' + parseInt(job.salary_range_max).toLocaleString() : ''}</div>` : ''}
+            </div>
+            <a href="job-applications.html?job=${job.id}" class="btn btn-sm btn-outline-primary">
+              <i class="fas fa-users me-1"></i>All Applicants
+            </a>
+          </div>
+        </div>` : ''}
+
+      </div>
+    </div>`;
+
+  document.getElementById('msgBtn').addEventListener('click', () => {
+    if (w.id) window.location.href = `messages.html?with=${w.id}`;
+  });
+}
+
+async function setStatus(status) {
+  if (!currentApp) return;
+  try {
+    await ApplicationService.updateStatus(currentApp.id, status);
+    currentApp.status = status;
+    notify(`Status updated to "${status}"`);
+    renderProfile(currentApp);
+  } catch (err) {
+    notify(err.message || 'Failed to update status', 'danger');
+  }
+}
+
+document.getElementById('logoutBtn').addEventListener('click', async (e) => {
+  e.preventDefault();
+  await supabaseClient.auth.signOut();
+  window.location.href = 'login.html';
+});
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (!session) { window.location.href = 'login.html'; return; }
+
+  const { data: profile } = await supabaseClient.from('profiles').select('role').eq('id', session.user.id).single();
+  if (profile?.role !== 'employer') { window.location.href = 'freelancer-dashboard.html'; return; }
+
+  currentUser = session.user;
+
+  const params = new URLSearchParams(location.search);
+  const appId = params.get('app') ? parseInt(params.get('app')) : null;
+
+  if (!appId) { window.location.href = 'job-applications.html'; return; }
+
+  try {
+    currentApp = await ApplicationService.getById(appId);
+    // Verify this application belongs to the employer's job
+    const job = currentApp.jobs || {};
+    const jobEmployerId = job.profiles?.id || job.employer_id;
+    // Allow if job employer matches or just render (RLS enforces access)
+    renderProfile(currentApp);
+  } catch (err) {
+    document.getElementById('profileContent').innerHTML =
+      `<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>${err.message}</div>`;
+  }
+});
+
+window.setStatus = setStatus;
+</script>
+</body>
+</html>

@@ -103,6 +103,8 @@ public/uploads/
 #-------------------------
 # Never commit real keys — use Vercel env vars in production
 # js/config.js contains dev keys only
+supabase.exe
+supabase/.temp/
 
 #-------------------------
 # IDE / Development Files
