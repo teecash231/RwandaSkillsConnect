@@ -12,13 +12,13 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) return json({ error: 'Unauthorized' }, 401);
 
-    const supabase = createClient(
+    const adminClient = createClient(
       Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
-      { global: { headers: { Authorization: authHeader } } }
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    const { data: { user }, error: authErr } = await supabase.auth.getUser();
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authErr } = await adminClient.auth.getUser(token);
     if (authErr || !user) return json({ error: 'Unauthorized' }, 401);
 
     const { amount, phone, network, account_name } = await req.json();
@@ -29,11 +29,6 @@ Deno.serve(async (req) => {
     if (!['MTN', 'AIRTEL'].includes((network || '').toUpperCase())) {
       return json({ error: 'Network must be MTN or AIRTEL' }, 400);
     }
-
-    const adminClient = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    );
 
     // ── Check & deduct wallet balance atomically ──────────────
     const { data: wallet } = await adminClient
@@ -65,41 +60,46 @@ Deno.serve(async (req) => {
 
     // ── Call Flutterwave Transfer API ─────────────────────────
     const transferRef = `WD-${Date.now()}-${crypto.randomUUID().split('-')[0].toUpperCase()}`;
+    const secretKey = Deno.env.get('FLUTTERWAVE_SECRET_KEY') || '';
+    const isTestMode = secretKey.startsWith('FLWSECK_TEST-');
 
-    const networkMap: Record<string, string> = { MTN: 'MPS', AIRTEL: 'AIRTEL' };
+    if (!isTestMode) {
+      const networkMap: Record<string, string> = { MTN: 'MPS', AIRTEL: 'AIRTEL' };
 
-    const flwRes = await fetch('https://api.flutterwave.com/v3/transfers', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${Deno.env.get('FLUTTERWAVE_SECRET_KEY')}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        account_bank: networkMap[network.toUpperCase()],
-        account_number: phone,
-        amount: net,
-        narration: 'Rwanda SkillsConnect withdrawal',
-        currency: 'RWF',
-        reference: transferRef,
-        beneficiary_name: account_name,
-        meta: [{ mobile_number: phone }],
-      }),
-    });
+      const flwRes = await fetch('https://api.flutterwave.com/v3/transfers', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${secretKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          account_bank: networkMap[network.toUpperCase()],
+          account_number: phone,
+          amount: net,
+          narration: 'Rwanda SkillsConnect withdrawal',
+          currency: 'RWF',
+          reference: transferRef,
+          beneficiary_name: account_name,
+          meta: [{ mobile_number: phone }],
+        }),
+      });
 
-    const flwData = await flwRes.json();
+      const flwData = await flwRes.json();
 
-    if (flwData.status !== 'success') {
-      // Refund balance on FLW failure
-      await adminClient
-        .from('ewallets')
-        .update({
-          available_balance: wallet.available_balance,
-          balance: wallet.balance,
-        })
-        .eq('id', wallet.id);
+      if (flwData.status !== 'success') {
+        // Refund balance on FLW failure
+        await adminClient
+          .from('ewallets')
+          .update({
+            available_balance: wallet.available_balance,
+            balance: wallet.balance,
+          })
+          .eq('id', wallet.id);
 
-      return json({ error: flwData.message || 'Transfer failed' }, 502);
+        return json({ error: flwData.message || 'Transfer failed' }, 502);
+      }
     }
+    // In test mode: skip real transfer, simulate success
 
     // ── Record transaction ────────────────────────────────────
     await adminClient.from('ewallet_transactions').insert({
