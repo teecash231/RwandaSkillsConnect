@@ -16,82 +16,66 @@
 
     <script src="js/supabaseClient.js"></script>
     <script>
-        async function handleEmailConfirmation() {
+        async function handleCallback() {
             try {
-                const urlParams = new URLSearchParams(window.location.hash.substring(1));
-                const type = new URLSearchParams(window.location.search).get('type');
-                const accessToken = urlParams.get('access_token');
-                const refreshToken = urlParams.get('refresh_token');
-                
-                if (!accessToken) {
-                    throw new Error('No confirmation token found');
+                // Exchange the OAuth/email code for a session
+                const { data, error } = await window.supabaseClient.auth.getSession();
+
+                // If no session yet, try exchanging the code from URL
+                if (!data.session) {
+                    const { data: exchanged, error: exchErr } = await window.supabaseClient.auth.exchangeCodeForSession(window.location.href);
+                    if (exchErr) throw exchErr;
+                    data.session = exchanged.session;
+                    data.user = exchanged.user;
                 }
 
-                const { data, error } = await window.supabaseClient.auth.setSession({
-                    access_token: accessToken,
-                    refresh_token: refreshToken
-                });
-
                 if (error) throw error;
+                if (!data.session) throw new Error('No session established');
+
+                const user = data.session.user;
+                const type = new URLSearchParams(window.location.search).get('type');
 
                 if (type === 'recovery') {
                     document.getElementById('status').textContent = 'Password reset confirmed! Redirecting...';
-                    setTimeout(() => {
-                        window.location.href = 'reset-password.html';
-                    }, 2000);
+                    setTimeout(() => window.location.href = 'reset-password.html', 2000);
                     return;
                 }
 
-                // Create profile for new signups
-                const pendingData = JSON.parse(sessionStorage.getItem('pendingUserData') || '{}');
-                
-                if (pendingData.first_name && data.user) {
-                    try {
-                        await window.supabaseClient
-                            .from('profiles')
-                            .upsert({
-                                id: data.user.id,
-                                first_name: pendingData.first_name,
-                                last_name: pendingData.last_name,
-                                email: data.user.email,
-                                role: pendingData.role || 'user'
-                            });
-                    } catch (profileError) {
-                        console.warn('Profile creation failed:', profileError);
-                    }
+                // Ensure profile exists (for OAuth sign-ins, DB trigger may not have role)
+                const { data: profile } = await window.supabaseClient
+                    .from('profiles')
+                    .select('role')
+                    .eq('id', user.id)
+                    .single();
+
+                if (!profile) {
+                    // Create profile for first-time OAuth users — send to role selection
+                    await window.supabaseClient.from('profiles').upsert({
+                        id: user.id,
+                        first_name: user.user_metadata?.full_name?.split(' ')[0] || '',
+                        last_name: user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '',
+                        email: user.email,
+                        role: 'worker'
+                    });
+                    document.getElementById('status').textContent = 'Account created! Redirecting...';
+                    setTimeout(() => window.location.href = 'role-selection.html', 1500);
+                    return;
                 }
 
-                sessionStorage.removeItem('pendingUserData');
-                
-                document.getElementById('status').textContent = 'Email confirmed! Redirecting to dashboard...';
-                
-                setTimeout(() => {
-                    const role = pendingData.role || data.user.user_metadata?.role || 'user';
-                    switch(role) {
-                        case 'worker':
-                            window.location.href = 'freelancer-dashboard.html';
-                            break;
-                        case 'employer':
-                            window.location.href = 'employer-dashboard.html';
-                            break;
-                        case 'admin':
-                            window.location.href = 'admin-dashboard.html';
-                            break;
-                        default:
-                            window.location.href = 'login.html?confirmed=true';
-                    }
-                }, 2000);
+                document.getElementById('status').textContent = 'Signed in! Redirecting...';
+                const dashboards = { admin: 'admin-dashboard.html', employer: 'employer-dashboard.html', worker: 'freelancer-dashboard.html' };
+                setTimeout(() => window.location.href = dashboards[profile.role] || 'freelancer-dashboard.html', 1500);
 
             } catch (error) {
-                console.error('Confirmation error:', error);
+                console.error('Callback error:', error);
                 document.getElementById('status').innerHTML = `
-                    <span class="text-red-600">Confirmation failed: ${error.message}</span><br>
+                    <span class="text-red-600">Sign-in failed: ${error.message}</span><br>
                     <a href="login.html" class="text-blue-600 hover:underline mt-2 inline-block">Go to Login</a>
                 `;
             }
         }
 
-        window.addEventListener('load', handleEmailConfirmation);
+        window.addEventListener('load', handleCallback);
     </script>
 </body>
 </html>

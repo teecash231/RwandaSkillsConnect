@@ -13,43 +13,12 @@
   </style>
 </head>
 <body>
-  <div class="card p-5 text-center" id="statusCard">
-    <div class="spinner-border text-primary mb-3" style="width:3rem;height:3rem;"></div>
-    <p class="text-muted">Verifying your payment...</p>
+  <div class="card p-5 text-center">
+    <div class="icon-circle bg-info text-white"><i class="fas fa-info-circle"></i></div>
+    <h4 class="fw-bold mb-2">Page Moved</h4>
+    <p class="text-muted mb-4">Payments are now processed internally via your e-wallet. No external redirect is needed.</p>
+    <a href="employer-payments.html" class="btn btn-primary w-100 mb-2">Go to Payments</a>
+    <a href="wallet.html" class="btn btn-outline-secondary w-100">View Wallet</a>
   </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabaseClient.js"></script>
-  <script>
-  (async () => {
-    const params = new URLSearchParams(location.search);
-    const status  = params.get('status');
-    const tx_ref  = params.get('tx_ref');
-    const card    = document.getElementById('statusCard');
-
-    // Flutterwave redirects with ?status=successful&tx_ref=...&transaction_id=...
-    if (status === 'successful' && tx_ref) {
-      card.innerHTML = `
-        <div class="icon-circle bg-success text-white"><i class="fas fa-check"></i></div>
-        <h4 class="fw-bold text-success mb-2">Payment Successful!</h4>
-        <p class="text-muted mb-1">Reference: <strong>${tx_ref}</strong></p>
-        <p class="text-muted small mb-4">Your wallet will be updated shortly via webhook confirmation.</p>
-        <a href="wallet.html" class="btn btn-success w-100 mb-2">View Wallet</a>
-        <a href="employer-payments.html" class="btn btn-outline-secondary w-100">View Payments</a>`;
-    } else if (status === 'cancelled') {
-      card.innerHTML = `
-        <div class="icon-circle bg-warning text-white"><i class="fas fa-times"></i></div>
-        <h4 class="fw-bold text-warning mb-2">Payment Cancelled</h4>
-        <p class="text-muted mb-4">You cancelled the payment. No funds were charged.</p>
-        <a href="wallet.html" class="btn btn-primary w-100">Back to Wallet</a>`;
-    } else {
-      card.innerHTML = `
-        <div class="icon-circle bg-danger text-white"><i class="fas fa-exclamation-triangle"></i></div>
-        <h4 class="fw-bold text-danger mb-2">Payment Failed</h4>
-        <p class="text-muted mb-4">Something went wrong. Please try again.</p>
-        <a href="wallet.html" class="btn btn-primary w-100">Try Again</a>`;
-    }
-  })();
-  </script>
 </body>
 </html>

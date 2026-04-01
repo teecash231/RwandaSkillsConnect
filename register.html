@@ -54,6 +54,11 @@
     .alert{border-radius:var(--radius);border:none;padding:10px 14px;margin-bottom:16px;font-size:13px;display:flex;align-items:center;gap:8px;}
     .alert-danger{background:#FFF5F5;color:var(--accent);border-left:3px solid var(--accent);}
     .alert-success{background:#F0FFF4;color:#155724;border-left:3px solid var(--secondary);}
+    .social-btn{flex:1;padding:8px;border:1px solid var(--border);border-radius:var(--radius);background:#fff;color:var(--dark);font-size:12px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .2s ease;cursor:pointer;height:36px;}
+    .social-btn:hover{border-color:var(--primary);background:var(--primary-light);}
+    .divider{display:flex;align-items:center;margin:10px 0;color:var(--gray);font-size:12px;}
+    .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
+    .divider span{padding:0 10px;}
     @media(max-width:768px){.form-columns{grid-template-columns:1fr;}.role-options{grid-template-columns:1fr;}.btn-register{width:100%;}}
     @keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
   </style>
@@ -71,6 +76,12 @@
       <h2 style="font-size:1.3rem;">Create Account</h2>
       <p style="color:var(--gray);font-size:13px;">Join Rwanda's leading talent network</p>
     </div>
+
+    <div class="d-flex gap-2 mb-3">
+      <button type="button" class="social-btn" id="googleBtn"><i class="fab fa-google"></i> Continue with Google</button>
+      <button type="button" class="social-btn" id="linkedinBtn"><i class="fab fa-linkedin-in"></i> Continue with LinkedIn</button>
+    </div>
+    <div class="divider"><span>or register with email</span></div>
 
     <div id="msg" style="display:none;"></div>
 
@@ -172,6 +183,16 @@
   <script src="js/supabaseClient.js"></script>
   <script src="js/auth.js"></script>
   <script>
+    // OAuth buttons
+    document.getElementById('googleBtn').addEventListener('click', async () => {
+      const { error } = await Auth.signInWithGoogle();
+      if (error) showMsg(error, 'danger');
+    });
+    document.getElementById('linkedinBtn').addEventListener('click', async () => {
+      const { error } = await Auth.signInWithLinkedIn();
+      if (error) showMsg(error, 'danger');
+    });
+
     // Role selection
     document.querySelectorAll('.role-option').forEach(opt => {
       opt.addEventListener('click', function() {

@@ -115,9 +115,29 @@ const Auth = (() => {
         return { success: true, user: data.user };
     }
 
+    // ── OAuth: Google ─────────────────────────────────────────
+    async function signInWithGoogle() {
+        const { error } = await sb().auth.signInWithOAuth({
+            provider: 'google',
+            options: { redirectTo: `${location.origin}/auth-callback.html` }
+        });
+        if (error) return { success: false, error: error.message };
+        return { success: true };
+    }
+
+    // ── OAuth: LinkedIn ───────────────────────────────────────
+    async function signInWithLinkedIn() {
+        const { error } = await sb().auth.signInWithOAuth({
+            provider: 'linkedin_oidc',
+            options: { redirectTo: `${location.origin}/auth-callback.html` }
+        });
+        if (error) return { success: false, error: error.message };
+        return { success: true };
+    }
+
     return { signUp, login, logout, getSession, getProfile, requireAuth,
              redirectIfLoggedIn, redirectToDashboard, forgotPassword,
-             resetPassword, verifyOtp, DASHBOARDS };
+             resetPassword, verifyOtp, signInWithGoogle, signInWithLinkedIn, DASHBOARDS };
 })();
 
 window.Auth = Auth;

@@ -69,9 +69,25 @@
         </p>
     </div>
 
+    <script src="js/supabaseClient.js"></script>
     <script>
-        function selectRole(role) {
-            window.location.href = `signup.html?role=${role}`;
+        const DASHBOARDS = { worker: 'freelancer-dashboard.html', employer: 'employer-dashboard.html', admin: 'admin-dashboard.html' };
+
+        async function selectRole(role) {
+            // Check if this is an OAuth user with an active session
+            const { data: { session } } = await window.supabaseClient.auth.getSession();
+
+            if (session) {
+                // OAuth user — save role to their profile then redirect
+                await window.supabaseClient
+                    .from('profiles')
+                    .update({ role })
+                    .eq('id', session.user.id);
+                window.location.href = DASHBOARDS[role] || 'freelancer-dashboard.html';
+            } else {
+                // Regular signup flow — pass role to signup page
+                window.location.href = `signup.html?role=${role}`;
+            }
         }
     </script>
 </body>
