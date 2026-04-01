@@ -329,15 +329,19 @@ img, video, iframe, embed, object {
   .d-grid .btn { min-height: var(--rsc-touch-target); }
 }
 
-/* ── 13. MOBILE BOTTOM NAVIGATION (static — in normal flow) ─ */
+/* ── 13. MOBILE BOTTOM NAVIGATION (fixed — always visible) ── */
 .mobile-bottom-nav {
-  display: none;                  /* hidden on desktop */
-  width: 100%;
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
   height: var(--rsc-bottom-nav-height);
   background: #fff;
   border-top: 1px solid var(--rsc-border);
   box-shadow: 0 -2px 12px rgba(0,0,0,.07);
-  /* NO position:fixed — sits at the bottom of the page flow */
+  z-index: 300;
+  overflow-x: hidden;
 }
 
 .mobile-bottom-nav .nav-items {
@@ -365,7 +369,7 @@ img, video, iframe, embed, object {
   transition: color .2s, background .2s;
   position: relative;
   border-radius: 0;
-  min-width: 0;   /* prevent flex children from overflowing */
+  min-width: 0;
 }
 .mobile-bottom-nav .nav-item-btn i {
   font-size: 1.1rem;
@@ -396,8 +400,8 @@ img, video, iframe, embed, object {
 
 @media (max-width: 768px) {
   .mobile-bottom-nav { display: flex; }
-  /* No extra padding-bottom needed — nav is in the flow */
-  body { padding-bottom: 0; }
+  /* Push all page content up so the fixed nav never covers it */
+  body { padding-bottom: var(--rsc-bottom-nav-height) !important; }
 }
 
 /* ── 14. MESSAGES / CHAT PAGE ─────────────────────────────── */
