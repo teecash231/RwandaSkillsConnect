@@ -79,15 +79,16 @@ img, video, iframe, embed, object {
   max-width: 100%;
 }
 
-/* Overlay for mobile sidebar */
+/* Overlay for mobile sidebar — sits BEHIND the sidebar */
 .sidebar-overlay {
   display: none;
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,.45);
-  z-index: 999;
+  z-index: 1000;          /* below sidebar (1100) */
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
+  pointer-events: auto;
 }
 .sidebar-overlay.show { display: block; }
 
@@ -118,8 +119,9 @@ img, video, iframe, embed, object {
     top: 0;
     left: 0;
     height: 100vh;
-    z-index: 1000;
+    z-index: 1100;          /* above overlay (1000) so clicks reach menu items */
     width: var(--rsc-sidebar-width) !important;
+    pointer-events: auto;   /* always receive clicks */
   }
   .sidebar.show { transform: translateX(0); }
 
