@@ -13,13 +13,13 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) return json({ error: 'Unauthorized' }, 401);
 
-    const supabase = createClient(
+    const adminClient = createClient(
       Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
-      { global: { headers: { Authorization: authHeader } } }
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    const { data: { user }, error: authErr } = await supabase.auth.getUser();
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authErr } = await adminClient.auth.getUser(token);
     if (authErr || !user) return json({ error: 'Unauthorized' }, 401);
 
     // ── Parse & validate body ─────────────────────────────────
@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
     if (payment_type === 'escrow' && !worker_id) return json({ error: 'worker_id required for escrow' }, 400);
 
     // ── Fetch caller profile ──────────────────────────────────
-    const { data: profile } = await supabase
+    const { data: profile } = await adminClient
       .from('profiles')
       .select('full_name, phone, role')
       .eq('id', user.id)
@@ -45,11 +45,6 @@ Deno.serve(async (req) => {
     const tx_ref = `RSC-${Date.now()}-${crypto.randomUUID().split('-')[0].toUpperCase()}`;
 
     // ── Store payment intent (service_role bypasses RLS) ──────
-    const adminClient = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    );
-
     const { error: intentErr } = await adminClient
       .from('flw_payment_intents')
       .insert({
