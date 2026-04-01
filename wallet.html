@@ -100,10 +100,21 @@
           </div>
           <div class="modal-body">
             <div id="depositAlert"></div>
-            <div class="alert alert-info small"><i class="fas fa-info-circle me-2"></i>To add funds to your wallet, please contact admin or use an internal transfer. Online top-up via Mobile Money will be available after full launch.</div>
+            <div class="mb-3">
+              <label class="form-label">Amount (RWF)</label>
+              <input type="number" class="form-control" id="depositAmount" placeholder="e.g. 5000" min="500">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Mobile Money Number</label>
+              <input type="tel" class="form-control" id="depositPhone" placeholder="e.g. 0781234567">
+            </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary" id="confirmDeposit">
+              <span class="spinner-border spinner-border-sm d-none me-1" id="depositSpinner"></span>
+              Deposit
+            </button>
           </div>
         </div>
       </div>
@@ -224,7 +235,7 @@
       document.getElementById('txList').innerHTML = rows;
     }
 
-    // Deposit handler — calls Flutterwave via Edge Function
+    // Deposit handler — internal MoMo via process_deposit RPC
     document.getElementById('confirmDeposit').addEventListener('click', async () => {
       const amount  = parseFloat(document.getElementById('depositAmount').value);
       const phone   = document.getElementById('depositPhone').value.trim();
@@ -238,21 +249,15 @@
       spinner.classList.remove('d-none');
       btn.disabled = true;
       try {
-        const { data: { session } } = await window.supabaseClient.auth.getSession();
-        const res = await fetch(`${window.SUPABASE_FUNCTIONS_URL}/initiate-payment`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`,
-          },
-          body: JSON.stringify({ amount, payment_type: 'deposit', phone }),
-        });
-        const result = await res.json();
-        if (!res.ok) throw new Error(result.error || 'Failed to initiate payment');
-        // Redirect to Flutterwave checkout
-        window.location.href = result.payment_link;
+        const newBalance = await EwalletService.deposit(user.id, wallet.id, amount, phone, wallet.available_balance);
+        alertEl.innerHTML = `<div class="alert alert-success"><i class="fas fa-check-circle me-2"></i>Deposit successful! New balance: RWF ${Number(newBalance).toLocaleString()}</div>`;
+        document.getElementById('balanceDisplay').textContent = `RWF ${Number(newBalance).toLocaleString()}`;
+        wallet.available_balance = newBalance;
+        document.getElementById('depositAmount').value = '';
+        document.getElementById('depositPhone').value = '';
       } catch (e) {
         alertEl.innerHTML = `<div class="alert alert-danger">${e.message}</div>`;
+      } finally {
         spinner.classList.add('d-none');
         btn.disabled = false;
       }
