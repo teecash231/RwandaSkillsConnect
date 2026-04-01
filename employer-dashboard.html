@@ -345,7 +345,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Sidebar
   const sidebar = document.getElementById('sidebar');
-  document.getElementById('sidebarCollapse').addEventListener('click', () => sidebar.classList.toggle('collapsed'));
+  document.getElementById('sidebarCollapse').addEventListener('click', () => {
+    // Handled by mobile-nav.js
+  });
   document.getElementById('mobileToggle').addEventListener('click', () => {
     sidebar.classList.toggle('show');
     document.getElementById('sidebarOverlay').classList.toggle('show');

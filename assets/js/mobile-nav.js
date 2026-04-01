@@ -1,12 +1,10 @@
 /**
  * Rwanda SkillsConnect — Mobile Navigation & UX Utilities
- * Injects bottom nav, handles sidebar toggle, chat mobile UX
- * No business logic — pure UI enhancement
  */
 (function () {
   'use strict';
 
-  /* ── Config ─────────────────────────────────────────────── */
+  /* ── Bottom nav config ───────────────────────────────────── */
   const NAV_CONFIGS = {
     worker: [
       { href: 'freelancer-dashboard.html', icon: 'fa-tachometer-alt', label: 'Home' },
@@ -24,69 +22,60 @@
     ],
     admin: [
       { href: 'admin-dashboard.html',      icon: 'fa-tachometer-alt', label: 'Dashboard' },
-      { href: 'admin-dashboard.html',      icon: 'fa-users',          label: 'Users',    section: 'users-all' },
-      { href: 'admin-dashboard.html',      icon: 'fa-briefcase',      label: 'Jobs',     section: 'jobs' },
-      { href: 'admin-dashboard.html',      icon: 'fa-exchange-alt',   label: 'Finance',  section: 'transactions' },
-      { href: 'admin-dashboard.html',      icon: 'fa-chart-bar',      label: 'Analytics',section: 'analytics' },
+      { href: 'admin-dashboard.html',      icon: 'fa-users',          label: 'Users',     section: 'users-all' },
+      { href: 'admin-dashboard.html',      icon: 'fa-briefcase',      label: 'Jobs',      section: 'jobs' },
+      { href: 'admin-dashboard.html',      icon: 'fa-exchange-alt',   label: 'Finance',   section: 'transactions' },
+      { href: 'admin-dashboard.html',      icon: 'fa-chart-bar',      label: 'Analytics', section: 'analytics' },
     ],
   };
 
-  /* ── Detect current page role ───────────────────────────── */
+  /* ── Helpers ─────────────────────────────────────────────── */
   function detectRole() {
-    const path = window.location.pathname;
-    const page = path.split('/').pop() || '';
+    const page = window.location.pathname.split('/').pop() || '';
     if (page.startsWith('admin')) return 'admin';
     if (page.startsWith('employer') || page === 'post-job.html' ||
         page === 'find-workers.html' || page === 'job-applications.html') return 'employer';
     return 'worker';
   }
 
-  /* ── Detect active nav item ─────────────────────────────── */
   function isActive(href) {
     const current = window.location.pathname.split('/').pop() || 'index.html';
     return href === current || href.split('?')[0] === current;
   }
 
-  /* ── Build bottom nav HTML ──────────────────────────────── */
+  /* ── Bottom nav ──────────────────────────────────────────── */
   function buildBottomNav(role) {
     const items = NAV_CONFIGS[role] || NAV_CONFIGS.worker;
-    const itemsHtml = items.map(item => {
-      const active = isActive(item.href) ? 'active' : '';
-      const sectionAttr = item.section ? `data-section="${item.section}"` : '';
-      return `
-        <a href="${item.href}" class="nav-item-btn ${active}" ${sectionAttr} aria-label="${item.label}">
-          <i class="fas ${item.icon}"></i>
-          <span>${item.label}</span>
-          ${item.badge ? `<span class="nav-badge" id="bottomNav_${item.badge}" style="display:none;"></span>` : ''}
-        </a>`;
+    const html = items.map(item => {
+      const active      = isActive(item.href) ? 'active' : '';
+      const sectionAttr = item.section ? 'data-section="' + item.section + '"' : '';
+      const badge       = item.badge
+        ? '<span class="nav-badge" id="bottomNav_' + item.badge + '" style="display:none;"></span>'
+        : '';
+      return '<a href="' + item.href + '" class="nav-item-btn ' + active + '" ' + sectionAttr + ' aria-label="' + item.label + '">'
+           + '<i class="fas ' + item.icon + '"></i>'
+           + '<span>' + item.label + '</span>'
+           + badge
+           + '</a>';
     }).join('');
-
-    return `
-      <nav class="mobile-bottom-nav" id="mobileBottomNav" role="navigation" aria-label="Mobile navigation">
-        <div class="nav-items">${itemsHtml}</div>
-      </nav>`;
+    return '<nav class="mobile-bottom-nav" id="mobileBottomNav" role="navigation" aria-label="Mobile navigation">'
+         + '<div class="nav-items">' + html + '</div></nav>';
   }
 
-  /* ── Inject bottom nav ──────────────────────────────────── */
   function injectBottomNav() {
     if (document.getElementById('mobileBottomNav')) return;
-    // Don't inject on login/register/landing pages
     const page = window.location.pathname.split('/').pop() || '';
-    const excluded = ['index.html', 'login.html', 'register.html', 'signup.html',
-                      'forgot-password.html', 'reset-password.html', 'otp-verify.html',
-                      'otp-verification.html', 'role-selection.html', 'email-confirmation.html',
-                      'auth-callback.html', ''];
+    const excluded = ['index.html','login.html','register.html','signup.html',
+                      'forgot-password.html','reset-password.html','otp-verify.html',
+                      'otp-verification.html','role-selection.html','email-confirmation.html',
+                      'auth-callback.html',''];
     if (excluded.includes(page)) return;
 
-    const role = detectRole();
-    // Insert BEFORE </body> so it sits at the bottom of the page flow (static, not fixed)
-    document.body.insertAdjacentHTML('beforeend', buildBottomNav(role));
-    // No padding-bottom needed — nav is in normal document flow
+    document.body.insertAdjacentHTML('beforeend', buildBottomNav(detectRole()));
 
-    // Wire admin section shortcuts
-    document.querySelectorAll('#mobileBottomNav [data-section]').forEach(btn => {
-      btn.addEventListener('click', e => {
-        const section = btn.dataset.section;
+    document.querySelectorAll('#mobileBottomNav [data-section]').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        var section = btn.dataset.section;
         if (section && typeof window.showSection === 'function') {
           e.preventDefault();
           window.showSection(section);
@@ -95,153 +84,169 @@
     });
   }
 
-  /* ── Sync notification badge to bottom nav ──────────────── */
+  /* ── Notification badge sync ─────────────────────────────── */
   function syncNotifBadge() {
-    // Watch for changes to the existing nav badge and mirror to bottom nav
-    const sourceIds = ['notifBadgeNav', 'notifBadgeSidebar'];
-    sourceIds.forEach(id => {
-      const source = document.getElementById(id);
+    ['notifBadgeNav', 'notifBadgeSidebar'].forEach(function(id) {
+      var source = document.getElementById(id);
       if (!source) return;
-      const observer = new MutationObserver(() => {
-        const bottomBadge = document.getElementById('bottomNav_msgBadge');
+      new MutationObserver(function() {
+        var bottomBadge = document.getElementById('bottomNav_msgBadge');
         if (bottomBadge) {
           bottomBadge.textContent = source.textContent;
           bottomBadge.style.display = source.style.display;
         }
-      });
-      observer.observe(source, { childList: true, characterData: true, subtree: true, attributes: true });
+      }).observe(source, { childList: true, characterData: true, subtree: true, attributes: true });
     });
   }
 
-  /* ── Sidebar toggle wiring ──────────────────────────────── */
+  /* ── Sidebar collapse/expand (chevron button) ────────────── */
   function wireSidebarToggle() {
-    const sidebar  = document.getElementById('sidebar');
-    const overlay  = document.getElementById('sidebarOverlay');
-    const toggle   = document.getElementById('mobileToggle');
-    const collapse = document.getElementById('sidebarCollapse');
+    var sidebar  = document.getElementById('sidebar');
+    var overlay  = document.getElementById('sidebarOverlay');
+    var toggle   = document.getElementById('mobileToggle');   // hamburger
+    var collapse = document.getElementById('sidebarCollapse'); // chevron
 
     if (!sidebar) return;
 
+    /* helpers */
+    function updateCollapseIcon() {
+      if (!collapse) return;
+      var icon = collapse.querySelector('i');
+      if (!icon) return;
+      if (window.innerWidth <= 992) {
+        // on mobile the chevron is a close (X) button — show left arrow
+        icon.className = 'fas fa-chevron-left';
+      } else {
+        // on desktop show direction matching sidebar state
+        icon.className = sidebar.classList.contains('collapsed')
+          ? 'fas fa-chevron-right'
+          : 'fas fa-chevron-left';
+      }
+    }
+
+    function updateMainMargin() {
+      if (window.innerWidth <= 992) return;
+      var main = document.querySelector('.main-content');
+      if (main) main.style.marginLeft = sidebar.classList.contains('collapsed') ? '72px' : '';
+    }
+
     function openSidebar() {
       sidebar.classList.add('show');
+      sidebar.classList.remove('collapsed');
       if (overlay) overlay.classList.add('show');
       document.body.style.overflow = 'hidden';
+      updateCollapseIcon();
     }
+
     function closeSidebar() {
       sidebar.classList.remove('show');
       if (overlay) overlay.classList.remove('show');
       document.body.style.overflow = '';
+      updateCollapseIcon();
     }
 
-    if (toggle) toggle.addEventListener('click', openSidebar);
-    if (overlay) overlay.addEventListener('click', closeSidebar);
+    /* hamburger — open on mobile */
+    if (toggle) {
+      toggle.addEventListener('click', function(e) {
+        e.stopPropagation();
+        openSidebar();
+      });
+    }
 
-    // Collapse toggle (desktop)
+    /* overlay backdrop — close */
+    if (overlay) {
+      overlay.addEventListener('click', closeSidebar);
+    }
+
+    /* chevron button */
     if (collapse) {
-      collapse.addEventListener('click', () => {
-        sidebar.classList.toggle('collapsed');
-        const icon = collapse.querySelector('i');
-        if (icon) {
-          icon.className = sidebar.classList.contains('collapsed')
-            ? 'fas fa-chevron-right'
-            : 'fas fa-chevron-left';
-        }
-        // Adjust main content margin
-        const main = document.querySelector('.main-content');
-        if (main && window.innerWidth > 992) {
-          main.style.marginLeft = sidebar.classList.contains('collapsed') ? '72px' : '';
+      // Remove any previously attached listeners by cloning the node
+      var freshCollapse = collapse.cloneNode(true);
+      collapse.parentNode.replaceChild(freshCollapse, collapse);
+      collapse = freshCollapse;
+
+      collapse.addEventListener('click', function(e) {
+        e.stopPropagation();
+
+        if (window.innerWidth <= 992) {
+          /* mobile: chevron = close sidebar */
+          closeSidebar();
+        } else {
+          /* desktop: chevron = collapse / expand */
+          sidebar.classList.toggle('collapsed');
+          updateCollapseIcon();
+          updateMainMargin();
         }
       });
     }
 
-    // Close sidebar when a menu item is clicked on mobile
-    sidebar.querySelectorAll('.menu-item, .sidebar-item').forEach(item => {
-      item.addEventListener('click', () => {
+    /* close when a menu link is tapped on mobile */
+    sidebar.querySelectorAll('.menu-item, .sidebar-item').forEach(function(item) {
+      item.addEventListener('click', function() {
         if (window.innerWidth <= 992) closeSidebar();
       });
     });
+
+    /* set correct icon on load */
+    updateCollapseIcon();
+    updateMainMargin();
   }
 
-  /* ── Chat mobile panel toggle ───────────────────────────── */
+  /* ── Chat mobile panel ───────────────────────────────────── */
   function wireChatMobile() {
-    const convList = document.getElementById('convList');
-    const chatPanel = document.getElementById('chatPanel');
-    const convAside = document.querySelector('.chat-layout > aside');
+    var convList  = document.getElementById('convList');
+    var chatPanel = document.getElementById('chatPanel');
+    var convAside = document.querySelector('.chat-layout > aside');
     if (!convList || !chatPanel || !convAside) return;
 
-    // Inject back button into chat header
-    const chatHeader = chatPanel.querySelector('.bg-white.border-b');
+    var chatHeader = chatPanel.querySelector('.bg-white.border-b');
     if (chatHeader && !chatHeader.querySelector('.chat-back-btn')) {
-      const backBtn = document.createElement('button');
+      var backBtn = document.createElement('button');
       backBtn.className = 'chat-back-btn';
       backBtn.innerHTML = '<i class="fas fa-arrow-left"></i>';
       backBtn.setAttribute('aria-label', 'Back to conversations');
-      backBtn.addEventListener('click', () => {
+      backBtn.addEventListener('click', function() {
         convAside.classList.remove('chat-hidden');
         chatPanel.classList.add('hidden');
       });
       chatHeader.insertBefore(backBtn, chatHeader.firstChild);
     }
 
-    // When a conversation is opened on mobile, hide the list
-    const origOpenConv = window.openConversation;
+    var origOpenConv = window.openConversation;
     if (typeof origOpenConv === 'function') {
-      window.openConversation = function (convId) {
+      window.openConversation = function(convId) {
         origOpenConv(convId);
-        if (window.innerWidth <= 768) {
-          convAside.classList.add('chat-hidden');
-        }
+        if (window.innerWidth <= 768) convAside.classList.add('chat-hidden');
       };
     }
   }
 
-  /* ── Wallet sidebar toggle ──────────────────────────────── */
-  function wireWalletSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    if (!sidebar || !sidebar.classList.contains('sidebar')) return;
-    // Wallet page uses nav.sidebar — handled by wireSidebarToggle
-    // Add mobile toggle button if missing
-    const mainContent = document.querySelector('.main-content');
-    if (!mainContent) return;
-    if (!document.getElementById('mobileToggle')) {
-      const btn = document.createElement('button');
-      btn.id = 'mobileToggle';
-      btn.className = 'mobile-toggle';
-      btn.innerHTML = '<i class="fas fa-bars"></i>';
-      btn.setAttribute('aria-label', 'Open menu');
-      const header = mainContent.querySelector('.d-flex.justify-content-between');
-      if (header) header.prepend(btn);
-    }
-  }
-
-  /* ── Responsive table labels ────────────────────────────── */
+  /* ── Responsive table labels ─────────────────────────────── */
   function addTableLabels() {
-    document.querySelectorAll('.table-responsive table').forEach(table => {
-      const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent.trim());
-      table.querySelectorAll('tbody tr').forEach(row => {
-        Array.from(row.querySelectorAll('td')).forEach((td, i) => {
-          if (headers[i] && !td.dataset.label) {
-            td.dataset.label = headers[i];
-          }
+    document.querySelectorAll('.table-responsive table').forEach(function(table) {
+      var headers = Array.from(table.querySelectorAll('thead th')).map(function(th) {
+        return th.textContent.trim();
+      });
+      table.querySelectorAll('tbody tr').forEach(function(row) {
+        Array.from(row.querySelectorAll('td')).forEach(function(td, i) {
+          if (headers[i] && !td.dataset.label) td.dataset.label = headers[i];
         });
       });
     });
   }
 
-  /* ── Observe DOM for dynamic table rows ─────────────────── */
   function observeTables() {
-    const observer = new MutationObserver(() => addTableLabels());
-    document.querySelectorAll('tbody').forEach(tbody => {
+    var observer = new MutationObserver(addTableLabels);
+    document.querySelectorAll('tbody').forEach(function(tbody) {
       observer.observe(tbody, { childList: true });
     });
   }
 
-  /* ── Init ───────────────────────────────────────────────── */
+  /* ── Init ────────────────────────────────────────────────── */
   function init() {
     injectBottomNav();
     wireSidebarToggle();
     wireChatMobile();
-    wireWalletSidebar();
     addTableLabels();
     observeTables();
     syncNotifBadge();
@@ -253,17 +258,28 @@
     init();
   }
 
-  // Re-run on resize (e.g., orientation change)
-  let resizeTimer;
-  window.addEventListener('resize', () => {
+  /* re-evaluate icon/margin on orientation change */
+  var resizeTimer;
+  window.addEventListener('resize', function() {
     clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => {
-      const sidebar = document.getElementById('sidebar');
-      if (sidebar && window.innerWidth > 992) {
+    resizeTimer = setTimeout(function() {
+      var sidebar = document.getElementById('sidebar');
+      if (!sidebar) return;
+      if (window.innerWidth > 992) {
         sidebar.classList.remove('show');
-        const overlay = document.getElementById('sidebarOverlay');
+        var overlay = document.getElementById('sidebarOverlay');
         if (overlay) overlay.classList.remove('show');
         document.body.style.overflow = '';
+      }
+      /* re-sync icon */
+      var collapse = document.getElementById('sidebarCollapse');
+      if (collapse) {
+        var icon = collapse.querySelector('i');
+        if (icon) {
+          icon.className = (window.innerWidth <= 992 || !sidebar.classList.contains('collapsed'))
+            ? 'fas fa-chevron-left'
+            : 'fas fa-chevron-right';
+        }
       }
     }, 150);
   });
