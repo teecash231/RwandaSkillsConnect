@@ -79,8 +79,9 @@
     if (excluded.includes(page)) return;
 
     const role = detectRole();
+    // Insert BEFORE </body> so it sits at the bottom of the page flow (static, not fixed)
     document.body.insertAdjacentHTML('beforeend', buildBottomNav(role));
-    document.body.classList.add('has-bottom-nav');
+    // No padding-bottom needed — nav is in normal document flow
 
     // Wire admin section shortcuts
     document.querySelectorAll('#mobileBottomNav [data-section]').forEach(btn => {

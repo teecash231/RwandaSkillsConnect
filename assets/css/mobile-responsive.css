@@ -26,14 +26,26 @@
 /* ── 2. BASE RESETS ───────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; }
 
-html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  overflow-x: hidden;   /* hard-stop horizontal scroll at root */
+  max-width: 100%;
+}
 
 body {
   overflow-x: hidden;
+  max-width: 100%;
   -webkit-font-smoothing: antialiased;
 }
 
-img, video { max-width: 100%; height: auto; }
+/* Every direct child of body must never exceed viewport width */
+body > * { max-width: 100%; }
+
+img, video, iframe, embed, object {
+  max-width: 100%;
+  height: auto;
+}
 
 /* ── 3. TYPOGRAPHY SCALE ──────────────────────────────────── */
 @media (max-width: 576px) {
@@ -51,6 +63,20 @@ img, video { max-width: 100%; height: auto; }
 .sidebar {
   transition: transform var(--rsc-transition), width var(--rsc-transition);
   will-change: transform;
+  overflow-x: hidden;   /* sidebar itself must not cause h-scroll */
+}
+
+/* Dashboard wrapper must not overflow */
+.dashboard-wrapper {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+/* Main content area */
+.main-content {
+  overflow-x: hidden;
+  min-width: 0;   /* flex child shrink fix */
+  max-width: 100%;
 }
 
 /* Overlay for mobile sidebar */
@@ -143,6 +169,8 @@ img, video { max-width: 100%; height: auto; }
 .content-area {
   padding: 24px;
   min-height: calc(100vh - var(--rsc-topnav-height));
+  overflow-x: hidden;   /* catch any inner overflow */
+  max-width: 100%;
 }
 
 @media (max-width: 768px) {
@@ -150,8 +178,6 @@ img, video { max-width: 100%; height: auto; }
 }
 @media (max-width: 576px) {
   .content-area { padding: 12px; }
-  /* Add bottom padding when bottom nav is present */
-  .has-bottom-nav .content-area { padding-bottom: calc(var(--rsc-bottom-nav-height) + 16px); }
 }
 
 /* ── 7. WELCOME BANNER ────────────────────────────────────── */
@@ -221,12 +247,17 @@ img, video { max-width: 100%; height: auto; }
 }
 
 /* ── 10. TABLES → CARD CONVERSION ON MOBILE ──────────────── */
+
+/* Tables scroll horizontally inside their own container only */
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+}
+
 @media (max-width: 768px) {
-  /* Wrap tables in a scrollable container */
   .table-responsive {
     border-radius: var(--rsc-radius-sm);
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
   }
 
   /* Applications table in worker dashboard */
@@ -298,24 +329,22 @@ img, video { max-width: 100%; height: auto; }
   .d-grid .btn { min-height: var(--rsc-touch-target); }
 }
 
-/* ── 13. MOBILE BOTTOM NAVIGATION ────────────────────────── */
+/* ── 13. MOBILE BOTTOM NAVIGATION (static — in normal flow) ─ */
 .mobile-bottom-nav {
-  display: none;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  display: none;                  /* hidden on desktop */
+  width: 100%;
   height: var(--rsc-bottom-nav-height);
   background: #fff;
   border-top: 1px solid var(--rsc-border);
-  z-index: 200;
-  box-shadow: 0 -4px 16px rgba(0,0,0,.08);
+  box-shadow: 0 -2px 12px rgba(0,0,0,.07);
+  /* NO position:fixed — sits at the bottom of the page flow */
 }
 
 .mobile-bottom-nav .nav-items {
   display: flex;
   height: 100%;
   align-items: stretch;
+  width: 100%;
 }
 
 .mobile-bottom-nav .nav-item-btn {
@@ -336,17 +365,14 @@ img, video { max-width: 100%; height: auto; }
   transition: color .2s, background .2s;
   position: relative;
   border-radius: 0;
+  min-width: 0;   /* prevent flex children from overflowing */
 }
 .mobile-bottom-nav .nav-item-btn i {
   font-size: 1.1rem;
   transition: transform .2s;
 }
-.mobile-bottom-nav .nav-item-btn.active {
-  color: var(--rsc-primary);
-}
-.mobile-bottom-nav .nav-item-btn.active i {
-  transform: translateY(-2px);
-}
+.mobile-bottom-nav .nav-item-btn.active { color: var(--rsc-primary); }
+.mobile-bottom-nav .nav-item-btn.active i { transform: translateY(-2px); }
 .mobile-bottom-nav .nav-item-btn:hover {
   color: var(--rsc-primary);
   background: var(--rsc-primary-light);
@@ -370,7 +396,8 @@ img, video { max-width: 100%; height: auto; }
 
 @media (max-width: 768px) {
   .mobile-bottom-nav { display: flex; }
-  body { padding-bottom: var(--rsc-bottom-nav-height); }
+  /* No extra padding-bottom needed — nav is in the flow */
+  body { padding-bottom: 0; }
 }
 
 /* ── 14. MESSAGES / CHAT PAGE ─────────────────────────────── */
