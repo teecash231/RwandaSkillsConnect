@@ -7,6 +7,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/mobile-responsive.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     body { font-family: 'Inter', sans-serif; background: #f5f7fa; }
@@ -44,13 +45,17 @@
     <a href="#" class="menu-item" id="logoutBtn"><i class="fas fa-sign-out-alt"></i>Logout</a>
   </div>
 </aside>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
 
 <main class="main-content">
   <header class="bg-white border-bottom px-4 py-3 sticky-top">
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-      <div>
-        <h5 class="mb-0 fw-bold">Notifications</h5>
-        <small class="text-muted" id="unreadLabel">Loading…</small>
+      <div class="d-flex align-items-center gap-3">
+        <button class="mobile-toggle" id="mobileToggle" aria-label="Open menu"><i class="fas fa-bars"></i></button>
+        <div>
+          <h5 class="mb-0 fw-bold">Notifications</h5>
+          <small class="text-muted" id="unreadLabel">Loading…</small>
+        </div>
       </div>
       <button class="btn btn-sm btn-outline-secondary" id="markAllBtn" style="display:none;">
         <i class="fas fa-check-double me-1"></i>Mark all as read
@@ -77,6 +82,7 @@
 
 <script src="js/supabaseClient.js"></script>
 <script src="js/notifications.js"></script>
+<script src="assets/js/mobile-nav.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 let _userId = null;

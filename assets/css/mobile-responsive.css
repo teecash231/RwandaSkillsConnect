@@ -1,0 +1,701 @@
+/* ============================================================
+   Rwanda SkillsConnect — Mobile Responsive System
+   Covers: all pages, all roles, all components
+   Strategy: mobile-first, progressive enhancement
+   ============================================================ */
+
+/* ── 1. CSS CUSTOM PROPERTIES ─────────────────────────────── */
+:root {
+  --rsc-primary: #0056B3;
+  --rsc-primary-light: #E8F2FF;
+  --rsc-secondary: #00C896;
+  --rsc-dark: #1A1F36;
+  --rsc-gray: #64748B;
+  --rsc-border: #E2E8F0;
+  --rsc-radius: 12px;
+  --rsc-radius-sm: 8px;
+  --rsc-shadow: 0 4px 20px rgba(0,0,0,.08);
+  --rsc-shadow-sm: 0 2px 8px rgba(0,0,0,.06);
+  --rsc-sidebar-width: 280px;
+  --rsc-topnav-height: 64px;
+  --rsc-bottom-nav-height: 64px;
+  --rsc-transition: .25s ease;
+  --rsc-touch-target: 44px;
+}
+
+/* ── 2. BASE RESETS ───────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+
+body {
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+img, video { max-width: 100%; height: auto; }
+
+/* ── 3. TYPOGRAPHY SCALE ──────────────────────────────────── */
+@media (max-width: 576px) {
+  h1, .h1 { font-size: 1.6rem !important; }
+  h2, .h2 { font-size: 1.35rem !important; }
+  h3, .h3 { font-size: 1.15rem !important; }
+  h4, .h4 { font-size: 1rem !important; }
+  h5, .h5 { font-size: .9375rem !important; }
+  h6, .h6 { font-size: .875rem !important; }
+  .page-title { font-size: 1.1rem !important; }
+  .page-subtitle { font-size: .75rem !important; }
+}
+
+/* ── 4. SIDEBAR — SHARED ACROSS ALL DASHBOARDS ───────────── */
+.sidebar {
+  transition: transform var(--rsc-transition), width var(--rsc-transition);
+  will-change: transform;
+}
+
+/* Overlay for mobile sidebar */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  z-index: 999;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+.sidebar-overlay.show { display: block; }
+
+/* Mobile toggle button — always visible on small screens */
+.mobile-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--rsc-primary);
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: var(--rsc-radius-sm);
+  min-width: var(--rsc-touch-target);
+  min-height: var(--rsc-touch-target);
+  align-items: center;
+  justify-content: center;
+  transition: background var(--rsc-transition);
+}
+.mobile-toggle:hover { background: var(--rsc-primary-light); }
+
+@media (max-width: 992px) {
+  .mobile-toggle { display: flex; }
+
+  .sidebar {
+    transform: translateX(-100%);
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 1000;
+    width: var(--rsc-sidebar-width) !important;
+  }
+  .sidebar.show { transform: translateX(0); }
+
+  .main-content {
+    margin-left: 0 !important;
+  }
+
+  /* Wallet page sidebar */
+  nav.sidebar {
+    transform: translateX(-100%);
+  }
+  nav.sidebar.show { transform: translateX(0); }
+}
+
+/* Collapsed sidebar (desktop) */
+@media (min-width: 993px) {
+  .sidebar.collapsed { width: 72px !important; }
+  .sidebar.collapsed .logo-text,
+  .sidebar.collapsed .menu-text,
+  .sidebar.collapsed .section-title,
+  .sidebar.collapsed .brand-tagline,
+  .sidebar.collapsed .user-details { display: none !important; }
+  .sidebar.collapsed .menu-item { justify-content: center; padding: 12px; }
+  .sidebar.collapsed .menu-item i { margin: 0; width: auto; }
+  .sidebar.collapsed .sidebar-item { justify-content: center; padding: 10px; }
+  .sidebar.collapsed .sidebar-item span { display: none; }
+  .main-content { transition: margin-left var(--rsc-transition); }
+}
+
+/* ── 5. TOP NAVIGATION ────────────────────────────────────── */
+.top-nav {
+  height: var(--rsc-topnav-height);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+@media (max-width: 576px) {
+  .top-nav { padding: 0 12px !important; }
+  .top-nav .page-title { font-size: 1rem !important; }
+  .top-nav .page-subtitle { display: none; }
+  .nav-right { gap: 10px !important; }
+  .nav-right > div:last-child { display: none; } /* hide name text on very small screens */
+}
+
+/* ── 6. CONTENT AREA ──────────────────────────────────────── */
+.content-area {
+  padding: 24px;
+  min-height: calc(100vh - var(--rsc-topnav-height));
+}
+
+@media (max-width: 768px) {
+  .content-area { padding: 16px; }
+}
+@media (max-width: 576px) {
+  .content-area { padding: 12px; }
+  /* Add bottom padding when bottom nav is present */
+  .has-bottom-nav .content-area { padding-bottom: calc(var(--rsc-bottom-nav-height) + 16px); }
+}
+
+/* ── 7. WELCOME BANNER ────────────────────────────────────── */
+.welcome-banner {
+  border-radius: var(--rsc-radius) !important;
+}
+
+@media (max-width: 768px) {
+  .welcome-banner {
+    flex-direction: column !important;
+    text-align: center !important;
+    gap: 1rem !important;
+    padding: 20px !important;
+  }
+  .welcome-banner h2 { font-size: 1.25rem !important; }
+  .welcome-actions {
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 8px !important;
+  }
+  .welcome-actions .btn { width: 100%; }
+}
+
+/* ── 8. STAT CARDS ────────────────────────────────────────── */
+.stat-card {
+  border-radius: var(--rsc-radius) !important;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,86,179,.12) !important;
+}
+
+@media (max-width: 576px) {
+  .stat-card { padding: 1rem !important; }
+  .stat-icon { width: 48px !important; height: 48px !important; font-size: 1.2rem !important; }
+  .stat-content h3 { font-size: 1.4rem !important; }
+  .stat-content p { font-size: .85rem !important; }
+}
+
+/* Admin compact stat cards */
+.stat-card-compact {
+  border-radius: var(--rsc-radius) !important;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.stat-card-compact:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,.08) !important;
+}
+
+/* ── 9. DASHBOARD CARDS ───────────────────────────────────── */
+.card {
+  border-radius: var(--rsc-radius) !important;
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .card-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+    padding: 1rem !important;
+  }
+  .card-header .btn,
+  .card-header select { align-self: flex-start; }
+  .card-body { padding: 1rem !important; }
+}
+
+/* ── 10. TABLES → CARD CONVERSION ON MOBILE ──────────────── */
+@media (max-width: 768px) {
+  /* Wrap tables in a scrollable container */
+  .table-responsive {
+    border-radius: var(--rsc-radius-sm);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Applications table in worker dashboard */
+  #applicationsTable tr,
+  #applicantsTable tr {
+    display: block;
+    border: 1px solid var(--rsc-border);
+    border-radius: var(--rsc-radius-sm);
+    margin-bottom: 10px;
+    padding: 10px;
+    background: #fff;
+  }
+  #applicationsTable td,
+  #applicantsTable td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0 !important;
+    border: none !important;
+    font-size: .85rem;
+  }
+  #applicationsTable td::before,
+  #applicantsTable td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--rsc-gray);
+    font-size: .75rem;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    flex-shrink: 0;
+    margin-right: 8px;
+  }
+  #applicationsTable thead,
+  #applicantsTable thead { display: none; }
+}
+
+/* ── 11. FORMS ────────────────────────────────────────────── */
+.form-control, .form-select {
+  min-height: var(--rsc-touch-target);
+  border-radius: var(--rsc-radius-sm) !important;
+  font-size: .9375rem;
+  transition: border-color .2s, box-shadow .2s;
+}
+.form-control:focus, .form-select:focus {
+  border-color: var(--rsc-primary) !important;
+  box-shadow: 0 0 0 3px rgba(0,86,179,.1) !important;
+}
+
+@media (max-width: 576px) {
+  .form-control, .form-select { font-size: 16px; } /* prevent iOS zoom */
+  .input-group .form-control { font-size: 16px; }
+}
+
+/* ── 12. BUTTONS ──────────────────────────────────────────── */
+.btn {
+  border-radius: var(--rsc-radius-sm) !important;
+  font-weight: 500;
+  transition: all .2s ease;
+  min-height: var(--rsc-touch-target);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+@media (max-width: 576px) {
+  /* Full-width buttons in action areas */
+  .btn-full-mobile { width: 100% !important; }
+  .d-grid .btn { min-height: var(--rsc-touch-target); }
+}
+
+/* ── 13. MOBILE BOTTOM NAVIGATION ────────────────────────── */
+.mobile-bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--rsc-bottom-nav-height);
+  background: #fff;
+  border-top: 1px solid var(--rsc-border);
+  z-index: 200;
+  box-shadow: 0 -4px 16px rgba(0,0,0,.08);
+}
+
+.mobile-bottom-nav .nav-items {
+  display: flex;
+  height: 100%;
+  align-items: stretch;
+}
+
+.mobile-bottom-nav .nav-item-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  text-decoration: none;
+  color: var(--rsc-gray);
+  font-size: .65rem;
+  font-weight: 500;
+  padding: 6px 4px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: color .2s, background .2s;
+  position: relative;
+  border-radius: 0;
+}
+.mobile-bottom-nav .nav-item-btn i {
+  font-size: 1.1rem;
+  transition: transform .2s;
+}
+.mobile-bottom-nav .nav-item-btn.active {
+  color: var(--rsc-primary);
+}
+.mobile-bottom-nav .nav-item-btn.active i {
+  transform: translateY(-2px);
+}
+.mobile-bottom-nav .nav-item-btn:hover {
+  color: var(--rsc-primary);
+  background: var(--rsc-primary-light);
+}
+.mobile-bottom-nav .nav-badge {
+  position: absolute;
+  top: 6px;
+  right: calc(50% - 14px);
+  background: #ef4444;
+  color: #fff;
+  font-size: .6rem;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+}
+
+@media (max-width: 768px) {
+  .mobile-bottom-nav { display: flex; }
+  body { padding-bottom: var(--rsc-bottom-nav-height); }
+}
+
+/* ── 14. MESSAGES / CHAT PAGE ─────────────────────────────── */
+.chat-layout {
+  height: calc(100vh - 65px);
+  display: flex;
+  overflow: hidden;
+}
+
+/* Conversation sidebar */
+.chat-layout > aside {
+  transition: transform var(--rsc-transition);
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .chat-layout {
+    height: calc(100vh - 65px - var(--rsc-bottom-nav-height));
+    position: relative;
+  }
+
+  /* Conversation list becomes a slide-over panel */
+  .chat-layout > aside {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100% !important;
+    z-index: 10;
+    transform: translateX(0);
+    background: #fff;
+  }
+  .chat-layout > aside.chat-hidden {
+    transform: translateX(-100%);
+  }
+
+  /* Chat panel takes full width */
+  .chat-layout > main {
+    width: 100%;
+    flex: 1;
+  }
+
+  /* Back button in chat header */
+  .chat-back-btn {
+    display: flex !important;
+  }
+
+  /* Message bubbles */
+  .msg-bubble { max-width: 85% !important; }
+
+  /* Sticky input */
+  #chatMessages {
+    padding-bottom: 8px;
+  }
+}
+
+.chat-back-btn {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  color: var(--rsc-primary);
+  font-size: .9rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: var(--rsc-radius-sm);
+  margin-right: 8px;
+}
+.chat-back-btn:hover { background: var(--rsc-primary-light); }
+
+/* ── 15. WALLET PAGE ──────────────────────────────────────── */
+.balance-card {
+  border-radius: var(--rsc-radius) !important;
+}
+
+@media (max-width: 768px) {
+  /* Wallet sidebar */
+  .sidebar ~ .main-content,
+  nav.sidebar ~ div.main-content {
+    margin-left: 0 !important;
+  }
+
+  .balance-card .row { flex-direction: column; }
+  .balance-card .col-md-6:last-child {
+    text-align: left !important;
+    margin-top: 1rem;
+    display: flex;
+    gap: 8px;
+  }
+  .balance-card .col-md-6:last-child .btn { flex: 1; }
+
+  /* Stat cards in wallet */
+  .stat-card[style*="border-color"] {
+    margin-bottom: 0;
+  }
+
+  /* Transaction rows */
+  #txList .d-flex {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  #txList .text-end {
+    text-align: left !important;
+    width: 100%;
+  }
+}
+
+@media (max-width: 576px) {
+  .main-content { padding: 12px !important; }
+  .balance-card { padding: 1.25rem !important; }
+  .balance-card h2 { font-size: 1.5rem !important; }
+}
+
+/* ── 16. FIND JOBS PAGE ───────────────────────────────────── */
+@media (max-width: 768px) {
+  /* Search filters stack vertically */
+  .find-jobs-filters .row > [class*="col-"] {
+    width: 100% !important;
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Job cards full width on mobile */
+  #jobsGrid .col-md-6,
+  #jobsGrid .col-lg-4 {
+    width: 100% !important;
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+  }
+
+  .job-card { padding: 14px !important; }
+}
+
+/* ── 17. LANDING PAGE (index.html) ───────────────────────── */
+@media (max-width: 768px) {
+  .hero { padding: 48px 0 40px !important; text-align: center; }
+  .hero h1 { font-size: 1.75rem !important; }
+  .hero p { font-size: .95rem !important; }
+  .cta-buttons { justify-content: center; flex-direction: column; align-items: center; }
+  .cta-buttons .btn { width: 100%; max-width: 280px; }
+  .stats-container { flex-direction: column; align-items: center; gap: 1rem; }
+  .stat-item { text-align: center; }
+
+  /* Steps connector line hidden on mobile */
+  .steps-container::before { display: none !important; }
+
+  /* Skill pills — 2 columns on mobile */
+  .skill-pill { padding: .75rem 1rem; }
+  .skill-pill-icon { width: 36px; height: 36px; font-size: 1rem; }
+}
+
+@media (max-width: 576px) {
+  .hero h1 { font-size: 1.5rem !important; }
+  .section-title h2 { font-size: 1.5rem !important; }
+  .feature-card { padding: 1.25rem !important; }
+  .step-card { padding: 1.25rem !important; }
+  .testimonial-card { padding: 1.25rem !important; }
+  .cta-section { padding: 3rem 1rem !important; margin: 0 !important; border-radius: 0 !important; }
+}
+
+/* ── 18. LOGIN / REGISTER PAGES ───────────────────────────── */
+@media (max-width: 576px) {
+  .login-container {
+    padding: 24px 20px !important;
+    border-radius: var(--rsc-radius) !important;
+    margin: 0 8px;
+  }
+  body.login-page {
+    padding: 16px;
+    align-items: flex-start;
+    padding-top: 32px;
+  }
+}
+
+/* ── 19. ADMIN DASHBOARD ──────────────────────────────────── */
+@media (max-width: 1024px) {
+  .dashboard-grid { grid-template-columns: 1fr !important; }
+}
+
+@media (max-width: 768px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .quick-actions-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .quick-stats { grid-template-columns: repeat(2, 1fr) !important; }
+
+  /* Admin filter bars */
+  .card-header .d-flex.flex-wrap { gap: 6px !important; }
+  .card-header input[type="text"],
+  .card-header .form-control { width: 100% !important; }
+  .card-header .form-select { width: 100% !important; }
+}
+
+@media (max-width: 576px) {
+  .stats-grid { grid-template-columns: 1fr !important; }
+  .welcome-banner { padding: 16px !important; }
+  .welcome-banner h2 { font-size: 1.1rem !important; }
+
+  /* Settings tabs scroll horizontally */
+  #settingsTabs { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  #settingsTabs .nav-link { white-space: nowrap; }
+}
+
+/* ── 20. PROFILE / SETTINGS PAGES ────────────────────────── */
+@media (max-width: 768px) {
+  .profile-header { flex-direction: column; text-align: center; gap: 1rem; }
+  .profile-avatar { margin: 0 auto; }
+}
+
+/* ── 21. NOTIFICATIONS PAGE ───────────────────────────────── */
+@media (max-width: 576px) {
+  .notification-item {
+    padding: 12px !important;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .notification-item .notification-actions {
+    width: 100%;
+    display: flex;
+    gap: 8px;
+  }
+  .notification-item .notification-actions .btn { flex: 1; }
+}
+
+/* ── 22. FIND WORKERS PAGE ────────────────────────────────── */
+@media (max-width: 768px) {
+  .worker-card { padding: 14px !important; }
+  .worker-card .d-flex { flex-wrap: wrap; }
+}
+
+/* ── 23. POST JOB PAGE ────────────────────────────────────── */
+@media (max-width: 768px) {
+  .post-job-form .row > [class*="col-"] {
+    width: 100% !important;
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+/* ── 24. EMPLOYER PAYMENTS PAGE ───────────────────────────── */
+@media (max-width: 768px) {
+  .payment-card { padding: 14px !important; }
+  .payment-card .d-flex { flex-wrap: wrap; gap: 8px; }
+}
+
+/* ── 25. WORKER EARNINGS PAGE ─────────────────────────────── */
+@media (max-width: 768px) {
+  .earnings-summary { flex-direction: column; gap: 12px; }
+  .earnings-summary > div { width: 100%; }
+}
+
+/* ── 26. MODALS ───────────────────────────────────────────── */
+@media (max-width: 576px) {
+  .modal-dialog {
+    margin: 8px !important;
+    max-width: calc(100vw - 16px) !important;
+  }
+  .modal-content { border-radius: var(--rsc-radius) !important; }
+  .modal-body { padding: 1rem !important; }
+  .modal-footer { padding: .75rem 1rem !important; flex-direction: column; gap: 8px; }
+  .modal-footer .btn { width: 100%; }
+}
+
+/* ── 27. BADGES & STATUS PILLS ────────────────────────────── */
+.badge {
+  border-radius: 6px !important;
+  font-weight: 600;
+  letter-spacing: .2px;
+}
+
+/* ── 28. SCROLLBAR STYLING ────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* ── 29. TOUCH IMPROVEMENTS ───────────────────────────────── */
+@media (hover: none) and (pointer: coarse) {
+  /* Remove hover transforms on touch devices */
+  .stat-card:hover,
+  .card:hover,
+  .job-card:hover,
+  .skill-pill:hover,
+  .feature-card:hover,
+  .step-card:hover { transform: none !important; }
+
+  /* Larger tap targets */
+  .menu-item { min-height: var(--rsc-touch-target); }
+  .sidebar-item { min-height: var(--rsc-touch-target); }
+  .nav-item-btn { min-height: var(--rsc-touch-target); }
+  .btn { min-height: var(--rsc-touch-target); }
+}
+
+/* ── 30. UTILITY CLASSES ──────────────────────────────────── */
+.rsc-card {
+  background: #fff;
+  border-radius: var(--rsc-radius);
+  box-shadow: var(--rsc-shadow-sm);
+  border: 1px solid var(--rsc-border);
+  padding: 1.25rem;
+}
+
+.rsc-divider {
+  height: 1px;
+  background: var(--rsc-border);
+  margin: 1rem 0;
+}
+
+/* Smooth page transitions */
+.pane { animation: rscFadeIn .2s ease-out; }
+
+@keyframes rscFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Focus visible for accessibility */
+:focus-visible {
+  outline: 2px solid var(--rsc-primary);
+  outline-offset: 2px;
+}
+
+/* ── 31. PRINT ────────────────────────────────────────────── */
+@media print {
+  .sidebar, .top-nav, .mobile-bottom-nav, .mobile-toggle { display: none !important; }
+  .main-content { margin-left: 0 !important; }
+  .content-area { padding: 0 !important; }
+}
