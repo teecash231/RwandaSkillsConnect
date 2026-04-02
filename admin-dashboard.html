@@ -984,8 +984,12 @@
   </main>
 </div>
 
+<script src="js/config.js"></script>
 <script src="js/supabaseClient.js"></script>
 <script src="assets/js/mobile-nav.js"></script>
+<script>
+const SUPABASE_URL = window.CONFIG?.SUPABASE_URL || 'https://frynqsobruaczattynji.supabase.co';
+</script>
 <script>
 document.addEventListener('DOMContentLoaded', async () => {
   const { data: { session } } = await supabaseClient.auth.getSession();

@@ -183,14 +183,17 @@
   <script src="js/supabaseClient.js"></script>
   <script src="js/auth.js"></script>
   <script>
+    // Redirect if already logged in
+    Auth.redirectIfLoggedIn();
+
     // OAuth buttons
     document.getElementById('googleBtn').addEventListener('click', async () => {
-      const { error } = await Auth.signInWithGoogle();
-      if (error) showMsg(error, 'danger');
+      const result = await Auth.signInWithGoogle();
+      if (!result.success) showMsg(result.error || 'Google sign-in failed', 'danger');
     });
     document.getElementById('linkedinBtn').addEventListener('click', async () => {
-      const { error } = await Auth.signInWithLinkedIn();
-      if (error) showMsg(error, 'danger');
+      const result = await Auth.signInWithLinkedIn();
+      if (!result.success) showMsg(result.error || 'LinkedIn sign-in failed', 'danger');
     });
 
     // Role selection

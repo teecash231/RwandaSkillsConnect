@@ -1,7 +1,10 @@
 {
   "outputDirectory": ".",
   "rewrites": [
-    { "source": "/(.*)", "destination": "/$1.html" }
+    {
+      "source": "/:path((?!.*\\.html$)(?!.*\\.).*)",
+      "destination": "/:path.html"
+    }
   ],
   "headers": [
     {

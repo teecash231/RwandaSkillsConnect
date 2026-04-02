@@ -14,6 +14,7 @@
         <p class="text-gray-600" id="status">Please wait while we verify your account.</p>
     </div>
 
+    <script src="js/config.js"></script>
     <script src="js/supabaseClient.js"></script>
     <script>
         async function handleCallback() {
@@ -52,8 +53,7 @@
                     // Create profile for first-time OAuth users — send to role selection
                     await window.supabaseClient.from('profiles').upsert({
                         id: user.id,
-                        first_name: user.user_metadata?.full_name?.split(' ')[0] || '',
-                        last_name: user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '',
+                        full_name: user.user_metadata?.full_name || user.user_metadata?.name || '',
                         email: user.email,
                         role: 'worker'
                     });

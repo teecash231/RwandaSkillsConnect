@@ -115,15 +115,21 @@
         const ok = await DB.applications.updateStatus(appId, status);
         if (ok) {
             showNotification(`Application ${status}.`, 'success');
-            // Notify worker
+            // Notify worker via SECURITY DEFINER RPC (cross-user notification)
             const app = allApps.find(a => a.id === appId);
             if (app) {
-                await DB.notifications.create(app.worker_id,
-                    status === 'accepted' ? 'Application Accepted 🎉' : 'Application Update',
-                    status === 'accepted' ? 'Your application has been accepted!' : 'Your application was not selected.',
-                    status === 'accepted' ? 'accept' : 'reject',
-                    { sender_id: userId, application_id: appId }
-                );
+                const title   = status === 'accepted' ? 'Application Accepted 🎉' : 'Application Update';
+                const message = status === 'accepted' ? 'Your application has been accepted!' : 'Your application was not selected.';
+                await window.supabaseClient.rpc('send_notification', {
+                    p_user_id:   app.worker_id,
+                    p_sender_id: userId,
+                    p_type:      'status',
+                    p_title:     title,
+                    p_message:   message,
+                    p_link:      'my-applications.html',
+                    p_job_id:    null,
+                    p_app_id:    appId
+                });
             }
             window.showApplicationsModal();
         }

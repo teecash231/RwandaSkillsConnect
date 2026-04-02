@@ -279,8 +279,16 @@ CREATE TRIGGER trg_transactions_immutable_delete
     FOR EACH ROW EXECUTE FUNCTION prevent_transaction_mutation();
 
 -- RLS: no UPDATE or DELETE allowed on transactions from client
-CREATE POLICY "tx_no_update" ON ewallet_transactions FOR UPDATE USING (false);
-CREATE POLICY "tx_no_delete" ON ewallet_transactions FOR DELETE USING (false);
+-- NOTE: These policies are also defined in supabase-rls-phase9.sql which drops
+-- and recreates all policies. Run supabase-rls-phase9.sql after this file.
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'tx_no_update' AND tablename = 'ewallet_transactions') THEN
+    CREATE POLICY "tx_no_update" ON ewallet_transactions FOR UPDATE USING (false);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'tx_no_delete' AND tablename = 'ewallet_transactions') THEN
+    CREATE POLICY "tx_no_delete" ON ewallet_transactions FOR DELETE USING (false);
+  END IF;
+END $$;
 
 -- ============================================================
 -- ATOMIC PAYMENT FUNCTION (employer pays worker via Supabase RPC)

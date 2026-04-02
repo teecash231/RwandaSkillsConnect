@@ -269,10 +269,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   ]);
   document.getElementById('statJobs').textContent = jobCount || 0;
   document.getElementById('statApplications').textContent = appCount || 0;
-  // Skill count from profile
+  // Skill count and rating from profile
   if (profile?.skills) {
     const skillCount = profile.skills.split(',').map(s => s.trim()).filter(Boolean).length;
     document.getElementById('statSkills').textContent = skillCount;
+  }
+  if (profile?.rating) {
+    document.getElementById('statRating').textContent = parseFloat(profile.rating).toFixed(1);
   }
 
   // Profile completion
@@ -287,9 +290,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Load recent applications
   const { data: apps } = await supabaseClient
     .from('job_applications')
-    .select('*, jobs(title, employer_id)')
+    .select('*, jobs(title, employer_id, profiles!jobs_employer_id_fkey(company_name, full_name))')
     .eq('worker_id', user.id)
-    .order('created_at', { ascending: false })
+    .order('applied_at', { ascending: false })
     .limit(5);
 
   if (apps && apps.length > 0) {
@@ -297,8 +300,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     tbody.innerHTML = apps.map(app => `
       <tr>
         <td><div class="d-flex align-items-center"><div class="company-icon me-3"><i class="fas fa-briefcase"></i></div><div><h6 class="mb-0">${app.jobs?.title || 'N/A'}</h6></div></div></td>
-        <td>${app.jobs?.employer_id ? '<span class="text-muted">Employer</span>' : 'N/A'}</td>
-        <td>${new Date(app.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</td>
+        <td>${app.jobs?.profiles?.company_name || app.jobs?.profiles?.full_name || 'N/A'}</td>
+        <td>${new Date(app.applied_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</td>
         <td><span class="badge badge-${app.status === 'accepted' ? 'success' : app.status === 'rejected' ? 'danger' : 'warning'}">${app.status || 'pending'}</span></td>
         <td><a href="my-applications.html" class="btn btn-sm btn-outline-primary">View</a></td>
       </tr>`).join('');

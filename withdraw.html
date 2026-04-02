@@ -200,7 +200,6 @@
   <script src="js/supabaseClient.js"></script>
   <script src="js/auth-utils.js"></script>
   <script src="js/ewallet.js"></script>
-  <script>window.SUPABASE_FUNCTIONS_URL = window.CONFIG.SUPABASE_URL + '/functions/v1';</script>
   <script>
   (async () => {
     const { data: { user } } = await window.supabaseClient.auth.getUser();

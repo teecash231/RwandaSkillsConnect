@@ -22,16 +22,25 @@ const ApplicationService = (() => {
 
   // Employer: get all applications across all their jobs
   async function getAllEmployerApplications(employerId) {
+    // First get the employer's job IDs, then fetch applications for those jobs
+    const { data: jobs, error: jobsErr } = await db()
+      .from('jobs')
+      .select('id')
+      .eq('employer_id', employerId);
+    if (jobsErr) throw jobsErr;
+    if (!jobs || !jobs.length) return [];
+
+    const jobIds = jobs.map(j => j.id);
     const { data, error } = await db()
       .from('job_applications')
       .select(`
         *,
-        jobs!inner(id, title, location, job_type, employer_id),
+        jobs(id, title, location, job_type, employer_id),
         profiles!job_applications_worker_id_fkey(
           id, full_name, phone, profile_image, skills, experience_level
         )
       `)
-      .eq('jobs.employer_id', employerId)
+      .in('job_id', jobIds)
       .order('applied_at', { ascending: false });
     if (error) throw error;
     return data;
@@ -41,7 +50,7 @@ const ApplicationService = (() => {
   async function updateStatus(appId, status) {
     const { data, error } = await db()
       .from('job_applications')
-      .update({ status, updated_at: new Date().toISOString() })
+      .update({ status })
       .eq('id', appId)
       .select()
       .single();

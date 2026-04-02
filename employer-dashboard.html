@@ -326,14 +326,33 @@ document.addEventListener('DOMContentLoaded', async () => {
       }).join('');
     }
   }
+  // Build real monthly applications chart for last 6 months
+  const months = [];
+  const monthKeys = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - i);
+    months.push(d.toLocaleDateString('en-US', { month: 'short' }));
+    monthKeys.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);
+  }
+  let chartData = new Array(6).fill(0);
+  if (jobIds.length) {
+    const since = new Date(); since.setMonth(since.getMonth() - 5); since.setDate(1);
+    const { data: allApps } = await supabaseClient
+      .from('job_applications').select('applied_at').in('job_id', jobIds).gte('applied_at', since.toISOString());
+    (allApps || []).forEach(a => {
+      const k = a.applied_at.slice(0, 7);
+      const idx = monthKeys.indexOf(k);
+      if (idx !== -1) chartData[idx]++;
+    });
+  }
   const ctx = document.getElementById('applicationsChart');
   new Chart(ctx, {
     type: 'line',
     data: {
-      labels: ['Jan','Feb','Mar','Apr','May','Jun'],
-      datasets: [{ label: 'Applications', data: [0,0,0,0,0,0], borderColor: '#0056B3', backgroundColor: 'rgba(0,86,179,.1)', tension: .4, fill: true, borderWidth: 2 }]
+      labels: months,
+      datasets: [{ label: 'Applications', data: chartData, borderColor: '#0056B3', backgroundColor: 'rgba(0,86,179,.1)', tension: .4, fill: true, borderWidth: 2 }]
     },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
   });
 
   // Logout

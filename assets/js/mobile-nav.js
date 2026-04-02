@@ -68,7 +68,7 @@
     const excluded = ['index.html','login.html','register.html','signup.html',
                       'forgot-password.html','reset-password.html','otp-verify.html',
                       'otp-verification.html','role-selection.html','email-confirmation.html',
-                      'auth-callback.html',''];
+                      'auth-callback.html','messages.html',''];
     if (excluded.includes(page)) return;
 
     document.body.insertAdjacentHTML('beforeend', buildBottomNav(detectRole()));

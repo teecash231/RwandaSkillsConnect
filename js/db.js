@@ -235,11 +235,9 @@ const DB = (() => {
         async markAllRead(userId) {
             await sb().from('notifications').update({ is_read: true }).eq('user_id', userId);
         },
-        async create(userId, title, message, type = 'info', extras = {}) {
+        async create(userId, title, message, type = 'system', extras = {}) {
             await sb().from('notifications').insert({
                 user_id: userId, title, message, type,
-                icon: extras.icon || 'fas fa-bell',
-                color: extras.color || 'info',
                 link: extras.link || '#',
                 sender_id: extras.sender_id || null,
                 job_id: extras.job_id || null,
@@ -272,14 +270,14 @@ const DB = (() => {
             return data || [];
         },
         async requestWithdrawal(walletId, amount, method, details) {
-            // Check balance first
+            // Check balance first — minimum fee aligned with DB RPC: GREATEST(amount*0.01, 10)
             const { data: w } = await sb().from('ewallets').select('available_balance').eq('id', walletId).single();
             if (!w || w.available_balance < amount)
                 return { success: false, error: 'Insufficient balance.' };
             if (amount < 1000)
                 return { success: false, error: 'Minimum withdrawal is RWF 1,000.' };
 
-            const fee = Math.max(amount * 0.01, 100);
+            const fee = Math.max(amount * 0.01, 10);
             const { error } = await sb().from('ewallet_withdrawals').insert({
                 ewallet_id: walletId, amount, fee,
                 net_amount: amount - fee,

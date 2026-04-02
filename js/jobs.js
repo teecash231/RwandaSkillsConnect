@@ -24,13 +24,15 @@ const JobService = (() => {
   }
 
   async function getOpenJobs({ search = '', location = '', jobType = '' } = {}) {
+    const today = new Date().toISOString().split('T')[0];
     let query = db()
       .from('jobs')
       .select('*, profiles!jobs_employer_id_fkey(full_name, company_name, company_logo)')
       .eq('status', 'active')
+      .gte('application_deadline', today)
       .order('created_at', { ascending: false });
 
-    if (search)   query = query.ilike('title', `%${search}%`);
+    if (search)   query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%,skills_required.ilike.%${search}%`);
     if (location) query = query.ilike('location', `%${location}%`);
     if (jobType)  query = query.eq('job_type', jobType);
 
@@ -76,7 +78,10 @@ const JobService = (() => {
       .insert({ job_id: jobId, worker_id: workerId, cover_letter: coverLetter })
       .select()
       .single();
-    if (error) throw error;
+    if (error) {
+      if (error.code === '23505') throw new Error('You have already applied to this job.');
+      throw error;
+    }
     // DB trigger trg_on_new_application fires automatically — notifies employer
     return data;
   }

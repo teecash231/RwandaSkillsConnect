@@ -253,10 +253,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   try {
     currentApp = await ApplicationService.getById(appId);
-    // Verify this application belongs to the employer's job
-    const job = currentApp.jobs || {};
-    const jobEmployerId = job.profiles?.id || job.employer_id;
-    // Allow if job employer matches or just render (RLS enforces access)
+    // RLS policy apps_select_employer enforces that only the job's employer can see this
     renderProfile(currentApp);
   } catch (err) {
     document.getElementById('profileContent').innerHTML =

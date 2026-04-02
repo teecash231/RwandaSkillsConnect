@@ -9,7 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    :root{--primary:#0056B3;--primary-light:#E8F2FF;--secondary:#00C896;--accent:#FF6B6B;--dark:#1A1F36;--light:#F8FAFC;--gray:#64748B;--border:#E2E8F0;--radius:10px;--sidebar-width:280px;--shadow:0 4px 20px rgba(0,0,0,.08);}
+    :root{--primary:#0056B3;--primary-light:#E8F2FF;--secondary:#00C896;--accent:#FF6B6B;--dark:#1A1F36;--gray:#64748B;--border:#E2E8F0;--radius:10px;--sidebar-width:280px;--shadow:0 4px 20px rgba(0,0,0,.08);}
     *{margin:0;padding:0;box-sizing:border-box;}
     body{font-family:'Inter',sans-serif;color:var(--dark);background:#f5f7fa;overflow-x:hidden;min-height:100vh;}
     h1,h2,h3,h4,h5,h6{font-family:'Poppins',sans-serif;font-weight:600;}
@@ -17,7 +17,7 @@
     .dashboard-wrapper{display:flex;min-height:100vh;}
     .sidebar{width:var(--sidebar-width);background:#fff;border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:1000;box-shadow:2px 0 10px rgba(0,0,0,.05);transition:transform .3s ease;}
     .sidebar.collapsed{width:80px;}
-    .sidebar.collapsed .logo-text,.sidebar.collapsed .user-details,.sidebar.collapsed .menu-text,.sidebar.collapsed .section-title{display:none;}
+    .sidebar.collapsed .logo-text,.sidebar.collapsed .menu-text,.sidebar.collapsed .section-title{display:none;}
     .sidebar-header{padding:20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
     .logo{display:flex;align-items:center;gap:12px;}
     .logo-icon{width:40px;height:40px;background:linear-gradient(135deg,var(--primary) 0%,var(--secondary) 100%);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;}
@@ -68,7 +68,6 @@
 </head>
 <body>
 <div class="dashboard-wrapper">
-  <!-- Sidebar -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <div class="logo">
@@ -137,7 +136,6 @@
     <div class="content-area">
       <div class="row g-4" style="max-width:1000px;margin:0 auto;">
 
-        <!-- Current Skills -->
         <div class="col-12">
           <div class="card">
             <div class="card-header">
@@ -146,7 +144,7 @@
             </div>
             <div class="card-body">
               <div id="skillsList" class="mb-3" style="min-height:48px;">
-                <span class="text-muted" id="emptyMsg">No skills added yet. Add your first skill below.</span>
+                <span class="text-muted">No skills added yet. Add your first skill below.</span>
               </div>
               <button class="btn btn-success btn-sm" id="saveBtn" style="display:none;">
                 <i class="fas fa-save me-1"></i> Save Changes
@@ -155,17 +153,16 @@
           </div>
         </div>
 
-        <!-- Add Skill -->
         <div class="col-md-6">
           <div class="card">
             <div class="card-header"><h5 class="card-title mb-0"><i class="fas fa-plus-circle me-2 text-success"></i>Add a Skill</h5></div>
             <div class="card-body">
               <div class="mb-3">
-                <label class="form-label fw-500" style="font-size:13px;">Skill Name</label>
+                <label class="form-label" style="font-size:13px;font-weight:500;">Skill Name</label>
                 <input type="text" id="skillInput" class="form-control" placeholder="e.g. Plumbing, Carpentry, Driving..." maxlength="60">
               </div>
               <div class="mb-3">
-                <label class="form-label fw-500" style="font-size:13px;">Proficiency Level</label>
+                <label class="form-label" style="font-size:13px;font-weight:500;">Proficiency Level</label>
                 <select id="levelInput" class="form-select">
                   <option value="beginner">Beginner</option>
                   <option value="intermediate" selected>Intermediate</option>
@@ -179,15 +176,12 @@
           </div>
         </div>
 
-        <!-- Suggested Skills -->
         <div class="col-md-6">
           <div class="card">
             <div class="card-header"><h5 class="card-title mb-0"><i class="fas fa-lightbulb me-2 text-warning"></i>Suggested Skills</h5></div>
             <div class="card-body">
               <p class="text-muted mb-3" style="font-size:13px;">Click to quickly add common skills:</p>
-              <div id="suggestedSkills">
-                <!-- populated by JS -->
-              </div>
+              <div id="suggestedSkills"></div>
             </div>
           </div>
         </div>
@@ -197,9 +191,9 @@
   </main>
 </div>
 
-<!-- Toast -->
 <div id="toast" aria-live="polite" aria-atomic="true"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="js/supabaseClient.js"></script>
 <script>
 const SUGGESTED = [
@@ -209,8 +203,8 @@ const SUGGESTED = [
   'Photography','Security','Gardening'
 ];
 
-let skills = []; // [{name, level}]
-let dirty = false;
+let skills = [];
+let dirty  = false;
 let userId = null;
 
 function toast(msg, type = 'success') {
@@ -220,19 +214,15 @@ function toast(msg, type = 'success') {
 }
 
 function renderSkills() {
-  const list = document.getElementById('skillsList');
-  const empty = document.getElementById('emptyMsg');
-  const count = document.getElementById('skillCount');
+  const list    = document.getElementById('skillsList');
+  const count   = document.getElementById('skillCount');
   const saveBtn = document.getElementById('saveBtn');
-
   count.textContent = `${skills.length} skill${skills.length !== 1 ? 's' : ''}`;
   saveBtn.style.display = dirty ? '' : 'none';
-
-  if (skills.length === 0) {
+  if (!skills.length) {
     list.innerHTML = '<span class="text-muted">No skills added yet. Add your first skill below.</span>';
     return;
   }
-
   list.innerHTML = skills.map((s, i) => `
     <span class="skill-tag level-${s.level}">
       <i class="fas fa-check-circle" style="font-size:11px;"></i>
@@ -251,20 +241,16 @@ function renderSuggested() {
 }
 
 function addSuggested(name) {
-  if (skills.find(s => s.name.toLowerCase() === name.toLowerCase())) {
-    toast('Skill already added.', 'warning'); return;
-  }
+  if (skills.find(s => s.name.toLowerCase() === name.toLowerCase())) { toast('Skill already added.', 'warning'); return; }
   skills.push({ name, level: 'intermediate' });
   dirty = true;
-  renderSkills();
-  renderSuggested();
+  renderSkills(); renderSuggested();
 }
 
 function removeSkill(i) {
   skills.splice(i, 1);
   dirty = true;
-  renderSkills();
-  renderSuggested();
+  renderSkills(); renderSuggested();
 }
 
 function escHtml(s) {
@@ -272,21 +258,18 @@ function escHtml(s) {
 }
 
 document.getElementById('addBtn').addEventListener('click', () => {
-  const name = document.getElementById('skillInput').value.trim();
+  const name  = document.getElementById('skillInput').value.trim();
   const level = document.getElementById('levelInput').value;
   if (!name) { toast('Please enter a skill name.', 'warning'); return; }
-  if (skills.find(s => s.name.toLowerCase() === name.toLowerCase())) {
-    toast('Skill already added.', 'warning'); return;
-  }
+  if (skills.find(s => s.name.toLowerCase() === name.toLowerCase())) { toast('Skill already added.', 'warning'); return; }
   skills.push({ name, level });
   dirty = true;
   document.getElementById('skillInput').value = '';
-  renderSkills();
-  renderSuggested();
+  renderSkills(); renderSuggested();
 });
 
 document.getElementById('skillInput').addEventListener('keydown', e => {
-  if (e.key === 'Enter') document.getElementById('addBtn').click();
+  if (e.key === 'Enter') { e.preventDefault(); document.getElementById('addBtn').click(); }
 });
 
 document.getElementById('saveBtn').addEventListener('click', async () => {
@@ -306,9 +289,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', userId).single();
 
   if (profile?.role === 'employer') { window.location.href = 'employer-dashboard.html'; return; }
-  if (profile?.role === 'admin') { window.location.href = 'admin-dashboard.html'; return; }
+  if (profile?.role === 'admin')    { window.location.href = 'admin-dashboard.html'; return; }
 
-  // Parse stored skills (supports "Name:level, Name:level" or plain "Name, Name")
   if (profile?.skills) {
     skills = profile.skills.split(',').map(s => s.trim()).filter(Boolean).map(s => {
       const [name, level] = s.split(':').map(p => p.trim());
@@ -325,7 +307,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     avatarEl.textContent = name.charAt(0).toUpperCase();
   }
 
-  // Notification badge
   const { count: notifCount } = await supabaseClient
     .from('notifications').select('*', { count: 'exact', head: true })
     .eq('user_id', userId).eq('is_read', false);
@@ -339,14 +320,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderSkills();
   renderSuggested();
 
-  // Logout
   document.getElementById('logoutBtn').addEventListener('click', async e => {
     e.preventDefault();
     await supabaseClient.auth.signOut();
     window.location.href = 'login.html';
   });
 
-  // Sidebar
   const sidebar = document.getElementById('sidebar');
   document.getElementById('sidebarCollapse').addEventListener('click', () => sidebar.classList.toggle('collapsed'));
   document.getElementById('mobileToggle').addEventListener('click', () => {
@@ -358,7 +337,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('sidebarOverlay').classList.remove('show');
   });
 });
+
+window.removeSkill   = removeSkill;
+window.addSuggested  = addSuggested;
 </script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -189,13 +189,25 @@
       `<li class="nav-item"><a class="nav-link${n.active?' active':''}" href="${n.href}"><i class="fas ${n.icon}"></i> ${n.label}</a></li>`
     ).join('');
 
-    // Show deposit button for all roles
-    document.getElementById('depositBtnWrap').innerHTML = `<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#depositModal"><i class="fas fa-plus me-1"></i> Deposit</button>`;
-    document.getElementById('depositBtn').addEventListener('click', () => {
-      new bootstrap.Modal(document.getElementById('depositModal')).show();
-    });
+    // Wire both deposit buttons to open the modal
+    const openDeposit = () => new bootstrap.Modal(document.getElementById('depositModal')).show();
+    document.getElementById('depositBtn').addEventListener('click', openDeposit);
+    document.getElementById('depositBtnWrap').innerHTML =
+      `<button class="btn btn-primary" id="depositBtnTop"><i class="fas fa-plus me-1"></i> Deposit</button>`;
+    document.getElementById('depositBtnTop').addEventListener('click', openDeposit);
 
-    // Deposit handler
+    // Load wallet & transactions first so deposit handler can reference them
+    let wallet, transactions;
+    try {
+      wallet       = await EwalletService.getWallet(user.id);
+      transactions = await EwalletService.getTransactions(wallet.id, 100);
+    } catch (e) {
+      document.getElementById('txList').innerHTML =
+        `<div class="text-center py-4 text-danger"><i class="fas fa-exclamation-circle me-2"></i>${e.message}</div>`;
+      return;
+    }
+
+    // Deposit handler — wallet is guaranteed to be defined here
     document.getElementById('confirmDeposit').addEventListener('click', async () => {
       const amount  = parseFloat(document.getElementById('depositAmount').value);
       const phone   = document.getElementById('depositPhone').value.trim();
@@ -204,35 +216,22 @@
       const btn     = document.getElementById('confirmDeposit');
 
       if (!amount || amount < 500) { alertEl.innerHTML = `<div class="alert alert-danger">Minimum deposit is RWF 500</div>`; return; }
-      if (!phone) { alertEl.innerHTML = `<div class="alert alert-danger">Phone number is required</div>`; return; }
+      if (!phone)                  { alertEl.innerHTML = `<div class="alert alert-danger">Phone number is required</div>`; return; }
 
       spinner.classList.remove('d-none');
       btn.disabled = true;
       try {
-        const newBalance = await EwalletService.deposit(user.id, null, amount, phone, null);
+        await EwalletService.deposit(user.id, null, amount, phone, null);
         bootstrap.Modal.getInstance(document.getElementById('depositModal')).hide();
-        document.getElementById('balanceDisplay').textContent = `RWF ${Number(newBalance).toLocaleString()}`;
-        // Reload transactions
-        wallet = await EwalletService.getWallet(user.id);
-        transactions = await EwalletService.getTransactions(wallet.id, 100);
         location.reload();
-      } catch (e) {
-        alertEl.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>${e.message}</div>`;
+      } catch (err) {
+        alertEl.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>${err.message}</div>`;
         spinner.classList.add('d-none');
         btn.disabled = false;
       }
     });
 
-    let wallet, transactions;
-    try {
-      wallet = await EwalletService.getWallet(user.id);
-      transactions = await EwalletService.getTransactions(wallet.id, 100);
-    } catch (e) {
-      document.getElementById('txList').innerHTML = `<div class="text-center py-4 text-danger"><i class="fas fa-exclamation-circle me-2"></i>${e.message}</div>`;
-      return;
-    }
-
-    // Balance
+    // Display balance
     document.getElementById('balanceDisplay').textContent = `RWF ${Number(wallet.available_balance).toLocaleString()}`;
     if (wallet.pending_balance > 0) {
       document.getElementById('pendingDisplay').textContent = `Pending: RWF ${Number(wallet.pending_balance).toLocaleString()}`;
@@ -243,18 +242,19 @@
     const withdrawn = transactions.filter(t => t.transaction_type === 'withdrawal').reduce((s,t) => s + Number(t.amount), 0);
     document.getElementById('totalReceived').textContent  = `RWF ${received.toLocaleString()}`;
     document.getElementById('totalWithdrawn').textContent = `RWF ${withdrawn.toLocaleString()}`;
-    document.getElementById('txCount').textContent = transactions.length;
-    document.getElementById('txBadge').textContent = `${transactions.length} transactions`;
+    document.getElementById('txCount').textContent        = transactions.length;
+    document.getElementById('txBadge').textContent        = `${transactions.length} transactions`;
 
     // Render transactions
     if (!transactions.length) {
-      document.getElementById('txList').innerHTML = `<div class="text-center py-5 text-muted"><i class="fas fa-exchange-alt fa-2x mb-3"></i><p>No transactions yet</p></div>`;
+      document.getElementById('txList').innerHTML =
+        `<div class="text-center py-5 text-muted"><i class="fas fa-exchange-alt fa-2x mb-3"></i><p>No transactions yet</p></div>`;
     } else {
       const typeLabel = { deposit:'Deposit', withdrawal:'Withdrawal', payment_sent:'Payment Sent', payment_received:'Payment Received', refund:'Refund' };
-      const rows = transactions.map(t => {
-        const isCredit = ['deposit','payment_received','refund'].includes(t.transaction_type);
-        const badgeClass = t.status === 'completed' ? (isCredit ? 'tx-credit' : 'tx-debit') : 'tx-pending';
-        const sign = isCredit ? '+' : '-';
+      document.getElementById('txList').innerHTML = transactions.map(t => {
+        const isCredit  = ['deposit','payment_received','refund'].includes(t.transaction_type);
+        const badgeCls  = t.status === 'completed' ? (isCredit ? 'tx-credit' : 'tx-debit') : 'tx-pending';
+        const sign      = isCredit ? '+' : '-';
         return `<div class="d-flex align-items-center justify-content-between px-4 py-3 border-bottom">
           <div>
             <div class="fw-semibold">${typeLabel[t.transaction_type] || t.transaction_type}</div>
@@ -263,11 +263,10 @@
           </div>
           <div class="text-end">
             <div class="fw-bold ${isCredit ? 'text-success' : 'text-danger'}">${sign} RWF ${Number(t.amount).toLocaleString()}</div>
-            <span class="tx-badge ${badgeClass}">${t.status}</span>
+            <span class="tx-badge ${badgeCls}">${t.status}</span>
           </div>
         </div>`;
       }).join('');
-      document.getElementById('txList').innerHTML = rows;
     }
 
     // Logout

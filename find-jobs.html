@@ -171,6 +171,7 @@
 let currentUser = null;
 let appliedJobIds = new Set();
 let selectedJobId = null;
+let _jobsCache = {};  // cache job data for apply modal title
 
 const toastEl = new bootstrap.Toast(document.getElementById('toast'), { delay: 3500 });
 const applyModal = new bootstrap.Modal(document.getElementById('applyModal'));
@@ -247,6 +248,7 @@ async function loadJobs() {
   const jobType  = document.getElementById('typeFilter').value;
   try {
     const jobs = await JobService.getOpenJobs({ search, location, jobType });
+    jobs.forEach(j => { _jobsCache[j.id] = j; });  // cache all loaded jobs
     renderJobs(jobs);
   } catch (err) {
     document.getElementById('jobsGrid').innerHTML = `<div class="alert alert-danger">${err.message}</div>`;
@@ -256,6 +258,7 @@ async function loadJobs() {
 async function showDetail(jobId) {
   try {
     const job = await JobService.getJobById(jobId);
+    _jobsCache[job.id] = job;  // cache for apply modal
     const employer = job.profiles;
     const applied = appliedJobIds.has(job.id);
     selectedJobId = job.id;
@@ -292,11 +295,13 @@ async function showDetail(jobId) {
 
 function openApply(jobId) {
   selectedJobId = jobId;
-  const jobs = document.querySelectorAll('.job-card');
-  // Find job title from rendered cards
+  const job = _jobsCache[jobId];
   document.getElementById('coverLetter').value = '';
-  document.getElementById('applyJobTitle').textContent = 'Apply for Job';
-  document.getElementById('applyJobMeta').innerHTML = `<i class="fas fa-info-circle me-2 text-primary"></i>Job ID: ${jobId}`;
+  document.getElementById('applyJobTitle').textContent = job ? `Apply for: ${job.title}` : 'Apply for Job';
+  document.getElementById('applyJobMeta').innerHTML = job
+    ? `<i class="fas fa-building me-2 text-primary"></i>${job.profiles?.company_name || job.profiles?.full_name || 'Company'}
+       <span class="ms-3"><i class="fas fa-map-marker-alt me-1"></i>${job.location}</span>`
+    : `<i class="fas fa-info-circle me-2 text-primary"></i>Job ID: ${jobId}`;
   applyModal.show();
 }
 
