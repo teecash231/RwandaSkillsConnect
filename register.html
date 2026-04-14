@@ -54,8 +54,7 @@
     .alert{border-radius:var(--radius);border:none;padding:10px 14px;margin-bottom:16px;font-size:13px;display:flex;align-items:center;gap:8px;}
     .alert-danger{background:#FFF5F5;color:var(--accent);border-left:3px solid var(--accent);}
     .alert-success{background:#F0FFF4;color:#155724;border-left:3px solid var(--secondary);}
-    .social-btn{flex:1;padding:8px;border:1px solid var(--border);border-radius:var(--radius);background:#fff;color:var(--dark);font-size:12px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .2s ease;cursor:pointer;height:36px;}
-    .social-btn:hover{border-color:var(--primary);background:var(--primary-light);}
+    .social-btn{flex:1;padding:8px;border:1px solid var(--border);border-radius:var(--radius);background:#f1f5f9;color:#a0aec0;font-size:12px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .2s ease;cursor:not-allowed;height:36px;opacity:0.6;pointer-events:none;}
     .divider{display:flex;align-items:center;margin:10px 0;color:var(--gray);font-size:12px;}
     .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
     .divider span{padding:0 10px;}
@@ -78,8 +77,8 @@
     </div>
 
     <div class="d-flex gap-2 mb-3">
-      <button type="button" class="social-btn" id="googleBtn"><i class="fab fa-google"></i> Continue with Google</button>
-      <button type="button" class="social-btn" id="linkedinBtn"><i class="fab fa-linkedin-in"></i> Continue with LinkedIn</button>
+      <button type="button" class="social-btn" id="googleBtn" disabled title="Coming soon"><i class="fab fa-google"></i> Continue with Google</button>
+      <button type="button" class="social-btn" id="linkedinBtn" disabled title="Coming soon"><i class="fab fa-linkedin-in"></i> Continue with LinkedIn</button>
     </div>
     <div class="divider"><span>or register with email</span></div>
 
@@ -185,16 +184,6 @@
   <script>
     // Redirect if already logged in
     Auth.redirectIfLoggedIn();
-
-    // OAuth buttons
-    document.getElementById('googleBtn').addEventListener('click', async () => {
-      const result = await Auth.signInWithGoogle();
-      if (!result.success) showMsg(result.error || 'Google sign-in failed', 'danger');
-    });
-    document.getElementById('linkedinBtn').addEventListener('click', async () => {
-      const result = await Auth.signInWithLinkedIn();
-      if (!result.success) showMsg(result.error || 'LinkedIn sign-in failed', 'danger');
-    });
 
     // Role selection
     document.querySelectorAll('.role-option').forEach(opt => {
